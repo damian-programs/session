@@ -142,7 +142,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 /* RECORDS TABLE */
 .rec-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
 .rec-table th { text-align: left; padding: 8px 8px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); border-bottom: 2px solid var(--border); white-space: nowrap; overflow: hidden; }
-.rec-table td { padding: 8px 8px; border-bottom: 1px solid var(--border-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-main); vertical-align: middle; }
+.rec-table td { padding: 8px 6px; border-bottom: 1px solid var(--border-soft); overflow: visible; white-space: nowrap; color: var(--text-main); vertical-align: middle; }
 .rec-table tr:last-child td { border-bottom: none; }
 .rec-table tr:hover td { background: var(--cream); }
 .pill { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
@@ -1203,7 +1203,7 @@ function renderTable(isAdmin) {
   const sorted = [...myRecs].sort((a, b) => b.svcDate.localeCompare(a.svcDate));
   let h = '<div style="overflow-x:auto;"><table class="rec-table"><thead><tr>';
   if (isAdmin) h += '<th style="width:120px;">Site</th>';
-  h += '<th style="width:82px;">Date</th><th style="width:56px;">Avail</th><th style="width:50px;">Served</th><th style="width:56px;">Unsrv</th><th style="width:54px;">Left</th><th style="width:76px;">Balance</th><th style="width:70px;">Status</th><th>Signed by</th><th style="width:36px;"></th></tr></thead><tbody>';
+  h += '<th style="width:90px;">Date</th><th style="width:56px;">Avail</th><th style="width:56px;">Served</th><th style="width:56px;">Unsrv</th><th style="width:54px;">Left</th><th style="width:76px;">Balance</th><th style="width:80px;">Status</th><th>Signed by</th><th style="width:100px;"></th></tr></thead><tbody>';
   sorted.forEach(r => {
     const sum = r.totalServed + r.totalUnsrv + r.leftover;
     const bal = r.availQty - sum;
