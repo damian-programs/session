@@ -10,12 +10,12 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
 :root {
-  --navy: #1a2744;
-  --navy-mid: #243156;
-  --navy-light: #2e3e6b;
-  --amber: #e8a020;
-  --amber-light: #fdf3e0;
-  --amber-dark: #b87a10;
+  --navy: #3f72b8;
+  --navy-mid: #2d5a9e;
+  --navy-light: #2d5a9e;
+  --amber: #58923a;
+  --amber-light: #edf5e8;
+  --amber-dark: #3d6828;
   --cream: #faf8f4;
   --white: #ffffff;
   --border: #ddd8ce;
@@ -33,8 +33,8 @@
   --info-text: #1a4a8a;
   --radius: 10px;
   --radius-sm: 6px;
-  --shadow: 0 1px 3px rgba(26,39,68,0.08), 0 4px 16px rgba(26,39,68,0.06);
-  --shadow-card: 0 2px 8px rgba(26,39,68,0.10), 0 1px 2px rgba(26,39,68,0.06);
+  --shadow: 0 1px 3px rgba(63,114,184,0.08), 0 4px 16px rgba(63,114,184,0.06);
+  --shadow-card: 0 2px 8px rgba(63,114,184,0.10), 0 1px 2px rgba(63,114,184,0.06);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -73,9 +73,9 @@ body {
 .topbar-brand i { color: var(--amber); font-size: 20px; }
 .topbar-right { display: flex; align-items: center; gap: 10px; }
 .site-badge {
-  background: rgba(232,160,32,0.18);
+  background: rgba(88,146,58,0.18);
   color: var(--amber);
-  border: 1px solid rgba(232,160,32,0.3);
+  border: 1px solid rgba(88,146,58,0.3);
   font-size: 11px;
   font-weight: 600;
   padding: 3px 10px;
@@ -189,7 +189,7 @@ select {
 textarea { height: auto; min-height: 68px; padding: 9px 11px; resize: vertical; line-height: 1.5; }
 input:focus, select:focus, textarea:focus {
   border-color: var(--navy-light);
-  box-shadow: 0 0 0 3px rgba(46,62,107,0.10);
+  box-shadow: 0 0 0 3px rgba(63,114,184,0.18);
 }
 input[readonly] { background: var(--cream); color: var(--text-mid); }
 
@@ -359,7 +359,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 /* ── LOGIN ── */
 .login-page {
   min-height: 100vh;
-  background: var(--navy);
+  background: #2a4f85;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -371,7 +371,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
   padding: 2.5rem;
   width: 100%;
   max-width: 380px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  box-shadow: 0 20px 60px rgba(63,114,184,0.25);
 }
 .login-logo {
   text-align: center;
@@ -424,7 +424,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 .setup-banner strong { font-weight: 600; }
 .setup-banner ol { margin: 8px 0 0 18px; line-height: 2; }
 .setup-banner code {
-  background: rgba(26,74,138,0.1);
+  background: rgba(63,114,184,0.12);
   padding: 1px 5px;
   border-radius: 3px;
   font-family: 'DM Mono', monospace;
@@ -481,9 +481,97 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
       <label for="ls">Site</label>
       <select id="ls">
         <option value="">Select your site…</option>
-        <option value="SITE-A">Roosevelt After-School Center</option>
-        <option value="SITE-B">Lincoln Community Program</option>
-        <option value="SITE-C">Jefferson Kids Club</option>
+        <option value="11778">3MB Afterschool</option>
+        <option value="14569">A Beautiful Mind</option>
+        <option value="12152">ACE Ohio Wellness</option>
+        <option value="11550">Applewood Centers - Cleveland</option>
+        <option value="11551">Bellefaire Jewish Children's Bureau-ASP</option>
+        <option value="12221">CCPL - Brook Park Branch</option>
+        <option value="12003">CCPL - Brooklyn Branch</option>
+        <option value="11935">CCPL - Garfield Heights Branch</option>
+        <option value="11936">CCPL - Maple Heights Branch</option>
+        <option value="12004">CCPL - North Olmsted Branch</option>
+        <option value="12005">CCPL - Parma Branch</option>
+        <option value="12036">CCPL - Parma Heights Branch</option>
+        <option value="12006">CCPL - Parma Snow Branch</option>
+        <option value="12295">CCPL - Richmond Heights</option>
+        <option value="12035">CCPL - South Euclid-Lyndhurst Branch</option>
+        <option value="12034">CCPL - Southeast Branch</option>
+        <option value="11849">CCPL - Warrensville Branch</option>
+        <option value="11655">CH-UH Noble Library</option>
+        <option value="11694">Chagrin Falls Community Park</option>
+        <option value="11855">Clear Fork Christian Preschool &amp; Learning Center</option>
+        <option value="13318">Cleveland Institute of Art</option>
+        <option value="12008">CMHA - Lakeview Community Center</option>
+        <option value="11926">CMHA - Outhwaite Homes Afterschool Enrichment Progr</option>
+        <option value="12102">CMHA - Riverside</option>
+        <option value="11686">CPL - 131st Street Branch</option>
+        <option value="11698">CPL - Addison</option>
+        <option value="11938">CPL - Brooklyn Branch</option>
+        <option value="11759">CPL - Carnegie West</option>
+        <option value="11644">CPL - Collinwood Branch</option>
+        <option value="11760">CPL - Eastman</option>
+        <option value="11646">CPL - Fleet Branch</option>
+        <option value="11647">CPL - Fulton Branch</option>
+        <option value="11699">CPL - Garden Valley</option>
+        <option value="11850">CPL - Glenville Branch</option>
+        <option value="11648">CPL - Harvard Lee Branch</option>
+        <option value="11761">CPL - Hough Branch</option>
+        <option value="11939">CPL - Jefferson Branch</option>
+        <option value="11649">CPL - Langston Hughes Branch</option>
+        <option value="11940">CPL - Lorain Branch</option>
+        <option value="11941">CPL - Main Branch</option>
+        <option value="11762">CPL - Martin Luther King Branch</option>
+        <option value="11942">CPL - Memorial Nottingham Branch</option>
+        <option value="11937">CPL - Mt. Pleasant Branch</option>
+        <option value="11690">CPL - Rice Branch</option>
+        <option value="11650">CPL - Rockport Branch</option>
+        <option value="11943">CPL - South Branch</option>
+        <option value="11763">CPL - South Brooklyn</option>
+        <option value="11651">CPL - Sterling Branch</option>
+        <option value="11944">CPL - Union Branch</option>
+        <option value="11945">CPL - West Park Branch</option>
+        <option value="11684">CPL - Woodland Branch</option>
+        <option value="11869">East Cleveland Public Library</option>
+        <option value="11509">Fatima Family Center</option>
+        <option value="12262">Horizon - Clara E. Westropp</option>
+        <option value="11930">Horizon - Global Ambassadors Language Academy</option>
+        <option value="12266">Horizon - Old Brooklyn Community</option>
+        <option value="13319">Horizon - Stockyard</option>
+        <option value="12261">Horizon - West Park Community</option>
+        <option value="14474">Living Faith-DBA Guiding Point</option>
+        <option value="14560">New Mercy Outreach</option>
+        <option value="14473">Open Doors Academy- Anton Grdina</option>
+        <option value="12223">Open Doors Academy - Citizens Academy East</option>
+        <option value="11948">Open Doors Academy - Citizens Academy Southeast</option>
+        <option value="11681">Open Doors Academy - E-Prep Cliffs</option>
+        <option value="11764">Open Doors Academy - E-Prep Woodland Hills</option>
+        <option value="12268">Open Doors Academy - Max Hayes</option>
+        <option value="12032">Open Doors Academy - Orchard</option>
+        <option value="14581">Open Doors Academy- Wade Park School</option>
+        <option value="14563">Open Doors Academy - Willard</option>
+        <option value="14579">Open Doors Academy- Willson School</option>
+        <option value="12244">PHASTAR Corporation</option>
+        <option value="11522">Rainey Institute</option>
+        <option value="13322">Rainey Institute- Pivot Center</option>
+        <option value="14484">Re:Source Cleveland</option>
+        <option value="14477">River of Life Ministries</option>
+        <option value="14559">Salvation Army - Dewald Community Center</option>
+        <option value="11642">Salvation Army - Temple Corps</option>
+        <option value="11552">Scranton Road Ministries</option>
+        <option value="11472">St. Martin De Porres Center</option>
+        <option value="14483">Stepstone Academy</option>
+        <option value="12063">Team Couture Youth Center</option>
+        <option value="12031">Team DNA</option>
+        <option value="12104">The Garden Christian Academy</option>
+        <option value="11868">University Settlement</option>
+        <option value="13325">University Settlement- Broadway Academy</option>
+        <option value="11434">Urban Community School</option>
+        <option value="12288">Urban Squash</option>
+        <option value="13334">West Park Academy</option>
+        <option value="12009">Woodhill Community Center-TCB</option>
+        <option value="14566">You Care We Care</option>
+        <option value="14562">Young Achievers</option>
         <option value="MONITOR">Monitor Organization (Admin)</option>
       </select>
     </div>
@@ -495,7 +583,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
       <i class="ti ti-login"></i> Sign in
     </button>
     <div class="login-demo">
-      Demo PINs — Sites: <strong>12345</strong> &nbsp;·&nbsp; Admin: <strong>99999</strong>
+      Each site's PIN is its 5-digit site number &nbsp;·&nbsp; Admin PIN: <strong>99999</strong>
     </div>
   </div>
 </div>
@@ -813,10 +901,98 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 //  CONFIG
 // ═══════════════════════════════════════════════
 const SITES = {
-  'SITE-A': { name: 'Roosevelt After-School Center', pin: '12345' },
-  'SITE-B': { name: 'Lincoln Community Program',     pin: '12345' },
-  'SITE-C': { name: 'Jefferson Kids Club',           pin: '12345' },
-  'MONITOR':{ name: 'Monitor Organization',          pin: '99999' }
+  '11778': { name: '3MB Afterschool', pin: '11778' },
+  '14569': { name: 'A Beautiful Mind', pin: '14569' },
+  '12152': { name: 'ACE Ohio Wellness', pin: '12152' },
+  '11550': { name: 'Applewood Centers - Cleveland', pin: '11550' },
+  '11551': { name: "Bellefaire Jewish Children's Bureau-ASP", pin: '11551' },
+  '12221': { name: 'CCPL - Brook Park Branch', pin: '12221' },
+  '12003': { name: 'CCPL - Brooklyn Branch', pin: '12003' },
+  '11935': { name: 'CCPL - Garfield Heights Branch', pin: '11935' },
+  '11936': { name: 'CCPL - Maple Heights Branch', pin: '11936' },
+  '12004': { name: 'CCPL - North Olmsted Branch', pin: '12004' },
+  '12005': { name: 'CCPL - Parma Branch', pin: '12005' },
+  '12036': { name: 'CCPL - Parma Heights Branch', pin: '12036' },
+  '12006': { name: 'CCPL - Parma Snow Branch', pin: '12006' },
+  '12295': { name: 'CCPL - Richmond Heights', pin: '12295' },
+  '12035': { name: 'CCPL - South Euclid-Lyndhurst Branch', pin: '12035' },
+  '12034': { name: 'CCPL - Southeast Branch', pin: '12034' },
+  '11849': { name: 'CCPL - Warrensville Branch', pin: '11849' },
+  '11655': { name: 'CH-UH Noble Library', pin: '11655' },
+  '11694': { name: 'Chagrin Falls Community Park', pin: '11694' },
+  '11855': { name: 'Clear Fork Christian Preschool & Learning Center', pin: '11855' },
+  '13318': { name: 'Cleveland Institute of Art', pin: '13318' },
+  '12008': { name: 'CMHA - Lakeview Community Center', pin: '12008' },
+  '11926': { name: 'CMHA - Outhwaite Homes Afterschool Enrichment Progr', pin: '11926' },
+  '12102': { name: 'CMHA - Riverside', pin: '12102' },
+  '11686': { name: 'CPL - 131st Street Branch', pin: '11686' },
+  '11698': { name: 'CPL - Addison', pin: '11698' },
+  '11938': { name: 'CPL - Brooklyn Branch', pin: '11938' },
+  '11759': { name: 'CPL - Carnegie West', pin: '11759' },
+  '11644': { name: 'CPL - Collinwood Branch', pin: '11644' },
+  '11760': { name: 'CPL - Eastman', pin: '11760' },
+  '11646': { name: 'CPL - Fleet Branch', pin: '11646' },
+  '11647': { name: 'CPL - Fulton Branch', pin: '11647' },
+  '11699': { name: 'CPL - Garden Valley', pin: '11699' },
+  '11850': { name: 'CPL - Glenville Branch', pin: '11850' },
+  '11648': { name: 'CPL - Harvard Lee Branch', pin: '11648' },
+  '11761': { name: 'CPL - Hough Branch', pin: '11761' },
+  '11939': { name: 'CPL - Jefferson Branch', pin: '11939' },
+  '11649': { name: 'CPL - Langston Hughes Branch', pin: '11649' },
+  '11940': { name: 'CPL - Lorain Branch', pin: '11940' },
+  '11941': { name: 'CPL - Main Branch', pin: '11941' },
+  '11762': { name: 'CPL - Martin Luther King Branch', pin: '11762' },
+  '11942': { name: 'CPL - Memorial Nottingham Branch', pin: '11942' },
+  '11937': { name: "CPL - Mt. Pleasant Branch", pin: '11937' },
+  '11690': { name: 'CPL - Rice Branch', pin: '11690' },
+  '11650': { name: 'CPL - Rockport Branch', pin: '11650' },
+  '11943': { name: 'CPL - South Branch', pin: '11943' },
+  '11763': { name: 'CPL - South Brooklyn', pin: '11763' },
+  '11651': { name: 'CPL - Sterling Branch', pin: '11651' },
+  '11944': { name: 'CPL - Union Branch', pin: '11944' },
+  '11945': { name: 'CPL - West Park Branch', pin: '11945' },
+  '11684': { name: 'CPL - Woodland Branch', pin: '11684' },
+  '11869': { name: 'East Cleveland Public Library', pin: '11869' },
+  '11509': { name: 'Fatima Family Center', pin: '11509' },
+  '12262': { name: 'Horizon - Clara E. Westropp', pin: '12262' },
+  '11930': { name: 'Horizon - Global Ambassadors Language Academy', pin: '11930' },
+  '12266': { name: 'Horizon - Old Brooklyn Community', pin: '12266' },
+  '13319': { name: 'Horizon - Stockyard', pin: '13319' },
+  '12261': { name: 'Horizon - West Park Community', pin: '12261' },
+  '14474': { name: 'Living Faith-DBA Guiding Point', pin: '14474' },
+  '14560': { name: 'New Mercy Outreach', pin: '14560' },
+  '14473': { name: 'Open Doors Academy- Anton Grdina', pin: '14473' },
+  '12223': { name: 'Open Doors Academy - Citizens Academy East', pin: '12223' },
+  '11948': { name: 'Open Doors Academy - Citizens Academy Southeast', pin: '11948' },
+  '11681': { name: 'Open Doors Academy - E-Prep Cliffs', pin: '11681' },
+  '11764': { name: 'Open Doors Academy - E-Prep Woodland Hills', pin: '11764' },
+  '12268': { name: 'Open Doors Academy - Max Hayes', pin: '12268' },
+  '12032': { name: 'Open Doors Academy - Orchard', pin: '12032' },
+  '14581': { name: 'Open Doors Academy- Wade Park School', pin: '14581' },
+  '14563': { name: 'Open Doors Academy - Willard', pin: '14563' },
+  '14579': { name: 'Open Doors Academy- Willson School', pin: '14579' },
+  '12244': { name: 'PHASTAR Corporation', pin: '12244' },
+  '11522': { name: 'Rainey Institute', pin: '11522' },
+  '13322': { name: 'Rainey Institute- Pivot Center', pin: '13322' },
+  '14484': { name: 'Re:Source Cleveland', pin: '14484' },
+  '14477': { name: 'River of Life Ministries', pin: '14477' },
+  '14559': { name: 'Salvation Army - Dewald Community Center', pin: '14559' },
+  '11642': { name: 'Salvation Army - Temple Corps', pin: '11642' },
+  '11552': { name: 'Scranton Road Ministries', pin: '11552' },
+  '11472': { name: 'St. Martin De Porres Center', pin: '11472' },
+  '14483': { name: 'Stepstone Academy', pin: '14483' },
+  '12063': { name: 'Team Couture Youth Center', pin: '12063' },
+  '12031': { name: 'Team DNA', pin: '12031' },
+  '12104': { name: 'The Garden Christian Academy', pin: '12104' },
+  '11868': { name: 'University Settlement', pin: '11868' },
+  '13325': { name: 'University Settlement- Broadway Academy', pin: '13325' },
+  '11434': { name: 'Urban Community School', pin: '11434' },
+  '12288': { name: 'Urban Squash', pin: '12288' },
+  '13334': { name: 'West Park Academy', pin: '13334' },
+  '12009': { name: 'Woodhill Community Center-TCB', pin: '12009' },
+  '14566': { name: 'You Care We Care', pin: '14566' },
+  '14562': { name: 'Young Achievers', pin: '14562' },
+  'MONITOR': { name: 'Monitor Organization', pin: '99999' }
 };
 
 let currentSite = null;
@@ -848,7 +1024,6 @@ function doLogin() {
     document.getElementById('tab-entry').style.display = 'none';
     showTab('admin');
   } else {
-    document.getElementById('tab-setup').style.display = 'inline-block';
     showTab('entry');
   }
   if (sheetsURL) document.getElementById('sheets-url').value = sheetsURL;
