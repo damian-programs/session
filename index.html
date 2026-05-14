@@ -806,7 +806,7 @@ function setSyncBanner(state, msg) {
   banner.innerHTML = '<span>' + (icons[state]||'') + '</span><span>' + msg + '</span>';
 }
 
-async function doLogin() {
+function doLogin() {
   const s = document.getElementById('ls').value;
   const p = document.getElementById('lp').value;
   const err = document.getElementById('login-err');
@@ -814,7 +814,7 @@ async function doLogin() {
   err.style.display = 'none';
   currentSite = s;
 
-  // Show app shell immediately
+  // Show app immediately — no async waiting
   document.getElementById('login-page').style.display = 'none';
   document.getElementById('main-app').style.display = 'block';
   document.getElementById('hdr-site').textContent = SITES[s].name;
@@ -848,11 +848,12 @@ async function doLogin() {
   } else {
     showTab('entry');
   }
-  // Load records from Firebase
-  await loadFromFirebase(s === 'MONITOR' ? 'ALL' : s);
 
   initFormDefaults();
   autoFillPrevLeftover();
+
+  // Load Firebase in background — non-blocking
+  loadFromFirebase(s === 'MONITOR' ? 'ALL' : s);
 }
 
 function doLogout() {
@@ -871,7 +872,7 @@ function doLogout() {
 // ═══════════════════════════
 //  TABS
 // ═══════════════════════════
-async function showTab(t) {
+function showTab(t) {
   ['entry','records','admin','tracker','summary','setup'].forEach(x => {
     const pane = document.getElementById('pane-' + x);
     const tab  = document.getElementById('tab-' + x);
@@ -879,15 +880,23 @@ async function showTab(t) {
     if (tab)  tab.classList.toggle('active', x === t);
   });
   if (t === 'records') {
-    await loadFromFirebase(currentSite);
     renderTable(false);
+    loadFromFirebase(currentSite).then(() => renderTable(false));
   }
   if (t === 'admin') {
-    await loadFromFirebase('ALL');
     renderTable(true);
+    loadFromFirebase('ALL').then(() => renderTable(true));
   }
-  if (t === 'tracker') { await loadFromFirebase('ALL'); document.getElementById('tracker-date').value = today(); renderTracker(); }
-  if (t === 'summary') { await loadFromFirebase('ALL'); document.getElementById('summary-month').value = today().slice(0,7); renderSummary(); }
+  if (t === 'tracker') {
+    document.getElementById('tracker-date').value = today();
+    renderTracker();
+    loadFromFirebase('ALL').then(() => renderTracker());
+  }
+  if (t === 'summary') {
+    document.getElementById('summary-month').value = today().slice(0,7);
+    renderSummary();
+    loadFromFirebase('ALL').then(() => renderSummary());
+  }
 }
 
 // ═══════════════════════════
