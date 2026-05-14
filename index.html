@@ -8,29 +8,18 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, doc, setDoc, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-const firebaseConfig = {
-  apiKey: "AIzaSyCIt9i_eZdorHsspjxGevwqIXRwhgziS44",
-  authDomain: "meal-tracker-ba544.firebaseapp.com",
-  projectId: "meal-tracker-ba544",
-  storageBucket: "meal-tracker-ba544.firebasestorage.app",
-  messagingSenderId: "887488334705",
-  appId: "1:887488334705:web:4f67043f5dca88dffd04d0"
-};
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-window._db = db;
-window._fbCollection = collection;
-window._fbDoc = doc;
-window._fbSetDoc = setDoc;
-window._fbGetDocs = getDocs;
-window._fbQuery = query;
-window._fbWhere = where;
-window._fbOrderBy = orderBy;
-window._firebaseReady = true;
-window.dispatchEvent(new Event('firebase-ready'));
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script>
+  firebase.initializeApp({
+    apiKey: "AIzaSyCIt9i_eZdorHsspjxGevwqIXRwhgziS44",
+    authDomain: "meal-tracker-ba544.firebaseapp.com",
+    projectId: "meal-tracker-ba544",
+    storageBucket: "meal-tracker-ba544.firebasestorage.app",
+    messagingSenderId: "887488334705",
+    appId: "1:887488334705:web:4f67043f5dca88dffd04d0"
+  });
+  const _db = firebase.firestore();
 </script>
 <style>
 :root {
@@ -762,31 +751,16 @@ function genUID() {
 // ═══════════════════════════
 //  FIREBASE DATABASE
 // ═══════════════════════════
-async function waitForFirebase(timeout = 8000) {
-  if (window._firebaseReady) return true;
-  return new Promise(resolve => {
-    const t = setTimeout(() => resolve(false), timeout);
-    window.addEventListener('firebase-ready', () => { clearTimeout(t); resolve(true); }, { once: true });
-  });
-}
-
 async function loadFromFirebase(site) {
   setSyncBanner('loading', 'Loading from Firebase…');
-  const ready = await waitForFirebase();
-  if (!ready || !window._db) {
-    setSyncBanner('warn', 'Using local cache — Firebase unavailable');
-    setTimeout(() => setSyncBanner('hide'), 4000);
-    return;
-  }
-  try {
-    const col = window._fbCollection(window._db, 'meal_records');
-    let q;
+    try {
+    let ref;
     if (site === 'ALL') {
-      q = window._fbQuery(col, window._fbOrderBy('svcDate', 'desc'));
+      ref = _db.collection('meal_records').orderBy('svcDate', 'desc');
     } else {
-      q = window._fbQuery(col, window._fbWhere('site', '==', site), window._fbOrderBy('svcDate', 'desc'));
+      ref = _db.collection('meal_records').where('site', '==', site).orderBy('svcDate', 'desc');
     }
-    const snap = await window._fbGetDocs(q);
+    const snap = await ref.get();
     const fresh = snap.docs.map(d => d.data());
     const freshUIDs = new Set(fresh.map(r => r.uid));
     const localOnly = records.filter(r => !freshUIDs.has(r.uid) && (site === 'ALL' || r.site === site));
@@ -807,10 +781,9 @@ async function loadFromFirebase(site) {
 }
 
 async function saveToFirebase(rec) {
-  const ready = await waitForFirebase();
-  if (!ready || !window._db) return false;
+  
   try {
-    await window._fbSetDoc(window._fbDoc(window._db, 'meal_records', rec.uid), rec);
+    await _db.collection('meal_records').doc(rec.uid).set(rec);
     return true;
   } catch (e) { console.warn('Firebase save failed:', e); return false; }
 }
@@ -1399,22 +1372,24 @@ function printRecord(uid) {
 async function checkFirebaseStatus() {
   const el = document.getElementById('firebase-status');
   el.textContent = 'Connecting…';
-  const ready = await waitForFirebase(5000);
-  if (!ready || !window._db) {
-    el.innerHTML = '<span style="color:var(--danger-text);">✗ Could not connect to Firebase.</span>';
-    return;
-  }
   try {
-    const col = window._fbCollection(window._db, 'meal_records');
-    const q = window._fbQuery(col, window._fbOrderBy('svcDate', 'desc'));
-    const snap = await window._fbGetDocs(q);
+    const snap = await _db.collection('meal_records').get();
     el.innerHTML = '<span style="color:var(--success-text);">✓ Connected — ' + snap.size + ' record(s) in database.</span>';
   } catch(e) {
-    el.innerHTML = '<span style="color:var(--danger-text);">✗ Query failed: ' + e.message + '</span>';
+    el.innerHTML = '<span style="color:var(--danger-text);">✗ Failed: ' + e.message + '</span>';
   }
 }
 
+
 async function syncAllToFirebase() {
+  const el = document.getElementById('bulk-sync-status');
+  el.style.display = 'block';
+  el.innerHTML = 'Syncing ' + records.length + ' records…';
+  let ok = 0, fail = 0;
+  for (const rec of records) { (await saveToFirebase(rec)) ? ok++ : fail++; }
+  el.innerHTML = '<span style="color:var(--success-text);">Done — ' + ok + ' saved' + (fail ? ', ' + fail + ' failed' : '') + '.</span>';
+}
+
 
 function exportCSV(isAdmin) {
   const myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
@@ -1451,11 +1426,6 @@ function q(s) { return '"' + (s || '').replace(/"/g, '""') + '"'; }
   statusEl.innerHTML = '<span style="color:var(--success-text);">Done — ' + ok + ' sent' + (fail ? ', ' + fail + ' failed' : '') + '.</span>';
 }
 
-// ═══════════════════════════
-//  EXPOSE FUNCTIONS TO GLOBAL SCOPE
-//  (needed because Firebase uses type="module" which isolates scope)
-// ═══════════════════════════
-window.doLogin = doLogin;
 window.doLogout = doLogout;
 window.showTab = showTab;
 window.saveRecord = saveRecord;
