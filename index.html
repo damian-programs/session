@@ -8,6 +8,30 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyCIt9i_eZdorHsspjxGevwqIXRwhgziS44",
+  authDomain: "meal-tracker-ba544.firebaseapp.com",
+  projectId: "meal-tracker-ba544",
+  storageBucket: "meal-tracker-ba544.firebasestorage.app",
+  messagingSenderId: "887488334705",
+  appId: "1:887488334705:web:4f67043f5dca88dffd04d0"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+window._db = db;
+window._fbCollection = collection;
+window._fbDoc = doc;
+window._fbSetDoc = setDoc;
+window._fbGetDocs = getDocs;
+window._fbQuery = query;
+window._fbWhere = where;
+window._fbOrderBy = orderBy;
+window._firebaseReady = true;
+window.dispatchEvent(new Event('firebase-ready'));
+</script>
 <style>
 :root {
   --navy: #3f72b8;
@@ -573,89 +597,33 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
     <!-- SETUP TAB -->
     <div id="pane-setup" style="display:none;">
       <div class="setup-banner">
-        <strong><i class="ti ti-brand-google" style="font-size:15px;"></i> Connect to Google Sheets</strong>
-        <p style="margin-top:6px;">Follow these steps once to send every saved record directly to a Google Sheet:</p>
-        <ol>
-          <li>Open <strong>Google Sheets</strong> and create a new spreadsheet.</li>
-          <li>Go to <strong>Extensions → Apps Script</strong>.</li>
-          <li>Delete the default code, paste the script below, and click <strong>Save</strong>.</li>
-          <li>Click <strong>Deploy → New deployment</strong>, set type to <strong>Web app</strong>, set "Who has access" to <strong>Anyone</strong>, and click <strong>Deploy</strong>.</li>
-          <li>Copy the <strong>Web app URL</strong> and paste it below, then click <strong>Save URL</strong>.</li>
-        </ol>
+        <strong><i class="ti ti-database" style="font-size:15px;"></i> Firebase Database — Connected</strong>
+        <p style="margin-top:6px;">This app is connected to Firebase Firestore (project: <strong>meal-tracker-ba544</strong>). Records save and load automatically — no configuration needed.</p>
       </div>
       <div class="card">
-        <div class="card-title"><i class="ti ti-code"></i>Apps Script — copy &amp; paste into your project</div>
-        <textarea readonly id="apps-script-code" style="font-family:'DM Mono',monospace;font-size:11px;min-height:260px;background:var(--cream);color:var(--text-main);line-height:1.7;border-color:var(--border-soft);">function doPost(e) {
-  try {
-    var data = JSON.parse(e.postData.contents);
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var sheet = ss.getSheetByName("CACFP Records") || ss.insertSheet("CACFP Records");
-    if (sheet.getLastRow() === 0) {
-      sheet.appendRow([
-        "Record ID","Site ID","Site Name","Receiver","Del Date","Del Time","Del Temp",
-        "Recv Qty","Svc Date","Svc Time","Meal Type","Prev Leftover","Available",
-        "First Meal","Second Meal","Adult Program","Adult Non-Prog","Total Served",
-        "Waste","Incomplete","Total Unservable","Leftover","Sig Name","Certified",
-        "Notes","Created At","Last Edited At","Edit Count"
-      ]);
-    }
-    // Check for existing row to update
-    var lastRow = sheet.getLastRow();
-    var updated = false;
-    for (var i = 2; i <= lastRow; i++) {
-      if (sheet.getRange(i, 1).getValue() == data.uid) {
-        sheet.getRange(i, 1, 1, 28).setValues([[
-          data.uid, data.site, data.siteName, data.receiver,
-          data.delDate, data.delTime, data.delTemp, data.recvQty,
-          data.svcDate, data.svcTime, data.mealType, data.prevLeftover,
-          data.availQty, data.firstMeal, data.secondMeal,
-          data.adultProg, data.adultNonProg, data.totalServed,
-          data.waste, data.incomplete, data.totalUnsrv, data.leftover,
-          data.sigName, data.sigCertified ? "Yes" : "No",
-          data.notes, data.createdAt, data.lastEditedAt, data.editCount
-        ]]);
-        updated = true;
-        break;
-      }
-    }
-    if (!updated) {
-      sheet.appendRow([
-        data.uid, data.site, data.siteName, data.receiver,
-        data.delDate, data.delTime, data.delTemp, data.recvQty,
-        data.svcDate, data.svcTime, data.mealType, data.prevLeftover,
-        data.availQty, data.firstMeal, data.secondMeal,
-        data.adultProg, data.adultNonProg, data.totalServed,
-        data.waste, data.incomplete, data.totalUnsrv, data.leftover,
-        data.sigName, data.sigCertified ? "Yes" : "No",
-        data.notes, data.createdAt, data.lastEditedAt, data.editCount
-      ]);
-    }
-    return ContentService.createTextOutput(JSON.stringify({status:"ok"}))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch(err) {
-    return ContentService.createTextOutput(JSON.stringify({status:"error",message:err.toString()}))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-}</textarea>
-        <button class="btn-sec" style="margin-top:10px;font-size:12px;height:32px;" onclick="copyScript()"><i class="ti ti-copy"></i> Copy script</button>
-      </div>
-      <div class="card">
-        <div class="card-title"><i class="ti ti-link"></i>Your Apps Script Web App URL</div>
-        <div class="sheets-url-row">
-          <div class="fg" style="flex:1;"><label for="sheets-url">Paste your deployment URL here</label><input type="text" id="sheets-url" placeholder="https://script.google.com/macros/s/…/exec" value="https://script.google.com/macros/s/AKfycbyPmBJsTfQPv29pekdzHMr_ntCSvZDPLPOg3FHGz6EzPYUjXqGzm44KFCEW7mRMoO08mg/exec"></div>
-          <button class="btn-primary green" style="flex-shrink:0;height:38px;" onclick="saveSheetURL()"><i class="ti ti-check"></i> Save URL</button>
-        </div>
-        <div id="url-status" style="margin-top:8px;font-size:13px;display:none;"></div>
-        <div class="divider"></div>
-        <p style="font-size:12px;color:var(--text-soft);">Once saved, every new or edited record will sync to your Sheet automatically.</p>
+        <div class="card-title"><i class="ti ti-database"></i>Firebase status</div>
+        <div id="firebase-status" style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Click below to check connection.</div>
         <div class="btn-row">
-          <button class="btn-sec" onclick="syncAllToSheets()"><i class="ti ti-cloud-upload"></i> Sync all local records to Sheets</button>
+          <button class="btn-primary" onclick="checkFirebaseStatus()"><i class="ti ti-refresh"></i> Check connection</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-cloud-upload"></i>Sync local cache to Firebase</div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Push any locally cached records up to Firebase.</p>
+        <div class="btn-row">
+          <button class="btn-sec" onclick="syncAllToFirebase()"><i class="ti ti-cloud-upload"></i> Sync all local records</button>
         </div>
         <div id="bulk-sync-status" style="margin-top:8px;font-size:13px;display:none;"></div>
       </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-download"></i>Export</div>
+        <div class="btn-row">
+          <button class="btn-sec" onclick="exportCSV(true)"><i class="ti ti-file-spreadsheet"></i> Export all records as CSV</button>
+        </div>
+      </div>
     </div>
 
-  </div>
+    </div>
 </div>
 
 <div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Made by Damian Feliciano</div>
@@ -773,16 +741,12 @@ const SITES = {
 // ═══════════════════════════
 //  STATE
 // ═══════════════════════════
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyPmBJsTfQPv29pekdzHMr_ntCSvZDPLPOg3FHGz6EzPYUjXqGzm44KFCEW7mRMoO08mg/exec';
 let currentSite = null;
 let records = JSON.parse(localStorage.getItem('cacfp_v2') || '[]');
-let sheetsURL = SHEETS_URL; // pre-configured — also editable in Setup tab
 let editingUid = null;
 let pendingUid = null;
-let isSyncing = false;
 
 function saveLocal() { localStorage.setItem('cacfp_v2', JSON.stringify(records)); }
-// Keep old name working
 function save() { saveLocal(); }
 
 // ═══════════════════════════
@@ -796,20 +760,34 @@ function genUID() {
 }
 
 // ═══════════════════════════
-//  AUTH
+//  FIREBASE DATABASE
 // ═══════════════════════════
-// ═══════════════════════════
-//  SHEETS DATABASE
-// ═══════════════════════════
-async function loadFromSheets(site) {
-  setSyncBanner('loading', 'Syncing with Google Sheets…');
+async function waitForFirebase(timeout = 8000) {
+  if (window._firebaseReady) return true;
+  return new Promise(resolve => {
+    const t = setTimeout(() => resolve(false), timeout);
+    window.addEventListener('firebase-ready', () => { clearTimeout(t); resolve(true); }, { once: true });
+  });
+}
+
+async function loadFromFirebase(site) {
+  setSyncBanner('loading', 'Loading from Firebase…');
+  const ready = await waitForFirebase();
+  if (!ready || !window._db) {
+    setSyncBanner('warn', 'Using local cache — Firebase unavailable');
+    setTimeout(() => setSyncBanner('hide'), 4000);
+    return;
+  }
   try {
-    const url = SHEETS_URL + '?site=' + encodeURIComponent(site) + '&t=' + Date.now();
-    const resp = await fetch(url);
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const fresh = await resp.json();
-    if (!Array.isArray(fresh)) throw new Error('Bad response');
-    // Merge: fresh data wins, but keep local-only records not yet in Sheets
+    const col = window._fbCollection(window._db, 'meal_records');
+    let q;
+    if (site === 'ALL') {
+      q = window._fbQuery(col, window._fbOrderBy('svcDate', 'desc'));
+    } else {
+      q = window._fbQuery(col, window._fbWhere('site', '==', site), window._fbOrderBy('svcDate', 'desc'));
+    }
+    const snap = await window._fbGetDocs(q);
+    const fresh = snap.docs.map(d => d.data());
     const freshUIDs = new Set(fresh.map(r => r.uid));
     const localOnly = records.filter(r => !freshUIDs.has(r.uid) && (site === 'ALL' || r.site === site));
     if (site === 'ALL') {
@@ -819,13 +797,22 @@ async function loadFromSheets(site) {
       records = [...otherSites, ...fresh, ...localOnly];
     }
     saveLocal();
-    setSyncBanner('ok', 'Synced with Google Sheets');
+    setSyncBanner('ok', 'Synced with Firebase ✓');
     setTimeout(() => setSyncBanner('hide'), 2500);
   } catch (e) {
-    console.warn('Sheets load failed, using local cache:', e);
-    setSyncBanner('warn', 'Using local cache — could not reach Sheets');
+    console.warn('Firebase load failed:', e);
+    setSyncBanner('warn', 'Using local cache — could not reach Firebase');
     setTimeout(() => setSyncBanner('hide'), 4000);
   }
+}
+
+async function saveToFirebase(rec) {
+  const ready = await waitForFirebase();
+  if (!ready || !window._db) return false;
+  try {
+    await window._fbSetDoc(window._fbDoc(window._db, 'meal_records', rec.uid), rec);
+    return true;
+  } catch (e) { console.warn('Firebase save failed:', e); return false; }
 }
 
 function setSyncBanner(state, msg) {
@@ -894,7 +881,7 @@ async function doLogin() {
   if (sheetsURL) document.getElementById('sheets-url').value = sheetsURL;
 
   // Load records from Sheets (merge with local cache)
-  await loadFromSheets(s === 'MONITOR' ? 'ALL' : s);
+  await loadFromFirebase(s === 'MONITOR' ? 'ALL' : s);
 
   initFormDefaults();
   autoFillPrevLeftover();
@@ -924,15 +911,15 @@ async function showTab(t) {
     if (tab)  tab.classList.toggle('active', x === t);
   });
   if (t === 'records') {
-    await loadFromSheets(currentSite);
+    await loadFromFirebase(currentSite);
     renderTable(false);
   }
   if (t === 'admin') {
-    await loadFromSheets('ALL');
+    await loadFromFirebase('ALL');
     renderTable(true);
   }
-  if (t === 'tracker') { await loadFromSheets('ALL'); document.getElementById('tracker-date').value = today(); renderTracker(); }
-  if (t === 'summary') { await loadFromSheets('ALL'); document.getElementById('summary-month').value = today().slice(0,7); renderSummary(); }
+  if (t === 'tracker') { await loadFromFirebase('ALL'); document.getElementById('tracker-date').value = today(); renderTracker(); }
+  if (t === 'summary') { await loadFromFirebase('ALL'); document.getElementById('summary-month').value = today().slice(0,7); renderSummary(); }
 }
 
 // ═══════════════════════════
@@ -1078,7 +1065,7 @@ async function saveRecord() {
       save();
       alertEl.style.display = 'flex'; alertEl.className = 'alert alert-success';
       alertEl.innerHTML = '<i class="ti ti-circle-check"></i>&nbsp; Record updated (Edit #' + editCount + '). Signed by ' + records[idx].sigName + '.';
-      if (sheetsURL) { setSyncStatus('loading','Syncing to Google Sheets…'); const ok = await postToSheets(records[idx]); setSyncStatus(ok?'ok':'error', ok?'Synced to Google Sheets ✓':'Saved locally — could not reach Sheets.'); }
+      setSyncBanner('loading','Saving to Firebase…'); const ok = await saveToFirebase(records[idx]); setSyncBanner(ok?'ok':'error', ok?'Saved to Firebase ✓':'Saved locally — could not reach Firebase.'); setTimeout(() => setSyncBanner('hide'), 3000);
     }
     editingUid = null;
     clearForm();
@@ -1109,7 +1096,7 @@ async function saveRecord() {
     records.push(rec); save();
     alertEl.style.display = 'flex'; alertEl.className = 'alert alert-success';
     alertEl.innerHTML = '<i class="ti ti-circle-check"></i>&nbsp; Record saved [' + uid + '] for ' + rec.svcDate + '. Signed by ' + rec.sigName + '.';
-    if (sheetsURL) { setSyncStatus('loading','Sending to Google Sheets…'); const ok = await postToSheets(rec); setSyncStatus(ok?'ok':'error', ok?'Saved to Google Sheets ✓':'Saved locally — could not reach Sheets.'); }
+    setSyncBanner('loading','Saving to Firebase…'); const ok = await saveToFirebase(rec); setSyncBanner(ok?'ok':'error', ok?'Saved to Firebase ✓':'Saved locally — could not reach Firebase.'); setTimeout(() => setSyncBanner('hide'), 3000);
   }
   clearForm();
   setTimeout(() => showTab('records'), 800);
@@ -1192,6 +1179,7 @@ function saveDraft() {
     records.push(draft);
   }
   save();
+  saveToFirebase(draft);
   statusEl.textContent = 'Draft saved at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   setTimeout(() => { statusEl.textContent = ''; }, 5000);
 }
@@ -1408,6 +1396,26 @@ function printRecord(uid) {
 // ═══════════════════════════
 //  CSV EXPORT
 // ═══════════════════════════
+async function checkFirebaseStatus() {
+  const el = document.getElementById('firebase-status');
+  el.textContent = 'Connecting…';
+  const ready = await waitForFirebase(5000);
+  if (!ready || !window._db) {
+    el.innerHTML = '<span style="color:var(--danger-text);">✗ Could not connect to Firebase.</span>';
+    return;
+  }
+  try {
+    const col = window._fbCollection(window._db, 'meal_records');
+    const q = window._fbQuery(col, window._fbOrderBy('svcDate', 'desc'));
+    const snap = await window._fbGetDocs(q);
+    el.innerHTML = '<span style="color:var(--success-text);">✓ Connected — ' + snap.size + ' record(s) in database.</span>';
+  } catch(e) {
+    el.innerHTML = '<span style="color:var(--danger-text);">✗ Query failed: ' + e.message + '</span>';
+  }
+}
+
+async function syncAllToFirebase() {
+
 function exportCSV(isAdmin) {
   const myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
   if (!myRecs.length) return;
@@ -1431,48 +1439,16 @@ function q(s) { return '"' + (s || '').replace(/"/g, '""') + '"'; }
 // ═══════════════════════════
 //  SHEETS
 // ═══════════════════════════
-function setSyncStatus(state, msg) {
-  const row = document.getElementById('sync-status');
-  const dot = document.getElementById('sync-dot');
-  const txt = document.getElementById('sync-msg');
-  row.style.display = 'flex';
-  txt.textContent = msg;
-  dot.className = 'status-dot ' + (state === 'ok' ? 'green' : state === 'error' ? 'red' : '');
 }
-async function postToSheets(rec) {
-  try {
-    await fetch(SHEETS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec) });
-    return true;
-  } catch (e) { return false; }
-}
-function saveSheetURL() {
-  const url = document.getElementById('sheets-url').value.trim();
-  const statusEl = document.getElementById('url-status');
-  if (!url.startsWith('https://script.google.com')) {
-    statusEl.style.display = 'block';
-    statusEl.innerHTML = '<span style="color:var(--danger-text);"><i class="ti ti-alert-circle"></i> That doesn\'t look like a valid Apps Script URL.</span>'; return;
-  }
   sheetsURL = url;
   localStorage.setItem('cacfp_sheets_url', url);
   statusEl.style.display = 'block';
   statusEl.innerHTML = '<span style="color:var(--success-text);"><i class="ti ti-circle-check"></i> URL saved! Records will sync automatically.</span>';
 }
-async function syncAllToSheets() {
-  const statusEl = document.getElementById('bulk-sync-status');
-  if (!sheetsURL) { statusEl.style.display = 'block'; statusEl.innerHTML = '<span style="color:var(--warning-text);">Save your Sheets URL first.</span>'; return; }
   statusEl.style.display = 'block'; statusEl.innerHTML = 'Syncing ' + records.length + ' records…';
   let ok = 0, fail = 0;
-  for (const rec of records) { (await postToSheets(rec)) ? ok++ : fail++; }
+  for (const rec of records) { (await saveToFirebase(rec)) ? ok++ : fail++; }
   statusEl.innerHTML = '<span style="color:var(--success-text);">Done — ' + ok + ' sent' + (fail ? ', ' + fail + ' failed' : '') + '.</span>';
-}
-function copyScript() {
-  const text = document.getElementById('apps-script-code').value;
-  navigator.clipboard.writeText(text).then(() => {
-    const btn = event.target.closest('button');
-    const orig = btn.innerHTML;
-    btn.innerHTML = '<i class="ti ti-check"></i> Copied!';
-    setTimeout(() => { btn.innerHTML = orig; }, 2000);
-  });
 }
 </script>
 </body>
