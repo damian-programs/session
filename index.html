@@ -521,10 +521,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
         <button class="btn-primary" id="save-btn" onclick="saveRecord()"><i class="ti ti-device-floppy"></i> Save record</button>
         <button class="btn-sec" onclick="clearForm()"><i class="ti ti-refresh"></i> Clear form</button>
       </div>
-      <div id="sync-status" class="sync-row" style="display:none;">
-        <span class="status-dot" id="sync-dot"></span>
-        <span id="sync-msg"></span>
-      </div>
+
     </div>
 
     <!-- RECORDS TAB -->
@@ -851,9 +848,7 @@ async function doLogin() {
   } else {
     showTab('entry');
   }
-  if (sheetsURL) document.getElementById('sheets-url').value = sheetsURL;
-
-  // Load records from Sheets (merge with local cache)
+  // Load records from Firebase
   await loadFromFirebase(s === 'MONITOR' ? 'ALL' : s);
 
   initFormDefaults();
@@ -1411,36 +1406,8 @@ function exportCSV(isAdmin) {
 }
 function q(s) { return '"' + (s || '').replace(/"/g, '""') + '"'; }
 
-// ═══════════════════════════
-//  SHEETS
-// ═══════════════════════════
-}
-  sheetsURL = url;
-  localStorage.setItem('cacfp_sheets_url', url);
-  statusEl.style.display = 'block';
-  statusEl.innerHTML = '<span style="color:var(--success-text);"><i class="ti ti-circle-check"></i> URL saved! Records will sync automatically.</span>';
-}
-  statusEl.style.display = 'block'; statusEl.innerHTML = 'Syncing ' + records.length + ' records…';
-  let ok = 0, fail = 0;
-  for (const rec of records) { (await saveToFirebase(rec)) ? ok++ : fail++; }
-  statusEl.innerHTML = '<span style="color:var(--success-text);">Done — ' + ok + ' sent' + (fail ? ', ' + fail + ' failed' : '') + '.</span>';
-}
 
-window.doLogout = doLogout;
-window.showTab = showTab;
-window.saveRecord = saveRecord;
-window.clearForm = clearForm;
-window.saveDraft = saveDraft;
-window.editRecord = editRecord;
-window.printRecord = printRecord;
-window.showAudit = showAudit;
-window.exportCSV = exportCSV;
-window.checkFirebaseStatus = checkFirebaseStatus;
-window.syncAllToFirebase = syncAllToFirebase;
-window.recalc = recalc;
-window.checkTemp = checkTemp;
-window.renderTracker = renderTracker;
-window.renderSummary = renderSummary;
+
 </script>
 </body>
 </html>
