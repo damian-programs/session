@@ -1,0 +1,528 @@
+
+<h2 class="sr-only">CACFP Meal Counter — record delivery and supper meal service data, with auto-calculated totals, balance check, e-signature, and CSV export.</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+.app{max-width:680px;margin:0 auto;padding:1rem 0 3rem;font-family:var(--font-sans);font-size:15px;color:var(--color-text-primary);}
+.header{border-bottom:0.5px solid var(--color-border-tertiary);padding-bottom:1rem;margin-bottom:1.25rem;}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.section{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem;}
+.sec-title{font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;display:flex;align-items:center;gap:7px;}
+.sec-title i{font-size:16px;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+label{font-size:13px;color:var(--color-text-secondary);}
+input,select,textarea{width:100%;}
+textarea{resize:vertical;min-height:56px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;}
+.full{grid-column:1/-1;}
+.calc-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:.75rem;}
+.calc-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.65rem .9rem;}
+.calc-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px;}
+.calc-val{font-size:20px;font-weight:500;}
+.calc-val.ok{color:var(--color-text-success);}
+.calc-val.warn{color:var(--color-text-warning);}
+.calc-val.danger{color:var(--color-text-danger);}
+.alert{border-radius:var(--border-radius-md);padding:9px 13px;font-size:13px;margin-bottom:.85rem;display:flex;align-items:center;gap:8px;}
+.alert-success{background:var(--color-background-success);color:var(--color-text-success);}
+.alert-danger{background:var(--color-background-danger);color:var(--color-text-danger);}
+.alert-warning{background:var(--color-background-warning);color:var(--color-text-warning);}
+.alert-info{background:var(--color-background-info);color:var(--color-text-info);}
+.divider{height:.5px;background:var(--color-border-tertiary);margin:.9rem 0;}
+.btn-row{display:flex;gap:9px;margin-top:1rem;flex-wrap:wrap;}
+.btn-primary{background:var(--color-text-primary);color:var(--color-background-primary);border:none;border-radius:var(--border-radius-md);padding:0 18px;height:36px;font-size:14px;font-weight:500;cursor:pointer;}
+.btn-primary:hover{opacity:.85;}
+.btn-sec{background:transparent;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:0 18px;height:36px;font-size:14px;color:var(--color-text-primary);cursor:pointer;}
+.btn-sec:hover{background:var(--color-background-secondary);}
+.login-wrap{max-width:360px;margin:2.5rem auto;}
+.login-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:2rem;}
+.tabs{display:flex;gap:2px;margin-bottom:1.2rem;border-bottom:0.5px solid var(--color-border-tertiary);}
+.tab{padding:8px 15px;font-size:14px;border:none;background:transparent;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
+.tab.active{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary);font-weight:500;}
+.site-chip{font-size:12px;background:var(--color-background-info);color:var(--color-text-info);padding:2px 10px;border-radius:20px;}
+.rec-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;}
+.rec-table th{text-align:left;padding:7px 8px;font-weight:500;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px;overflow:hidden;white-space:nowrap;}
+.rec-table td{padding:7px 8px;border-bottom:0.5px solid var(--color-border-tertiary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rec-table tr:last-child td{border-bottom:none;}
+.pill{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;}
+.pill-ok{background:var(--color-background-success);color:var(--color-text-success);}
+.pill-warn{background:var(--color-background-warning);color:var(--color-text-warning);}
+.empty{text-align:center;padding:2rem;color:var(--color-text-tertiary);font-size:14px;}
+.esig-box{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:1rem;margin-top:.5rem;}
+.esig-check{display:flex;align-items:flex-start;gap:10px;margin-top:.75rem;font-size:13px;color:var(--color-text-secondary);line-height:1.5;}
+.esig-check input[type=checkbox]{width:16px;height:16px;flex-shrink:0;margin-top:2px;accent-color:var(--color-text-primary);}
+.readonly-field{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:7px 10px;font-size:14px;font-weight:500;color:var(--color-text-primary);min-height:36px;display:flex;align-items:center;}
+</style>
+
+<div class="app" id="app">
+
+  <!-- LOGIN -->
+  <div id="login-screen">
+    <div class="login-wrap">
+      <div style="text-align:center;margin-bottom:1.5rem;">
+        <i class="ti ti-salad" style="font-size:32px;color:var(--color-text-info);" aria-hidden="true"></i>
+        <h1 style="font-size:18px;font-weight:500;margin-top:8px;">CACFP Meal Counter</h1>
+        <p style="font-size:13px;color:var(--color-text-secondary);margin-top:3px;">After-school supper program</p>
+      </div>
+      <div class="login-card">
+        <div id="login-err" class="alert alert-danger" style="display:none;"><i class="ti ti-alert-circle" aria-hidden="true"></i><span>Invalid site or PIN.</span></div>
+        <div class="fg" style="margin-bottom:11px;">
+          <label for="ls">Site</label>
+          <select id="ls">
+            <option value="">Select your site...</option>
+            <option value="SITE-A">Roosevelt After-School Center</option>
+            <option value="SITE-B">Lincoln Community Program</option>
+            <option value="SITE-C">Jefferson Kids Club</option>
+            <option value="MONITOR">Monitor Organization (Admin)</option>
+          </select>
+        </div>
+        <div class="fg" style="margin-bottom:16px;">
+          <label for="lp">5-digit PIN</label>
+          <input type="password" id="lp" placeholder="Enter 5-digit PIN" maxlength="5" inputmode="numeric">
+        </div>
+        <button class="btn-primary" style="width:100%;" onclick="doLogin()">Sign in</button>
+        <p style="font-size:12px;color:var(--color-text-tertiary);text-align:center;margin-top:11px;">Demo PINs — sites: <strong>12345</strong> &nbsp;|&nbsp; admin: <strong>99999</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main-screen" style="display:none;">
+    <div class="header">
+      <div class="header-top">
+        <div style="display:flex;align-items:center;gap:9px;">
+          <i class="ti ti-salad" style="font-size:20px;color:var(--color-text-info);" aria-hidden="true"></i>
+          <span style="font-size:17px;font-weight:500;">CACFP Meal Counter</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:9px;">
+          <span class="site-chip" id="hdr-site"></span>
+          <button class="btn-sec" onclick="doLogout()" style="height:30px;font-size:12px;">Sign out</button>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--color-text-secondary);" id="hdr-date"></p>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" id="tab-entry" onclick="showTab('entry')">Log meal record</button>
+      <button class="tab" id="tab-records" onclick="showTab('records')">My records</button>
+      <button class="tab" id="tab-admin" onclick="showTab('admin')" style="display:none;">All sites (admin)</button>
+    </div>
+
+    <!-- ENTRY TAB -->
+    <div id="pane-entry">
+      <div id="entry-alert" style="display:none;"></div>
+
+      <!-- DELIVERY -->
+      <div class="section">
+        <div class="sec-title"><i class="ti ti-truck-delivery" aria-hidden="true"></i>Delivery information</div>
+        <div class="grid2">
+          <div class="fg">
+            <label for="f-site">Site name</label>
+            <input type="text" id="f-site" readonly>
+          </div>
+          <div class="fg">
+            <label for="f-receiver">Receiver name</label>
+            <input type="text" id="f-receiver" placeholder="Person accepting delivery">
+          </div>
+          <div class="fg">
+            <label for="f-del-date">Delivery date</label>
+            <input type="date" id="f-del-date">
+          </div>
+          <div class="fg">
+            <label for="f-del-time">Delivery time</label>
+            <input type="time" id="f-del-time">
+          </div>
+          <div class="fg">
+            <label for="f-del-temp">Delivery temperature (°F)</label>
+            <input type="number" id="f-del-temp" step="0.1" placeholder="e.g. 165.0">
+          </div>
+          <div class="fg">
+            <label for="f-recv-qty">Received quantity</label>
+            <input type="number" id="f-recv-qty" min="0" placeholder="# of meals" oninput="recalc()">
+          </div>
+        </div>
+      </div>
+
+      <!-- SERVICE -->
+      <div class="section">
+        <div class="sec-title"><i class="ti ti-clipboard-list" aria-hidden="true"></i>Meal service</div>
+        <div class="grid2">
+          <div class="fg">
+            <label for="f-svc-date">Serve date</label>
+            <input type="date" id="f-svc-date">
+          </div>
+          <div class="fg">
+            <label for="f-svc-time">Serve time</label>
+            <input type="time" id="f-svc-time">
+          </div>
+          <div class="fg">
+            <label for="f-meal-type">Meal type</label>
+            <select id="f-meal-type">
+              <option value="Supper">Supper</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label for="f-prev-left">Previous leftover qty</label>
+            <input type="number" id="f-prev-left" min="0" placeholder="From prior service" oninput="recalc()">
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- AUTO-CALC: AVAILABLE -->
+        <div class="grid2" style="margin-bottom:.75rem;">
+          <div class="fg full">
+            <label>Available qty <span style="font-size:11px;color:var(--color-text-tertiary);">(received + previous leftover — auto-calculated)</span></label>
+            <div class="readonly-field" id="f-avail-display">—</div>
+            <input type="hidden" id="f-avail">
+          </div>
+        </div>
+
+        <!-- SERVED BREAKDOWN -->
+        <div class="grid2">
+          <div class="fg">
+            <label for="f-first">First meal qty</label>
+            <input type="number" id="f-first" min="0" placeholder="Children — 1st serving" oninput="recalc()">
+          </div>
+          <div class="fg">
+            <label for="f-second">Second meal qty</label>
+            <input type="number" id="f-second" min="0" placeholder="Children — 2nd serving" oninput="recalc()">
+          </div>
+          <div class="fg">
+            <label for="f-adult-prog">Adult program qty</label>
+            <input type="number" id="f-adult-prog" min="0" placeholder="Program staff meals" oninput="recalc()">
+          </div>
+          <div class="fg">
+            <label for="f-adult-nonprog">Adult non-program qty</label>
+            <input type="number" id="f-adult-nonprog" min="0" placeholder="Non-program adults" oninput="recalc()">
+          </div>
+        </div>
+
+        <!-- AUTO-CALC: TOTAL SERVED -->
+        <div style="margin:.75rem 0;">
+          <label>Total served qty <span style="font-size:11px;color:var(--color-text-tertiary);">(auto-calculated)</span></label>
+          <div class="readonly-field ok" id="f-total-served-display" style="margin-top:5px;">—</div>
+          <input type="hidden" id="f-total-served">
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- UNSERVABLE BREAKDOWN -->
+        <div class="grid2">
+          <div class="fg">
+            <label for="f-waste">Waste qty</label>
+            <input type="number" id="f-waste" min="0" placeholder="Disposed / spoiled" oninput="recalc()">
+          </div>
+          <div class="fg">
+            <label for="f-incomplete">Incomplete qty</label>
+            <input type="number" id="f-incomplete" min="0" placeholder="Missing components" oninput="recalc()">
+          </div>
+        </div>
+
+        <!-- AUTO-CALC: TOTAL UNSERVABLE -->
+        <div style="margin:.75rem 0;">
+          <label>Total unservable qty <span style="font-size:11px;color:var(--color-text-tertiary);">(waste + incomplete — auto-calculated)</span></label>
+          <div class="readonly-field warn" id="f-total-unsrv-display" style="margin-top:5px;">—</div>
+          <input type="hidden" id="f-total-unsrv">
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="fg">
+          <label for="f-leftover">Leftover qty <span style="font-size:11px;color:var(--color-text-tertiary);">(carried to next service)</span></label>
+          <input type="number" id="f-leftover" min="0" placeholder="Remaining usable meals" oninput="recalc()">
+        </div>
+
+        <!-- BALANCE SUMMARY -->
+        <div class="calc-row" id="calc-row">
+          <div class="calc-card">
+            <div class="calc-label">Available</div>
+            <div class="calc-val" id="s-avail">—</div>
+          </div>
+          <div class="calc-card">
+            <div class="calc-label">Served + Unservable + Leftover</div>
+            <div class="calc-val" id="s-sum">—</div>
+          </div>
+          <div class="calc-card">
+            <div class="calc-label">Balance</div>
+            <div class="calc-val" id="s-balance">—</div>
+          </div>
+        </div>
+        <div id="balance-alert" style="display:none;margin-top:.75rem;"></div>
+      </div>
+
+      <!-- NOTES -->
+      <div class="section">
+        <div class="sec-title"><i class="ti ti-notes" aria-hidden="true"></i>Notes</div>
+        <div class="fg">
+          <label for="f-notes">Notes (optional)</label>
+          <textarea id="f-notes" placeholder="Any issues, substitutions, temperature concerns, or other observations..."></textarea>
+        </div>
+      </div>
+
+      <!-- E-SIGNATURE -->
+      <div class="section">
+        <div class="sec-title"><i class="ti ti-pen" aria-hidden="true"></i>E-signature</div>
+        <div class="esig-box">
+          <div class="fg">
+            <label for="f-sig-name">Full name of person completing this record</label>
+            <input type="text" id="f-sig-name" placeholder="Type your full name">
+          </div>
+          <div class="esig-check">
+            <input type="checkbox" id="f-sig-confirm">
+            <label for="f-sig-confirm" style="color:var(--color-text-primary);">I certify that the information recorded above is accurate and was counted at the point of service in accordance with CACFP requirements.</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-primary" onclick="saveRecord()"><i class="ti ti-device-floppy" aria-hidden="true"></i>&nbsp; Save record</button>
+        <button class="btn-sec" onclick="clearForm()">Clear form</button>
+      </div>
+    </div>
+
+    <!-- RECORDS TAB -->
+    <div id="pane-records" style="display:none;">
+      <div class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+          <div class="sec-title" style="margin-bottom:0;"><i class="ti ti-table" aria-hidden="true"></i>My site records</div>
+          <button class="btn-sec" onclick="exportCSV(false)" style="font-size:13px;height:32px;"><i class="ti ti-download" aria-hidden="true"></i>&nbsp; Export CSV</button>
+        </div>
+        <div id="my-records"></div>
+      </div>
+    </div>
+
+    <!-- ADMIN TAB -->
+    <div id="pane-admin" style="display:none;">
+      <div class="section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+          <div class="sec-title" style="margin-bottom:0;"><i class="ti ti-building-community" aria-hidden="true"></i>All sites — combined view</div>
+          <button class="btn-sec" onclick="exportCSV(true)" style="font-size:13px;height:32px;"><i class="ti ti-download" aria-hidden="true"></i>&nbsp; Export all CSV</button>
+        </div>
+        <div id="all-records"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const SITES={
+  'SITE-A':{name:'Roosevelt After-School Center',pin:'12345'},
+  'SITE-B':{name:'Lincoln Community Program',pin:'12345'},
+  'SITE-C':{name:'Jefferson Kids Club',pin:'12345'},
+  'MONITOR':{name:'Monitor Organization',pin:'99999'}
+};
+let currentSite=null;
+let records=JSON.parse(localStorage.getItem('cacfp_v2')||'[]');
+
+function save(){localStorage.setItem('cacfp_v2',JSON.stringify(records));}
+
+function doLogin(){
+  const s=document.getElementById('ls').value;
+  const p=document.getElementById('lp').value;
+  const err=document.getElementById('login-err');
+  if(!s||!SITES[s]||SITES[s].pin!==p){err.style.display='flex';return;}
+  err.style.display='none';
+  currentSite=s;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('main-screen').style.display='block';
+  document.getElementById('hdr-site').textContent=SITES[s].name;
+  document.getElementById('hdr-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('f-site').value=SITES[s].name;
+  document.getElementById('f-del-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('f-svc-date').value=new Date().toISOString().slice(0,10);
+  if(s==='MONITOR'){
+    document.getElementById('tab-admin').style.display='inline-block';
+    document.getElementById('tab-entry').style.display='none';
+    showTab('admin');
+  } else {
+    showTab('entry');
+  }
+}
+
+function doLogout(){
+  currentSite=null;
+  document.getElementById('login-screen').style.display='block';
+  document.getElementById('main-screen').style.display='none';
+  document.getElementById('lp').value='';
+  document.getElementById('ls').value='';
+}
+
+function showTab(t){
+  ['entry','records','admin'].forEach(x=>{
+    document.getElementById('pane-'+x).style.display=x===t?'block':'none';
+    const el=document.getElementById('tab-'+x);
+    if(el)el.classList.toggle('active',x===t);
+  });
+  if(t==='records')renderTable(false);
+  if(t==='admin')renderTable(true);
+}
+
+function n(id){return parseInt(document.getElementById(id).value)||0;}
+
+function recalc(){
+  const recv=n('f-recv-qty');
+  const prev=n('f-prev-left');
+  const avail=recv+prev;
+  document.getElementById('f-avail').value=avail;
+  document.getElementById('f-avail-display').textContent=avail>0||recv>0||prev>0?avail:'—';
+
+  const first=n('f-first'),second=n('f-second'),ap=n('f-adult-prog'),anp=n('f-adult-nonprog');
+  const served=first+second+ap+anp;
+  document.getElementById('f-total-served').value=served;
+  document.getElementById('f-total-served-display').textContent=served||'—';
+
+  const waste=n('f-waste'),inc=n('f-incomplete');
+  const unsrv=waste+inc;
+  document.getElementById('f-total-unsrv').value=unsrv;
+  document.getElementById('f-total-unsrv-display').textContent=unsrv||'—';
+
+  const left=n('f-leftover');
+  const sum=served+unsrv+left;
+  document.getElementById('s-avail').textContent=avail||'—';
+  document.getElementById('s-sum').textContent=avail>0?sum:'—';
+
+  const balEl=document.getElementById('s-balance');
+  const alertEl=document.getElementById('balance-alert');
+  if(avail>0&&(served>0||unsrv>0||left>0)){
+    const diff=avail-sum;
+    balEl.textContent=diff===0?'✓ Balanced':diff>0?'+'+diff:diff;
+    balEl.className='calc-val '+(diff===0?'ok':'danger');
+    if(diff!==0){
+      alertEl.style.display='flex';
+      alertEl.className='alert alert-warning';
+      alertEl.innerHTML='<i class="ti ti-alert-triangle" aria-hidden="true"></i>&nbsp; Counts do not balance. Served + Unservable + Leftover ('+sum+') must equal Available ('+avail+'). Difference: '+Math.abs(diff)+'.';
+    } else {
+      alertEl.style.display='flex';
+      alertEl.className='alert alert-success';
+      alertEl.innerHTML='<i class="ti ti-circle-check" aria-hidden="true"></i>&nbsp; Counts balance correctly.';
+    }
+  } else {
+    balEl.textContent='—';
+    balEl.className='calc-val';
+    alertEl.style.display='none';
+  }
+}
+
+function saveRecord(){
+  const alertEl=document.getElementById('entry-alert');
+  const required=[
+    ['f-receiver','Receiver name'],['f-del-date','Delivery date'],['f-del-time','Delivery time'],
+    ['f-del-temp','Delivery temperature'],['f-recv-qty','Received quantity'],
+    ['f-svc-date','Serve date'],['f-svc-time','Serve time'],
+    ['f-first','First meal qty'],['f-leftover','Leftover qty'],
+    ['f-sig-name','E-signature name']
+  ];
+  const missing=required.filter(([id])=>!document.getElementById(id).value.trim());
+  if(missing.length){
+    alertEl.style.display='flex';alertEl.className='alert alert-danger';
+    alertEl.innerHTML='<i class="ti ti-alert-circle" aria-hidden="true"></i>&nbsp; Please complete: '+missing.map(f=>f[1]).join(', ')+'.';
+    alertEl.scrollIntoView({behavior:'smooth',block:'nearest'});return;
+  }
+  if(!document.getElementById('f-sig-confirm').checked){
+    alertEl.style.display='flex';alertEl.className='alert alert-danger';
+    alertEl.innerHTML='<i class="ti ti-alert-circle" aria-hidden="true"></i>&nbsp; Please check the certification box to complete your e-signature.';
+    return;
+  }
+  const avail=parseInt(document.getElementById('f-avail').value)||0;
+  const served=parseInt(document.getElementById('f-total-served').value)||0;
+  const unsrv=parseInt(document.getElementById('f-total-unsrv').value)||0;
+  const left=n('f-leftover');
+  if(avail>0&&(served+unsrv+left)!==avail){
+    alertEl.style.display='flex';alertEl.className='alert alert-warning';
+    alertEl.innerHTML='<i class="ti ti-alert-triangle" aria-hidden="true"></i>&nbsp; Warning: counts do not balance. You may still save, but please verify your numbers.';
+  } else {
+    alertEl.style.display='none';
+  }
+  const rec={
+    id:Date.now(),site:currentSite,siteName:SITES[currentSite].name,
+    receiver:document.getElementById('f-receiver').value,
+    delDate:document.getElementById('f-del-date').value,
+    delTime:document.getElementById('f-del-time').value,
+    delTemp:document.getElementById('f-del-temp').value,
+    recvQty:n('f-recv-qty'),
+    svcDate:document.getElementById('f-svc-date').value,
+    svcTime:document.getElementById('f-svc-time').value,
+    mealType:document.getElementById('f-meal-type').value,
+    prevLeftover:n('f-prev-left'),
+    availQty:avail,
+    firstMeal:n('f-first'),secondMeal:n('f-second'),
+    adultProg:n('f-adult-prog'),adultNonProg:n('f-adult-nonprog'),
+    totalServed:served,
+    waste:n('f-waste'),incomplete:n('f-incomplete'),
+    totalUnsrv:unsrv,
+    leftover:left,
+    sigName:document.getElementById('f-sig-name').value,
+    sigCertified:true,
+    notes:document.getElementById('f-notes').value,
+    savedAt:new Date().toISOString()
+  };
+  records.push(rec);save();
+  const saved=document.createElement('div');
+  saved.className='alert alert-success';
+  saved.innerHTML='<i class="ti ti-circle-check" aria-hidden="true"></i>&nbsp; Record saved for '+rec.svcDate+'. Signed by '+rec.sigName+'.';
+  document.getElementById('entry-alert').replaceWith(saved);
+  document.getElementById('entry-alert') || saved.setAttribute('id','entry-alert');
+  saved.id='entry-alert';
+  clearForm();
+}
+
+function clearForm(){
+  ['f-receiver','f-del-time','f-del-temp','f-recv-qty','f-svc-time',
+   'f-prev-left','f-first','f-second','f-adult-prog','f-adult-nonprog',
+   'f-waste','f-incomplete','f-leftover','f-sig-name','f-notes'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  document.getElementById('f-del-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('f-svc-date').value=new Date().toISOString().slice(0,10);
+  document.getElementById('f-sig-confirm').checked=false;
+  document.getElementById('f-avail-display').textContent='—';
+  document.getElementById('f-total-served-display').textContent='—';
+  document.getElementById('f-total-unsrv-display').textContent='—';
+  document.getElementById('s-avail').textContent='—';
+  document.getElementById('s-sum').textContent='—';
+  document.getElementById('s-balance').textContent='—';
+  document.getElementById('balance-alert').style.display='none';
+}
+
+function renderTable(isAdmin){
+  const myRecs=isAdmin?records:records.filter(r=>r.site===currentSite);
+  const ctr=document.getElementById(isAdmin?'all-records':'my-records');
+  if(!myRecs.length){ctr.innerHTML='<div class="empty"><i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:8px;" aria-hidden="true"></i>No records yet.</div>';return;}
+  const sorted=[...myRecs].sort((a,b)=>b.svcDate.localeCompare(a.svcDate));
+  let h='<div style="overflow-x:auto;"><table class="rec-table"><thead><tr>';
+  if(isAdmin)h+='<th style="width:110px;">Site</th>';
+  h+='<th style="width:82px;">Serve date</th><th style="width:58px;">Available</th><th style="width:52px;">Served</th><th style="width:58px;">Unservable</th><th style="width:56px;">Leftover</th><th style="width:70px;">Balance</th><th>Signed by</th></tr></thead><tbody>';
+  sorted.forEach(r=>{
+    const sum=r.totalServed+r.totalUnsrv+r.leftover;
+    const bal=r.availQty-sum;
+    const ok=bal===0;
+    h+='<tr>';
+    if(isAdmin)h+='<td title="'+r.siteName+'">'+r.siteName.split(' ')[0]+'…</td>';
+    h+='<td>'+r.svcDate+'</td><td>'+r.availQty+'</td><td>'+r.totalServed+'</td><td>'+r.totalUnsrv+'</td><td>'+r.leftover+'</td>';
+    h+='<td><span class="pill '+(ok?'pill-ok':'pill-warn')+'">'+(ok?'Balanced':'Off by '+Math.abs(bal))+'</span></td>';
+    h+='<td title="'+r.sigName+'">'+r.sigName+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+  ctr.innerHTML=h;
+}
+
+function exportCSV(isAdmin){
+  const myRecs=isAdmin?records:records.filter(r=>r.site===currentSite);
+  if(!myRecs.length){return;}
+  const hdr=['Site ID','Site Name','Receiver Name','Delivery Date','Delivery Time','Delivery Temp (F)','Received Qty','Serve Date','Serve Time','Meal Type','Previous Leftover Qty','Available Qty','First Meal Qty','Second Meal Qty','Adult Program Qty','Adult Non-Program Qty','Total Served Qty','Waste Qty','Incomplete Qty','Total Unservable Qty','Leftover Qty','E-Signature Name','Certified','Notes','Saved At'];
+  const rows=myRecs.map(r=>[
+    r.site,q(r.siteName),q(r.receiver),r.delDate,r.delTime,r.delTemp,r.recvQty,
+    r.svcDate,r.svcTime,r.mealType,r.prevLeftover,r.availQty,
+    r.firstMeal,r.secondMeal,r.adultProg,r.adultNonProg,r.totalServed,
+    r.waste,r.incomplete,r.totalUnsrv,r.leftover,
+    q(r.sigName),r.sigCertified?'Yes':'No',q(r.notes||''),r.savedAt
+  ].join(','));
+  const csv=[hdr.join(','),...rows].join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='CACFP_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+}
+function q(s){return '"'+(s||'').replace(/"/g,'""')+'"';}
+</script>
