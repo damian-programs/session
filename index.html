@@ -231,6 +231,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
     <div class="login-logo">
       <div class="login-logo-icon"><i class="ti ti-salad"></i></div>
       <h1>Meal Receipt & Service Information Tracker</h1>
+      <p>After-school supper program</p>
     </div>
     <div id="login-err" class="alert alert-danger" style="display:none;margin-bottom:1rem;">
       <i class="ti ti-alert-circle"></i><span>Invalid site or PIN. Please try again.</span>
@@ -340,6 +341,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
     <button class="btn-primary" style="width:100%;justify-content:center;height:44px;font-size:15px;" onclick="doLogin()">
       <i class="ti ti-login"></i> Sign in
     </button>
+
   </div>
 </div>
 
@@ -517,7 +519,10 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
           <div class="card-title" style="margin-bottom:0;"><i class="ti ti-table"></i>My site records</div>
-          <button class="btn-sec" onclick="exportCSV(false)" style="font-size:12px;height:34px;"><i class="ti ti-download"></i> Export CSV</button>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-sec" onclick="showTab('records')" style="font-size:12px;height:34px;"><i class="ti ti-refresh"></i> Refresh</button>
+            <button class="btn-sec" onclick="exportCSV(false)" style="font-size:12px;height:34px;"><i class="ti ti-download"></i> Export CSV</button>
+          </div>
         </div>
         <div id="my-records"></div>
       </div>
@@ -528,7 +533,10 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
           <div class="card-title" style="margin-bottom:0;"><i class="ti ti-building-community"></i>All sites — combined view</div>
-          <button class="btn-sec" onclick="exportCSV(true)" style="font-size:12px;height:34px;"><i class="ti ti-download"></i> Export all CSV</button>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-sec" onclick="showTab('admin')" style="font-size:12px;height:34px;"><i class="ti ti-refresh"></i> Refresh</button>
+            <button class="btn-sec" onclick="exportCSV(true)" style="font-size:12px;height:34px;"><i class="ti ti-download"></i> Export all CSV</button>
+          </div>
         </div>
         <div id="all-records"></div>
       </div>
@@ -634,7 +642,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
       <div class="card">
         <div class="card-title"><i class="ti ti-link"></i>Your Apps Script Web App URL</div>
         <div class="sheets-url-row">
-          <div class="fg" style="flex:1;"><label for="sheets-url">Paste your deployment URL here</label><input type="text" id="sheets-url" placeholder="https://script.google.com/macros/s/…/exec"></div>
+          <div class="fg" style="flex:1;"><label for="sheets-url">Paste your deployment URL here</label><input type="text" id="sheets-url" placeholder="https://script.google.com/macros/s/…/exec" value="https://script.google.com/macros/s/AKfycbyPmBJsTfQPv29pekdzHMr_ntCSvZDPLPOg3FHGz6EzPYUjXqGzm44KFCEW7mRMoO08mg/exec"></div>
           <button class="btn-primary green" style="flex-shrink:0;height:38px;" onclick="saveSheetURL()"><i class="ti ti-check"></i> Save URL</button>
         </div>
         <div id="url-status" style="margin-top:8px;font-size:13px;display:none;"></div>
@@ -649,9 +657,9 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 
   </div>
 </div>
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">
-  Made by Damian Feliciano
-</div>
+
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Made by Damian Feliciano</div>
+
 <script>
 // ═══════════════════════════
 //  TRAINED STAFF BY SITE
@@ -765,13 +773,17 @@ const SITES = {
 // ═══════════════════════════
 //  STATE
 // ═══════════════════════════
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyPmBJsTfQPv29pekdzHMr_ntCSvZDPLPOg3FHGz6EzPYUjXqGzm44KFCEW7mRMoO08mg/exec';
 let currentSite = null;
 let records = JSON.parse(localStorage.getItem('cacfp_v2') || '[]');
-let sheetsURL = localStorage.getItem('cacfp_sheets_url') || '';
+let sheetsURL = SHEETS_URL; // pre-configured — also editable in Setup tab
 let editingUid = null;
-let pendingUid = null; // UID reserved for current new form
+let pendingUid = null;
+let isSyncing = false;
 
-function save() { localStorage.setItem('cacfp_v2', JSON.stringify(records)); }
+function saveLocal() { localStorage.setItem('cacfp_v2', JSON.stringify(records)); }
+// Keep old name working
+function save() { saveLocal(); }
 
 // ═══════════════════════════
 //  UID GENERATOR
@@ -786,13 +798,66 @@ function genUID() {
 // ═══════════════════════════
 //  AUTH
 // ═══════════════════════════
-function doLogin() {
+// ═══════════════════════════
+//  SHEETS DATABASE
+// ═══════════════════════════
+async function loadFromSheets(site) {
+  setSyncBanner('loading', 'Syncing with Google Sheets…');
+  try {
+    const url = SHEETS_URL + '?site=' + encodeURIComponent(site) + '&t=' + Date.now();
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const fresh = await resp.json();
+    if (!Array.isArray(fresh)) throw new Error('Bad response');
+    // Merge: fresh data wins, but keep local-only records not yet in Sheets
+    const freshUIDs = new Set(fresh.map(r => r.uid));
+    const localOnly = records.filter(r => !freshUIDs.has(r.uid) && (site === 'ALL' || r.site === site));
+    if (site === 'ALL') {
+      records = [...fresh, ...localOnly];
+    } else {
+      const otherSites = records.filter(r => r.site !== site);
+      records = [...otherSites, ...fresh, ...localOnly];
+    }
+    saveLocal();
+    setSyncBanner('ok', 'Synced with Google Sheets');
+    setTimeout(() => setSyncBanner('hide'), 2500);
+  } catch (e) {
+    console.warn('Sheets load failed, using local cache:', e);
+    setSyncBanner('warn', 'Using local cache — could not reach Sheets');
+    setTimeout(() => setSyncBanner('hide'), 4000);
+  }
+}
+
+function setSyncBanner(state, msg) {
+  let banner = document.getElementById('sync-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'sync-banner';
+    banner.style.cssText = 'position:fixed;bottom:12px;left:50%;transform:translateX(-50%);padding:8px 18px;border-radius:20px;font-size:12px;font-weight:500;z-index:999;display:flex;align-items:center;gap:7px;box-shadow:0 2px 12px rgba(0,0,0,0.15);transition:opacity 0.3s;font-family:DM Sans,sans-serif;';
+    document.body.appendChild(banner);
+  }
+  if (state === 'hide') { banner.style.opacity = '0'; setTimeout(() => { banner.style.display = 'none'; }, 300); return; }
+  banner.style.display = 'flex'; banner.style.opacity = '1';
+  const styles = {
+    loading: 'background:#3f72b8;color:white;',
+    ok:      'background:#1a6e38;color:white;',
+    warn:    'background:#8a5a00;color:white;',
+    error:   'background:#c0392b;color:white;'
+  };
+  const icons = { loading: '⟳', ok: '✓', warn: '⚠', error: '✗' };
+  banner.style.cssText += styles[state] || styles.ok;
+  banner.innerHTML = '<span>' + (icons[state]||'') + '</span><span>' + msg + '</span>';
+}
+
+async function doLogin() {
   const s = document.getElementById('ls').value;
   const p = document.getElementById('lp').value;
   const err = document.getElementById('login-err');
   if (!s || !SITES[s] || SITES[s].pin !== p) { err.style.display = 'flex'; return; }
   err.style.display = 'none';
   currentSite = s;
+
+  // Show app shell immediately
   document.getElementById('login-page').style.display = 'none';
   document.getElementById('main-app').style.display = 'block';
   document.getElementById('hdr-site').textContent = SITES[s].name;
@@ -814,10 +879,7 @@ function doLogin() {
     const o = document.createElement('option'); o.value = k; o.textContent = v.name; sumSite.appendChild(o);
   });
 
-  // Default dates/times
-  initFormDefaults();
-  autoFillPrevLeftover();
-
+  // Show tabs
   if (s === 'MONITOR') {
     document.getElementById('tab-admin').style.display = 'inline-block';
     document.getElementById('tab-tracker').style.display = 'inline-block';
@@ -830,6 +892,12 @@ function doLogin() {
     showTab('entry');
   }
   if (sheetsURL) document.getElementById('sheets-url').value = sheetsURL;
+
+  // Load records from Sheets (merge with local cache)
+  await loadFromSheets(s === 'MONITOR' ? 'ALL' : s);
+
+  initFormDefaults();
+  autoFillPrevLeftover();
 }
 
 function doLogout() {
@@ -848,17 +916,23 @@ function doLogout() {
 // ═══════════════════════════
 //  TABS
 // ═══════════════════════════
-function showTab(t) {
+async function showTab(t) {
   ['entry','records','admin','tracker','summary','setup'].forEach(x => {
     const pane = document.getElementById('pane-' + x);
     const tab  = document.getElementById('tab-' + x);
     if (pane) pane.style.display = x === t ? 'block' : 'none';
     if (tab)  tab.classList.toggle('active', x === t);
   });
-  if (t === 'records') renderTable(false);
-  if (t === 'admin')   renderTable(true);
-  if (t === 'tracker') { document.getElementById('tracker-date').value = today(); renderTracker(); }
-  if (t === 'summary') { document.getElementById('summary-month').value = today().slice(0,7); renderSummary(); }
+  if (t === 'records') {
+    await loadFromSheets(currentSite);
+    renderTable(false);
+  }
+  if (t === 'admin') {
+    await loadFromSheets('ALL');
+    renderTable(true);
+  }
+  if (t === 'tracker') { await loadFromSheets('ALL'); document.getElementById('tracker-date').value = today(); renderTracker(); }
+  if (t === 'summary') { await loadFromSheets('ALL'); document.getElementById('summary-month').value = today().slice(0,7); renderSummary(); }
 }
 
 // ═══════════════════════════
@@ -1366,9 +1440,8 @@ function setSyncStatus(state, msg) {
   dot.className = 'status-dot ' + (state === 'ok' ? 'green' : state === 'error' ? 'red' : '');
 }
 async function postToSheets(rec) {
-  if (!sheetsURL) return false;
   try {
-    await fetch(sheetsURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec) });
+    await fetch(SHEETS_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec) });
     return true;
   } catch (e) { return false; }
 }
