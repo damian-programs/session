@@ -582,9 +582,6 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
     <button class="btn-primary" style="width:100%;justify-content:center;height:44px;font-size:15px;" onclick="doLogin()">
       <i class="ti ti-login"></i> Sign in
     </button>
-    <div class="login-demo">
-      Each site's PIN is its 5-digit site number &nbsp;·&nbsp; Admin PIN: <strong>99999</strong>
-    </div>
   </div>
 </div>
 
@@ -618,7 +615,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
     <!-- ─── ENTRY TAB ─── -->
     <div id="pane-entry">
       <div id="entry-alert" style="display:none;margin-bottom:1rem;"></div>
-
+<div id="edit-banner" class="alert alert-info" style="display:none;margin-bottom:1rem;"></div>
       <!-- Delivery -->
       <div class="card">
         <div class="card-title"><i class="ti ti-truck-delivery"></i>Delivery information</div>
@@ -1114,6 +1111,18 @@ async function saveRecord() {
     alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; Please complete: ' + missing.map(f => f[1]).join(', ') + '.';
     alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return;
   }
+  const dupDate = document.getElementById('f-svc-date').value;
+  const dupCheck = records.find(r =>
+    r.site === currentSite &&
+    r.svcDate === dupDate &&
+    r.id !== editingId
+  );
+  if (dupCheck) {
+    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
+    alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; A meal record for <strong>' + dupDate + '</strong> already exists for your site. Use the <strong>Edit</strong> button in My Records to update it.';
+    alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
   if (!document.getElementById('f-sig-confirm').checked) {
     alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
     alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; Please check the certification box to complete your e-signature.';
@@ -1151,7 +1160,14 @@ async function saveRecord() {
     savedAt: new Date().toISOString()
   };
 
-  records.push(rec); save();
+  if (editingId) {
+    const idx = records.findIndex(x => x.id === editingId);
+    if (idx !== -1) { rec.id = editingId; records[idx] = rec; }
+    editingId = null;
+  } else {
+    records.push(rec);
+  }
+  save();
 
   alertEl.style.display = 'flex';
   alertEl.className = 'alert alert-success';
@@ -1190,7 +1206,42 @@ async function postToSheets(rec) {
     return false;
   }
 }
+let editingId = null;
 
+function editRecord(id) {
+  const r = records.find(x => x.id === id);
+  if (!r) return;
+  editingId = id;
+  showTab('entry');
+
+  document.getElementById('f-receiver').value  = r.receiver || '';
+  document.getElementById('f-del-date').value   = r.delDate || '';
+  document.getElementById('f-del-time').value   = r.delTime || '';
+  document.getElementById('f-del-temp').value   = r.delTemp || '';
+  document.getElementById('f-recv-qty').value   = r.recvQty || '';
+  document.getElementById('f-svc-date').value   = r.svcDate || '';
+  document.getElementById('f-svc-time').value   = r.svcTime || '';
+  document.getElementById('f-prev-left').value  = r.prevLeftover || '';
+  document.getElementById('f-first').value      = r.firstMeal || '';
+  document.getElementById('f-second').value     = r.secondMeal || '';
+  document.getElementById('f-adult-prog').value = r.adultProg || '';
+  document.getElementById('f-adult-nonprog').value = r.adultNonProg || '';
+  document.getElementById('f-waste').value      = r.waste || '';
+  document.getElementById('f-incomplete').value = r.incomplete || '';
+  document.getElementById('f-leftover').value   = r.leftover || '';
+  document.getElementById('f-sig-name').value   = r.sigName || '';
+  document.getElementById('f-notes').value      = r.notes || '';
+  document.getElementById('f-sig-confirm').checked = r.sigCertified || false;
+
+  recalc();
+
+  const banner = document.getElementById('edit-banner');
+  banner.style.display = 'flex';
+  banner.innerHTML = '<i class="ti ti-pencil"></i>&nbsp; Editing record from <strong>' + r.svcDate + '</strong> — changes will overwrite the original.';
+
+  document.getElementById('save-btn').innerHTML = '<i class="ti ti-device-floppy"></i> Update record';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 function clearForm() {
   ['f-receiver','f-del-time','f-del-temp','f-recv-qty','f-svc-time',
    'f-prev-left','f-first','f-second','f-adult-prog','f-adult-nonprog',
@@ -1204,6 +1255,9 @@ function clearForm() {
     document.getElementById(id).textContent = '—';
   });
   document.getElementById('balance-alert').style.display = 'none';
+  editingId = null;
+  document.getElementById('edit-banner').style.display = 'none';
+  document.getElementById('save-btn').innerHTML = '<i class="ti ti-device-floppy"></i> Save record';
 }
 
 // ═══════════════════════════════════════════════
@@ -1218,7 +1272,7 @@ function renderTable(isAdmin) {
   const sorted = [...myRecs].sort((a, b) => b.svcDate.localeCompare(a.svcDate));
   let h = '<div style="overflow-x:auto;"><table class="rec-table"><thead><tr>';
   if (isAdmin) h += '<th style="width:110px;">Site</th>';
-  h += '<th style="width:88px;">Serve date</th><th style="width:62px;">Available</th><th style="width:54px;">Served</th><th style="width:64px;">Unservable</th><th style="width:60px;">Leftover</th><th style="width:80px;">Balance</th><th>Signed by</th></tr></thead><tbody>';
+h += '<th style="width:88px;">Serve date</th><th style="width:62px;">Available</th><th style="width:54px;">Served</th><th style="width:64px;">Unservable</th><th style="width:60px;">Leftover</th><th style="width:80px;">Balance</th><th>Signed by</th><th style="width:50px;"></th></tr></thead><tbody>';
   sorted.forEach(r => {
     const sum = r.totalServed + r.totalUnsrv + r.leftover;
     const bal = r.availQty - sum;
@@ -1227,7 +1281,9 @@ function renderTable(isAdmin) {
     if (isAdmin) h += '<td title="' + r.siteName + '">' + r.siteName.split(' ')[0] + '…</td>';
     h += '<td>' + r.svcDate + '</td><td>' + r.availQty + '</td><td>' + r.totalServed + '</td><td>' + r.totalUnsrv + '</td><td>' + r.leftover + '</td>';
     h += '<td><span class="pill ' + (ok ? 'pill-ok' : 'pill-warn') + '">' + (ok ? 'Balanced' : 'Off by ' + Math.abs(bal)) + '</span></td>';
-    h += '<td title="' + r.sigName + '">' + r.sigName + '</td></tr>';
+    h += '<td title="' + r.sigName + '">' + r.sigName + '</td>';
+if (!isAdmin) h += '<td><button onclick="editRecord(' + r.id + ')" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:4px;background:white;cursor:pointer;color:var(--text-mid);">Edit</button></td>';
+h += '</tr>';
   });
   h += '</tbody></table></div>';
   ctr.innerHTML = h;
