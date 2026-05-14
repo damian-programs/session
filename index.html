@@ -1221,6 +1221,7 @@ function renderTable(isAdmin) {
     if (!isAdmin) h += '<button class="btn-sm blue" onclick="editRecord(\'' + r.uid + '\')"><i class="ti ti-pencil"></i></button>';
     h += '<button class="btn-sm print-btn" onclick="printRecord(\'' + r.uid + '\')"><i class="ti ti-printer"></i></button>';
     if (isAdmin) h += '<button class="btn-sm" onclick="showAudit(\'' + r.uid + '\')"><i class="ti ti-history"></i></button>';
+    if (isAdmin) h += '<button class="btn-sm" style="border-color:#c0392b;color:#c0392b;" onclick="deleteRecord(\'' + r.uid + '\')"><i class="ti ti-trash"></i></button>';
     h += '</div></td></tr>';
     // Audit log row (admin only, hidden by default)
     if (isAdmin) {
@@ -1238,6 +1239,18 @@ function renderTable(isAdmin) {
   ctr.innerHTML = h;
 }
 
+async function deleteRecord(uid) {
+  if (!confirm('Are you sure you want to delete this record? This cannot be undone.')) return;
+  records = records.filter(r => r.uid !== uid);
+  saveLocal();
+  try {
+    await _db.collection('meal_records').doc(uid).delete();
+  } catch(e) {
+    console.warn('Firebase delete failed:', e);
+  }
+  renderTable(currentSite === 'MONITOR');
+}  
+  
 function showAudit(uid) {
   const row = document.getElementById('audit-' + uid);
   if (row) row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
