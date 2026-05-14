@@ -1450,6 +1450,27 @@ function q(s) { return '"' + (s || '').replace(/"/g, '""') + '"'; }
   for (const rec of records) { (await saveToFirebase(rec)) ? ok++ : fail++; }
   statusEl.innerHTML = '<span style="color:var(--success-text);">Done — ' + ok + ' sent' + (fail ? ', ' + fail + ' failed' : '') + '.</span>';
 }
+
+// ═══════════════════════════
+//  EXPOSE FUNCTIONS TO GLOBAL SCOPE
+//  (needed because Firebase uses type="module" which isolates scope)
+// ═══════════════════════════
+window.doLogin = doLogin;
+window.doLogout = doLogout;
+window.showTab = showTab;
+window.saveRecord = saveRecord;
+window.clearForm = clearForm;
+window.saveDraft = saveDraft;
+window.editRecord = editRecord;
+window.printRecord = printRecord;
+window.showAudit = showAudit;
+window.exportCSV = exportCSV;
+window.checkFirebaseStatus = checkFirebaseStatus;
+window.syncAllToFirebase = syncAllToFirebase;
+window.recalc = recalc;
+window.checkTemp = checkTemp;
+window.renderTracker = renderTracker;
+window.renderSummary = renderSummary;
 </script>
 </body>
 </html>
