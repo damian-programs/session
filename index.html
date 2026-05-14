@@ -36,437 +36,196 @@
   --shadow: 0 1px 3px rgba(63,114,184,0.08), 0 4px 16px rgba(63,114,184,0.06);
   --shadow-card: 0 2px 8px rgba(63,114,184,0.10), 0 1px 2px rgba(63,114,184,0.06);
 }
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text-main); min-height: 100vh; font-size: 15px; line-height: 1.5; }
 
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--cream);
-  color: var(--text-main);
-  min-height: 100vh;
-  font-size: 15px;
-  line-height: 1.5;
-}
-
-/* ── TOPBAR ── */
-.topbar {
-  background: var(--navy);
-  color: white;
-  padding: 0 1.5rem;
-  height: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
-}
-.topbar-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 600;
-  font-size: 16px;
-  letter-spacing: -0.01em;
-}
+/* TOPBAR */
+.topbar { background: var(--navy); color: white; padding: 0 1.5rem; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
+.topbar-brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 16px; letter-spacing: -0.01em; }
 .topbar-brand i { color: var(--amber); font-size: 20px; }
 .topbar-right { display: flex; align-items: center; gap: 10px; }
-.site-badge {
-  background: rgba(88,146,58,0.18);
-  color: var(--amber);
-  border: 1px solid rgba(88,146,58,0.3);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 20px;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.btn-signout {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  color: white;
-  border-radius: var(--radius-sm);
-  padding: 0 12px;
-  height: 30px;
-  font-size: 12px;
-  font-family: 'DM Sans', sans-serif;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.15s;
-}
+.site-badge { background: rgba(88,146,58,0.18); color: var(--amber); border: 1px solid rgba(88,146,58,0.3); font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.03em; text-transform: uppercase; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn-signout { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: var(--radius-sm); padding: 0 12px; height: 30px; font-size: 12px; font-family: 'DM Sans', sans-serif; cursor: pointer; font-weight: 500; transition: background 0.15s; }
 .btn-signout:hover { background: rgba(255,255,255,0.18); }
 
-/* ── LAYOUT ── */
-.app { max-width: 700px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+/* LAYOUT */
+.app { max-width: 740px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
 
-/* ── TABS ── */
-.tabs {
-  display: flex;
-  gap: 2px;
-  border-bottom: 2px solid var(--border);
-  margin-bottom: 1.5rem;
-}
-.tab {
-  padding: 9px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  font-family: 'DM Sans', sans-serif;
-  border: none;
-  background: transparent;
-  color: var(--text-soft);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  margin-bottom: -2px;
-  transition: color 0.15s;
-}
+/* TABS */
+.tabs { display: flex; gap: 2px; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; flex-wrap: wrap; }
+.tab { padding: 9px 14px; font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif; border: none; background: transparent; color: var(--text-soft); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color 0.15s; }
 .tab.active { color: var(--navy); border-bottom-color: var(--navy); }
 .tab:hover:not(.active) { color: var(--text-mid); }
 
-/* ── DATE STRIP ── */
-.date-strip {
-  font-size: 12px;
-  color: var(--text-soft);
-  margin-bottom: 1.25rem;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+/* DATE STRIP */
+.date-strip { font-size: 12px; color: var(--text-soft); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 6px; }
 .date-strip i { font-size: 14px; }
 
-/* ── CARD / SECTION ── */
-.card {
-  background: var(--white);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.25rem;
-  margin-bottom: 1rem;
-  box-shadow: var(--shadow-card);
-}
-.card-title {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-bottom: 1.1rem;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
+/* CARD */
+.card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow-card); }
+.card-title { font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1.1rem; display: flex; align-items: center; gap: 7px; }
 .card-title i { font-size: 15px; color: var(--navy-light); }
 
-/* ── FORM ── */
+/* FORM */
 .fg { display: flex; flex-direction: column; gap: 5px; }
 label { font-size: 12px; font-weight: 500; color: var(--text-mid); }
-input[type=text], input[type=number], input[type=date],
-input[type=time], input[type=password], select, textarea {
-  width: 100%;
-  height: 38px;
-  padding: 0 11px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-family: 'DM Sans', sans-serif;
-  font-size: 14px;
-  color: var(--text-main);
-  background: var(--white);
-  transition: border-color 0.15s, box-shadow 0.15s;
-  outline: none;
-  appearance: none;
-  -webkit-appearance: none;
+input[type=text], input[type=number], input[type=date], input[type=time], input[type=password], select, textarea {
+  width: 100%; height: 38px; padding: 0 11px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text-main); background: var(--white);
+  transition: border-color 0.15s, box-shadow 0.15s; outline: none; appearance: none; -webkit-appearance: none;
 }
-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a9a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 30px;
-}
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a9a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
 textarea { height: auto; min-height: 68px; padding: 9px 11px; resize: vertical; line-height: 1.5; }
-input:focus, select:focus, textarea:focus {
-  border-color: var(--navy-light);
-  box-shadow: 0 0 0 3px rgba(63,114,184,0.18);
-}
+input:focus, select:focus, textarea:focus { border-color: var(--navy-light); box-shadow: 0 0 0 3px rgba(63,114,184,0.18); }
 input[readonly] { background: var(--cream); color: var(--text-mid); }
-
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 .full { grid-column: 1 / -1; }
 
-/* ── READONLY DISPLAY ── */
-.ro-field {
-  height: 38px;
-  padding: 0 11px;
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-sm);
-  background: var(--cream);
-  font-family: 'DM Mono', monospace;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text-main);
-  display: flex;
-  align-items: center;
-}
+/* RO FIELD */
+.ro-field { height: 38px; padding: 0 11px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: var(--cream); font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; color: var(--text-main); display: flex; align-items: center; }
 .ro-field.big { font-size: 18px; }
+.id-display { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-soft); background: var(--cream); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); padding: 4px 10px; display: inline-block; letter-spacing: 0.05em; }
 
-/* ── CALC CARDS ── */
-.calc-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-top: 1rem;
-}
-.calc-card {
-  background: var(--cream);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-sm);
-  padding: 0.75rem 1rem;
-  text-align: center;
-}
+/* CALC CARDS */
+.calc-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 1rem; }
+.calc-card { background: var(--cream); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); padding: 0.75rem 1rem; text-align: center; }
 .calc-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); margin-bottom: 4px; }
 .calc-val { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--text-main); }
 .calc-val.ok { color: var(--success-text); }
 .calc-val.warn { color: var(--warning-text); }
 .calc-val.danger { color: var(--danger-text); }
 
-/* ── DIVIDER ── */
+/* DIVIDER */
 .divider { height: 1px; background: var(--border-soft); margin: 1rem 0; }
 
-/* ── ALERTS ── */
-.alert {
-  border-radius: var(--radius-sm);
-  padding: 10px 14px;
-  font-size: 13px;
-  display: flex;
-  align-items: flex-start;
-  gap: 9px;
-  line-height: 1.5;
-}
+/* ALERTS */
+.alert { border-radius: var(--radius-sm); padding: 10px 14px; font-size: 13px; display: flex; align-items: flex-start; gap: 9px; line-height: 1.5; }
 .alert i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
 .alert-success { background: var(--success-bg); color: var(--success-text); border: 1px solid #b8e8c8; }
 .alert-danger  { background: var(--danger-bg);  color: var(--danger-text);  border: 1px solid #f5c6c2; }
 .alert-warning { background: var(--warning-bg); color: var(--warning-text); border: 1px solid #fde8a0; }
 .alert-info    { background: var(--info-bg);    color: var(--info-text);    border: 1px solid #c0d8f8; }
 
-/* ── BUTTONS ── */
+/* BUTTONS */
 .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1.25rem; }
-.btn-primary {
-  background: var(--navy);
-  color: white;
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 0 20px;
-  height: 40px;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: 'DM Sans', sans-serif;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  transition: background 0.15s, transform 0.1s;
-}
+.btn-primary { background: var(--navy); color: white; border: none; border-radius: var(--radius-sm); padding: 0 20px; height: 40px; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; cursor: pointer; display: flex; align-items: center; gap: 7px; transition: background 0.15s, transform 0.1s; }
 .btn-primary:hover { background: var(--navy-light); }
 .btn-primary:active { transform: scale(0.98); }
-.btn-primary.amber { background: var(--amber); color: var(--navy); }
-.btn-primary.amber:hover { background: var(--amber-dark); }
-.btn-sec {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 0 16px;
-  height: 40px;
-  font-size: 14px;
-  font-family: 'DM Sans', sans-serif;
-  color: var(--text-mid);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  transition: background 0.15s;
-}
+.btn-primary.green { background: var(--amber); color: white; }
+.btn-primary.green:hover { background: var(--amber-dark); }
+.btn-sec { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0 16px; height: 40px; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--text-mid); cursor: pointer; display: flex; align-items: center; gap: 7px; transition: background 0.15s; }
 .btn-sec:hover { background: var(--cream); }
+.btn-sm { height: 30px; font-size: 11px; padding: 0 10px; border: 1px solid var(--border); border-radius: 4px; background: white; cursor: pointer; color: var(--text-mid); font-family: 'DM Sans', sans-serif; display: inline-flex; align-items: center; gap: 4px; }
+.btn-sm:hover { background: var(--cream); }
+.btn-sm.blue { border-color: var(--navy); color: var(--navy); }
+.btn-sm.print-btn { border-color: var(--amber); color: var(--amber-dark); }
 
-/* ── E-SIG ── */
-.esig-box {
-  background: var(--cream);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-sm);
-  padding: 1.1rem;
-}
-.esig-check {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  margin-top: 0.9rem;
-  font-size: 13px;
-  color: var(--text-mid);
-  line-height: 1.55;
-}
-.esig-check input[type=checkbox] {
-  width: 17px; height: 17px;
-  flex-shrink: 0;
-  margin-top: 2px;
-  accent-color: var(--navy);
-  cursor: pointer;
-}
+/* E-SIG */
+.esig-box { background: var(--cream); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); padding: 1.1rem; }
+.esig-check { display: flex; align-items: flex-start; gap: 10px; margin-top: 0.9rem; font-size: 13px; color: var(--text-mid); line-height: 1.55; }
+.esig-check input[type=checkbox] { width: 17px; height: 17px; flex-shrink: 0; margin-top: 2px; accent-color: var(--navy); cursor: pointer; }
 
-/* ── RECORDS TABLE ── */
+/* RECORDS TABLE */
 .rec-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
-.rec-table th {
-  text-align: left;
-  padding: 8px 10px;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--text-soft);
-  border-bottom: 2px solid var(--border);
-  white-space: nowrap;
-  overflow: hidden;
-}
-.rec-table td {
-  padding: 9px 10px;
-  border-bottom: 1px solid var(--border-soft);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--text-main);
-}
+.rec-table th { text-align: left; padding: 8px 8px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); border-bottom: 2px solid var(--border); white-space: nowrap; overflow: hidden; }
+.rec-table td { padding: 8px 8px; border-bottom: 1px solid var(--border-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-main); vertical-align: middle; }
 .rec-table tr:last-child td { border-bottom: none; }
 .rec-table tr:hover td { background: var(--cream); }
-.pill {
-  display: inline-block;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 20px;
-}
+.pill { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
 .pill-ok   { background: var(--success-bg); color: var(--success-text); }
 .pill-warn { background: var(--warning-bg); color: var(--warning-text); }
-.empty {
-  text-align: center;
-  padding: 2.5rem 1rem;
-  color: var(--text-soft);
-  font-size: 14px;
-}
+.pill-danger { background: var(--danger-bg); color: var(--danger-text); }
+.pill-info { background: var(--info-bg); color: var(--info-text); }
+.empty { text-align: center; padding: 2.5rem 1rem; color: var(--text-soft); font-size: 14px; }
 .empty i { font-size: 28px; display: block; margin-bottom: 8px; opacity: 0.5; }
 
-/* ── LOGIN ── */
-.login-page {
-  min-height: 100vh;
-  background: #2a4f85;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-}
-.login-card {
-  background: white;
-  border-radius: 16px;
-  padding: 2.5rem;
-  width: 100%;
-  max-width: 380px;
-  box-shadow: 0 20px 60px rgba(63,114,184,0.25);
-}
-.login-logo {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-.login-logo-icon {
-  width: 56px; height: 56px;
-  background: var(--amber-light);
-  border-radius: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 12px;
-}
+/* ANOMALY ROW */
+.rec-table tr.anomaly td { background: #fffbf0; }
+.rec-table tr.anomaly:hover td { background: #fff5d6; }
+
+/* TRACKER GRID */
+.tracker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.tracker-card { border-radius: var(--radius-sm); padding: 10px 12px; font-size: 12px; border: 1px solid; }
+.tracker-card.submitted { background: var(--success-bg); border-color: #b8e8c8; color: var(--success-text); }
+.tracker-card.missing   { background: var(--danger-bg);  border-color: #f5c6c2; color: var(--danger-text); }
+.tracker-card-name { font-weight: 600; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tracker-card-sub { font-size: 10px; opacity: 0.8; }
+
+/* MONTH FILTER */
+.filter-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 1rem; flex-wrap: wrap; }
+.filter-row .fg { flex: 0 0 auto; }
+.filter-row select, .filter-row input[type=month] { width: auto; }
+
+/* AUDIT LOG */
+.audit-entry { font-size: 12px; color: var(--text-mid); padding: 5px 0; border-bottom: 1px solid var(--border-soft); display: flex; gap: 8px; align-items: baseline; }
+.audit-entry:last-child { border-bottom: none; }
+.audit-ts { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-soft); flex-shrink: 0; }
+
+/* LOGIN */
+.login-page { min-height: 100vh; background: #2a4f85; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+.login-card { background: white; border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(63,114,184,0.25); }
+.login-logo { text-align: center; margin-bottom: 2rem; }
+.login-logo-icon { width: 56px; height: 56px; background: var(--amber-light); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; }
 .login-logo-icon i { font-size: 28px; color: var(--amber-dark); }
 .login-logo h1 { font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
 .login-logo p { font-size: 13px; color: var(--text-soft); }
-.login-demo {
-  margin-top: 1.25rem;
-  background: var(--cream);
-  border-radius: var(--radius-sm);
-  padding: 10px 14px;
-  font-size: 12px;
-  color: var(--text-soft);
-  text-align: center;
-}
+.login-demo { margin-top: 1.25rem; background: var(--cream); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; color: var(--text-soft); text-align: center; }
 .login-demo strong { color: var(--text-mid); }
 
-/* ── SPINNER ── */
-.spinner {
-  display: inline-block;
-  width: 14px; height: 14px;
-  border: 2px solid rgba(255,255,255,0.4);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
+/* SPINNER */
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── SHEETS SETUP CARD ── */
-.setup-banner {
-  background: var(--info-bg);
-  border: 1px solid #c0d8f8;
-  border-radius: var(--radius);
-  padding: 1.1rem 1.25rem;
-  margin-bottom: 1rem;
-  font-size: 13px;
-  color: var(--info-text);
-}
+/* SETUP */
+.setup-banner { background: var(--info-bg); border: 1px solid #c0d8f8; border-radius: var(--radius); padding: 1.1rem 1.25rem; margin-bottom: 1rem; font-size: 13px; color: var(--info-text); }
 .setup-banner strong { font-weight: 600; }
 .setup-banner ol { margin: 8px 0 0 18px; line-height: 2; }
-.setup-banner code {
-  background: rgba(63,114,184,0.12);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-family: 'DM Mono', monospace;
-  font-size: 11px;
-}
+.setup-banner code { background: rgba(63,114,184,0.12); padding: 1px 5px; border-radius: 3px; font-family: 'DM Mono', monospace; font-size: 11px; }
 .sheets-url-row { display: flex; gap: 8px; align-items: flex-end; margin-top: 10px; }
 .sheets-url-row input { flex: 1; }
-.status-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 5px;
-  background: #ccc;
-}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; background: #ccc; }
 .status-dot.green { background: var(--success-text); }
 .status-dot.red   { background: var(--danger-text); }
+.sync-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-soft); margin-top: 8px; }
 
-/* ── SYNC STATUS ── */
-.sync-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--text-soft);
-  margin-top: 8px;
+/* PRINT */
+@media print {
+  body * { visibility: hidden; }
+  #print-area, #print-area * { visibility: visible; }
+  #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 2rem; font-family: 'DM Sans', sans-serif; }
+  .print-header { border-bottom: 2px solid #3f72b8; padding-bottom: 12px; margin-bottom: 16px; }
+  .print-title { font-size: 18px; font-weight: 700; color: #3f72b8; }
+  .print-sub { font-size: 12px; color: #666; margin-top: 3px; }
+  .print-section { margin-bottom: 14px; }
+  .print-section-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #666; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 8px; }
+  .print-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 20px; }
+  .print-field label { font-size: 9px; color: #888; text-transform: uppercase; letter-spacing: 0.05em; display: block; }
+  .print-field span { font-size: 12px; color: #1a1a1a; font-weight: 500; display: block; border-bottom: 1px solid #eee; padding-bottom: 2px; }
+  .print-id { font-family: monospace; font-size: 10px; color: #888; }
+  .print-sig { margin-top: 20px; border-top: 2px solid #3f72b8; padding-top: 12px; }
+  .print-sig-line { display: flex; gap: 20px; }
+  .print-sig-block { flex: 1; border-bottom: 1px solid #333; padding-bottom: 2px; min-height: 30px; }
+  .print-sig-label { font-size: 9px; color: #888; margin-top: 3px; }
 }
 
-/* ── RESPONSIVE ── */
+/* RESPONSIVE */
 @media (max-width: 500px) {
   .grid2, .grid3 { grid-template-columns: 1fr; }
   .calc-row { grid-template-columns: 1fr; }
   .full { grid-column: 1; }
   .topbar { padding: 0 1rem; }
   .login-card { padding: 1.75rem 1.25rem; }
+  .tracker-grid { grid-template-columns: 1fr 1fr; }
 }
 </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════════
-     LOGIN SCREEN
-═══════════════════════════════════════ -->
+<!-- PRINT AREA (hidden until print) -->
+<div id="print-area" style="display:none;"></div>
+
+<!-- LOGIN -->
 <div id="login-page" class="login-page">
   <div class="login-card">
     <div class="login-logo">
@@ -582,20 +341,16 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
     <button class="btn-primary" style="width:100%;justify-content:center;height:44px;font-size:15px;" onclick="doLogin()">
       <i class="ti ti-login"></i> Sign in
     </button>
+    <div class="login-demo">
+      Each site's PIN is its 5-digit site number &nbsp;·&nbsp; Admin PIN: <strong>99999</strong>
+    </div>
   </div>
 </div>
 
-<!-- ════════════════════════════════════
-     MAIN APP
-═══════════════════════════════════════ -->
+<!-- MAIN APP -->
 <div id="main-app" style="display:none;">
-
-  <!-- Topbar -->
   <div class="topbar">
-    <div class="topbar-brand">
-      <i class="ti ti-salad"></i>
-      CACFP Meal Counter
-    </div>
+    <div class="topbar-brand"><i class="ti ti-salad"></i>CACFP Meal Counter</div>
     <div class="topbar-right">
       <span class="site-badge" id="hdr-site"></span>
       <button class="btn-signout" onclick="doLogout()"><i class="ti ti-logout" style="font-size:13px;"></i> Sign out</button>
@@ -604,29 +359,37 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 
   <div class="app">
     <div class="date-strip"><i class="ti ti-calendar"></i><span id="hdr-date"></span></div>
-
     <div class="tabs">
       <button class="tab active" id="tab-entry"   onclick="showTab('entry')">Log meal record</button>
       <button class="tab"        id="tab-records" onclick="showTab('records')">My records</button>
-      <button class="tab"        id="tab-admin"   onclick="showTab('admin')"  style="display:none;">All sites (admin)</button>
-      <button class="tab"        id="tab-setup"   onclick="showTab('setup')"  style="display:none;">Google Sheets setup</button>
+      <button class="tab"        id="tab-admin"   onclick="showTab('admin')"   style="display:none;">All sites</button>
+      <button class="tab"        id="tab-tracker" onclick="showTab('tracker')" style="display:none;">Site tracker</button>
+      <button class="tab"        id="tab-summary" onclick="showTab('summary')" style="display:none;">Monthly summary</button>
+      <button class="tab"        id="tab-setup"   onclick="showTab('setup')"   style="display:none;">Sheets setup</button>
     </div>
 
-    <!-- ─── ENTRY TAB ─── -->
+    <!-- ENTRY TAB -->
     <div id="pane-entry">
+      <div id="edit-banner" class="alert alert-info" style="display:none;margin-bottom:1rem;"></div>
       <div id="entry-alert" style="display:none;margin-bottom:1rem;"></div>
-<div id="edit-banner" class="alert alert-info" style="display:none;margin-bottom:1rem;"></div>
+
+      <!-- Record ID -->
+      <div style="margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:11px;color:var(--text-soft);">Record ID:</span>
+        <span class="id-display" id="f-record-id">—</span>
+      </div>
+
       <!-- Delivery -->
       <div class="card">
         <div class="card-title"><i class="ti ti-truck-delivery"></i>Delivery information</div>
         <div class="grid2">
           <div class="fg">
-            <label for="f-site">Site name</label>
+            <label>Site name</label>
             <input type="text" id="f-site" readonly>
           </div>
           <div class="fg">
             <label for="f-receiver">Receiver name</label>
-            <input type="text" id="f-receiver" placeholder="Person accepting delivery">
+            <select id="f-receiver"><option value="">Select receiver…</option></select>
           </div>
           <div class="fg">
             <label for="f-del-date">Delivery date</label>
@@ -638,12 +401,23 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
           </div>
           <div class="fg">
             <label for="f-del-temp">Delivery temp (°F)</label>
-            <input type="number" id="f-del-temp" step="0.1" placeholder="e.g. 165.0">
+            <input type="number" id="f-del-temp" step="0.1" placeholder="e.g. 165.0" oninput="checkTemp()">
           </div>
           <div class="fg">
             <label for="f-recv-qty">Received quantity</label>
             <input type="number" id="f-recv-qty" min="0" placeholder="# of meals" oninput="recalc()">
           </div>
+        </div>
+        <div id="temp-alert" style="display:none;margin-top:0.75rem;"></div>
+      </div>
+
+      <!-- Draft Save -->
+      <div class="card" style="border:1px dashed var(--border);background:var(--cream);">
+        <div class="card-title"><i class="ti ti-device-floppy"></i>Save draft</div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Delivery info filled in? Save a draft now and return later to complete the meal service section.</p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button class="btn-sec" onclick="saveDraft()"><i class="ti ti-device-floppy"></i> Save draft</button>
+          <span id="draft-status" style="font-size:12px;color:var(--text-soft);"></span>
         </div>
       </div>
 
@@ -661,90 +435,49 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
           </div>
           <div class="fg">
             <label for="f-meal-type">Meal type</label>
-            <select id="f-meal-type">
-              <option value="Supper">Supper</option>
-            </select>
+            <select id="f-meal-type"><option value="Supper">Supper</option></select>
           </div>
           <div class="fg">
             <label for="f-prev-left">Previous leftover qty</label>
             <input type="number" id="f-prev-left" min="0" placeholder="From prior service" oninput="recalc()">
           </div>
         </div>
-
         <div class="divider"></div>
-
-        <!-- Available -->
         <div class="fg" style="margin-bottom:1rem;">
-          <label>Available qty <span style="font-size:11px;color:var(--text-soft);">(received + prev leftover — auto-calculated)</span></label>
+          <label>Available qty <span style="font-size:11px;color:var(--text-soft);">(received + prev leftover)</span></label>
           <div class="ro-field big" id="f-avail-display">—</div>
           <input type="hidden" id="f-avail">
         </div>
-
-        <!-- Served -->
         <div class="grid2" style="margin-bottom:0.75rem;">
-          <div class="fg">
-            <label for="f-first">First meal qty</label>
-            <input type="number" id="f-first" min="0" placeholder="Children — 1st" oninput="recalc()">
-          </div>
-          <div class="fg">
-            <label for="f-second">Second meal qty</label>
-            <input type="number" id="f-second" min="0" placeholder="Children — 2nd" oninput="recalc()">
-          </div>
-          <div class="fg">
-            <label for="f-adult-prog">Adult program qty</label>
-            <input type="number" id="f-adult-prog" min="0" placeholder="Program staff" oninput="recalc()">
-          </div>
-          <div class="fg">
-            <label for="f-adult-nonprog">Adult non-program qty</label>
-            <input type="number" id="f-adult-nonprog" min="0" placeholder="Non-program adults" oninput="recalc()">
-          </div>
+          <div class="fg"><label for="f-first">First meal qty</label><input type="number" id="f-first" min="0" placeholder="Children — 1st" oninput="recalc()"></div>
+          <div class="fg"><label for="f-second">Second meal qty</label><input type="number" id="f-second" min="0" placeholder="Children — 2nd" oninput="recalc()"></div>
+          <div class="fg"><label for="f-adult-prog">Adult program qty</label><input type="number" id="f-adult-prog" min="0" placeholder="Program staff" oninput="recalc()"></div>
+          <div class="fg"><label for="f-adult-nonprog">Adult non-program qty</label><input type="number" id="f-adult-nonprog" min="0" placeholder="Non-program adults" oninput="recalc()"></div>
         </div>
         <div class="fg" style="margin-bottom:1rem;">
           <label>Total served qty <span style="font-size:11px;color:var(--text-soft);">(auto-calculated)</span></label>
           <div class="ro-field" id="f-total-served-display" style="color:var(--success-text);">—</div>
           <input type="hidden" id="f-total-served">
         </div>
-
         <div class="divider"></div>
-
-        <!-- Unservable -->
         <div class="grid2" style="margin-bottom:0.75rem;">
-          <div class="fg">
-            <label for="f-waste">Waste qty</label>
-            <input type="number" id="f-waste" min="0" placeholder="Disposed / spoiled" oninput="recalc()">
-          </div>
-          <div class="fg">
-            <label for="f-incomplete">Incomplete qty</label>
-            <input type="number" id="f-incomplete" min="0" placeholder="Missing components" oninput="recalc()">
-          </div>
+          <div class="fg"><label for="f-waste">Waste qty</label><input type="number" id="f-waste" min="0" placeholder="Disposed / spoiled" oninput="recalc()"></div>
+          <div class="fg"><label for="f-incomplete">Incomplete qty</label><input type="number" id="f-incomplete" min="0" placeholder="Missing components" oninput="recalc()"></div>
         </div>
         <div class="fg" style="margin-bottom:1rem;">
-          <label>Total unservable qty <span style="font-size:11px;color:var(--text-soft);">(waste + incomplete — auto-calculated)</span></label>
+          <label>Total unservable qty <span style="font-size:11px;color:var(--text-soft);">(waste + incomplete)</span></label>
           <div class="ro-field" id="f-total-unsrv-display" style="color:var(--warning-text);">—</div>
           <input type="hidden" id="f-total-unsrv">
         </div>
-
         <div class="divider"></div>
-
         <div class="fg">
           <label for="f-leftover">Leftover qty <span style="font-size:11px;color:var(--text-soft);">(carried to next service)</span></label>
           <input type="number" id="f-leftover" min="0" placeholder="Remaining usable meals" oninput="recalc()">
         </div>
-
-        <!-- Balance summary -->
         <div class="calc-row">
-          <div class="calc-card">
-            <div class="calc-label">Available</div>
-            <div class="calc-val" id="s-avail">—</div>
-          </div>
-          <div class="calc-card">
-            <div class="calc-label">Served + Unsrv + Left</div>
-            <div class="calc-val" id="s-sum">—</div>
-          </div>
-          <div class="calc-card">
-            <div class="calc-label">Balance</div>
-            <div class="calc-val" id="s-balance">—</div>
-          </div>
+          <div class="calc-card"><div class="calc-label">Available</div><div class="calc-val" id="s-avail">—</div></div>
+          <div class="calc-card"><div class="calc-label">Served + Unsrv + Left</div><div class="calc-val" id="s-sum">—</div></div>
+          <div class="calc-card"><div class="calc-label">Balance</div><div class="calc-val" id="s-balance">—</div></div>
         </div>
         <div id="balance-alert" style="display:none;margin-top:0.75rem;"></div>
       </div>
@@ -763,8 +496,8 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
         <div class="card-title"><i class="ti ti-pen"></i>E-signature</div>
         <div class="esig-box">
           <div class="fg">
-            <label for="f-sig-name">Full name of person completing this record</label>
-            <input type="text" id="f-sig-name" placeholder="Type your full name">
+            <label for="f-sig-name">Person completing this record</label>
+            <select id="f-sig-name"><option value="">Select name…</option></select>
           </div>
           <div class="esig-check">
             <input type="checkbox" id="f-sig-confirm">
@@ -774,12 +507,8 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
       </div>
 
       <div class="btn-row">
-        <button class="btn-primary" id="save-btn" onclick="saveRecord()">
-          <i class="ti ti-device-floppy"></i> Save record
-        </button>
-        <button class="btn-sec" onclick="clearForm()">
-          <i class="ti ti-refresh"></i> Clear form
-        </button>
+        <button class="btn-primary" id="save-btn" onclick="saveRecord()"><i class="ti ti-device-floppy"></i> Save record</button>
+        <button class="btn-sec" onclick="clearForm()"><i class="ti ti-refresh"></i> Clear form</button>
       </div>
       <div id="sync-status" class="sync-row" style="display:none;">
         <span class="status-dot" id="sync-dot"></span>
@@ -787,33 +516,57 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
       </div>
     </div>
 
-    <!-- ─── RECORDS TAB ─── -->
+    <!-- RECORDS TAB -->
     <div id="pane-records" style="display:none;">
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
           <div class="card-title" style="margin-bottom:0;"><i class="ti ti-table"></i>My site records</div>
-          <button class="btn-sec" onclick="exportCSV(false)" style="font-size:12px;height:34px;">
-            <i class="ti ti-download"></i> Export CSV
-          </button>
+          <button class="btn-sec" onclick="exportCSV(false)" style="font-size:12px;height:34px;"><i class="ti ti-download"></i> Export CSV</button>
         </div>
         <div id="my-records"></div>
       </div>
     </div>
 
-    <!-- ─── ADMIN TAB ─── -->
+    <!-- ADMIN TAB -->
     <div id="pane-admin" style="display:none;">
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
           <div class="card-title" style="margin-bottom:0;"><i class="ti ti-building-community"></i>All sites — combined view</div>
-          <button class="btn-sec" onclick="exportCSV(true)" style="font-size:12px;height:34px;">
-            <i class="ti ti-download"></i> Export all CSV
-          </button>
+          <button class="btn-sec" onclick="exportCSV(true)" style="font-size:12px;height:34px;"><i class="ti ti-download"></i> Export all CSV</button>
         </div>
         <div id="all-records"></div>
       </div>
     </div>
 
-    <!-- ─── SETUP TAB ─── -->
+    <!-- TRACKER TAB -->
+    <div id="pane-tracker" style="display:none;">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-checklist"></i>Daily submission tracker</div>
+        <div class="filter-row">
+          <div class="fg"><label for="tracker-date">Date</label><input type="date" id="tracker-date" oninput="renderTracker()" style="width:160px;"></div>
+        </div>
+        <div id="tracker-summary" style="margin-bottom:1rem;font-size:13px;color:var(--text-mid);"></div>
+        <div class="tracker-grid" id="tracker-grid"></div>
+      </div>
+    </div>
+
+    <!-- MONTHLY SUMMARY TAB -->
+    <div id="pane-summary" style="display:none;">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-chart-bar"></i>Monthly summary report</div>
+        <div class="filter-row">
+          <div class="fg"><label for="summary-month">Month</label><input type="month" id="summary-month" oninput="renderSummary()" style="width:160px;"></div>
+          <div class="fg"><label for="summary-site">Site</label>
+            <select id="summary-site" oninput="renderSummary()" style="width:220px;">
+              <option value="ALL">All sites</option>
+            </select>
+          </div>
+        </div>
+        <div id="summary-content"></div>
+      </div>
+    </div>
+
+    <!-- SETUP TAB -->
     <div id="pane-setup" style="display:none;">
       <div class="setup-banner">
         <strong><i class="ti ti-brand-google" style="font-size:15px;"></i> Connect to Google Sheets</strong>
@@ -821,40 +574,58 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
         <ol>
           <li>Open <strong>Google Sheets</strong> and create a new spreadsheet.</li>
           <li>Go to <strong>Extensions → Apps Script</strong>.</li>
-          <li>Delete the default code, then paste the script below and click <strong>Save</strong>.</li>
+          <li>Delete the default code, paste the script below, and click <strong>Save</strong>.</li>
           <li>Click <strong>Deploy → New deployment</strong>, set type to <strong>Web app</strong>, set "Who has access" to <strong>Anyone</strong>, and click <strong>Deploy</strong>.</li>
-          <li>Copy the <strong>Web app URL</strong> and paste it in the field below, then click <strong>Save URL</strong>.</li>
+          <li>Copy the <strong>Web app URL</strong> and paste it below, then click <strong>Save URL</strong>.</li>
         </ol>
       </div>
-
-      <!-- Apps Script to copy -->
       <div class="card">
-        <div class="card-title"><i class="ti ti-code"></i>Apps Script — copy &amp; paste this into your project</div>
-        <textarea readonly id="apps-script-code" style="font-family:'DM Mono',monospace;font-size:11px;min-height:220px;background:var(--cream);color:var(--text-main);line-height:1.7;border-color:var(--border-soft);">function doPost(e) {
+        <div class="card-title"><i class="ti ti-code"></i>Apps Script — copy &amp; paste into your project</div>
+        <textarea readonly id="apps-script-code" style="font-family:'DM Mono',monospace;font-size:11px;min-height:260px;background:var(--cream);color:var(--text-main);line-height:1.7;border-color:var(--border-soft);">function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName("CACFP Records") || ss.insertSheet("CACFP Records");
     if (sheet.getLastRow() === 0) {
       sheet.appendRow([
-        "ID","Site ID","Site Name","Receiver","Del Date","Del Time",
-        "Del Temp","Recv Qty","Svc Date","Svc Time","Meal Type",
-        "Prev Leftover","Available","First Meal","Second Meal",
-        "Adult Program","Adult Non-Prog","Total Served","Waste",
-        "Incomplete","Total Unservable","Leftover","Sig Name",
-        "Certified","Notes","Saved At"
+        "Record ID","Site ID","Site Name","Receiver","Del Date","Del Time","Del Temp",
+        "Recv Qty","Svc Date","Svc Time","Meal Type","Prev Leftover","Available",
+        "First Meal","Second Meal","Adult Program","Adult Non-Prog","Total Served",
+        "Waste","Incomplete","Total Unservable","Leftover","Sig Name","Certified",
+        "Notes","Created At","Last Edited At","Edit Count"
       ]);
     }
-    sheet.appendRow([
-      data.id, data.site, data.siteName, data.receiver,
-      data.delDate, data.delTime, data.delTemp, data.recvQty,
-      data.svcDate, data.svcTime, data.mealType, data.prevLeftover,
-      data.availQty, data.firstMeal, data.secondMeal,
-      data.adultProg, data.adultNonProg, data.totalServed,
-      data.waste, data.incomplete, data.totalUnsrv, data.leftover,
-      data.sigName, data.sigCertified ? "Yes" : "No",
-      data.notes, data.savedAt
-    ]);
+    // Check for existing row to update
+    var lastRow = sheet.getLastRow();
+    var updated = false;
+    for (var i = 2; i <= lastRow; i++) {
+      if (sheet.getRange(i, 1).getValue() == data.uid) {
+        sheet.getRange(i, 1, 1, 28).setValues([[
+          data.uid, data.site, data.siteName, data.receiver,
+          data.delDate, data.delTime, data.delTemp, data.recvQty,
+          data.svcDate, data.svcTime, data.mealType, data.prevLeftover,
+          data.availQty, data.firstMeal, data.secondMeal,
+          data.adultProg, data.adultNonProg, data.totalServed,
+          data.waste, data.incomplete, data.totalUnsrv, data.leftover,
+          data.sigName, data.sigCertified ? "Yes" : "No",
+          data.notes, data.createdAt, data.lastEditedAt, data.editCount
+        ]]);
+        updated = true;
+        break;
+      }
+    }
+    if (!updated) {
+      sheet.appendRow([
+        data.uid, data.site, data.siteName, data.receiver,
+        data.delDate, data.delTime, data.delTemp, data.recvQty,
+        data.svcDate, data.svcTime, data.mealType, data.prevLeftover,
+        data.availQty, data.firstMeal, data.secondMeal,
+        data.adultProg, data.adultNonProg, data.totalServed,
+        data.waste, data.incomplete, data.totalUnsrv, data.leftover,
+        data.sigName, data.sigCertified ? "Yes" : "No",
+        data.notes, data.createdAt, data.lastEditedAt, data.editCount
+      ]);
+    }
     return ContentService.createTextOutput(JSON.stringify({status:"ok"}))
       .setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
@@ -862,27 +633,17 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
       .setMimeType(ContentService.MimeType.JSON);
   }
 }</textarea>
-        <button class="btn-sec" style="margin-top:10px;font-size:12px;height:32px;" onclick="copyScript()">
-          <i class="ti ti-copy"></i> Copy script
-        </button>
+        <button class="btn-sec" style="margin-top:10px;font-size:12px;height:32px;" onclick="copyScript()"><i class="ti ti-copy"></i> Copy script</button>
       </div>
-
-      <!-- URL input -->
       <div class="card">
         <div class="card-title"><i class="ti ti-link"></i>Your Apps Script Web App URL</div>
         <div class="sheets-url-row">
-          <div class="fg" style="flex:1;">
-            <label for="sheets-url">Paste your deployment URL here</label>
-            <input type="text" id="sheets-url" placeholder="https://script.google.com/macros/s/…/exec">
-          </div>
-          <button class="btn-primary amber" style="flex-shrink:0;height:38px;" onclick="saveSheetURL()">
-            <i class="ti ti-check"></i> Save URL
-          </button>
+          <div class="fg" style="flex:1;"><label for="sheets-url">Paste your deployment URL here</label><input type="text" id="sheets-url" placeholder="https://script.google.com/macros/s/…/exec"></div>
+          <button class="btn-primary green" style="flex-shrink:0;height:38px;" onclick="saveSheetURL()"><i class="ti ti-check"></i> Save URL</button>
         </div>
         <div id="url-status" style="margin-top:8px;font-size:13px;display:none;"></div>
-
         <div class="divider"></div>
-        <p style="font-size:12px;color:var(--text-soft);">Once saved, every new record will be sent to your Sheet automatically. Existing local records can be synced below.</p>
+        <p style="font-size:12px;color:var(--text-soft);">Once saved, every new or edited record will sync to your Sheet automatically.</p>
         <div class="btn-row">
           <button class="btn-sec" onclick="syncAllToSheets()"><i class="ti ti-cloud-upload"></i> Sync all local records to Sheets</button>
         </div>
@@ -890,13 +651,24 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
       </div>
     </div>
 
-  </div><!-- /app -->
-</div><!-- /main-app -->
+  </div>
+</div>
 
 <script>
-// ═══════════════════════════════════════════════
-//  CONFIG
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
+//  TRAINED STAFF BY SITE
+// ═══════════════════════════
+const STAFF = {
+  'DEFAULT': ['Site Coordinator','Program Staff','Site Director'],
+  // Add site-specific staff like: '11778': ['Jane Smith','John Doe'],
+};
+function getSiteStaff(siteId) {
+  return STAFF[siteId] || STAFF['DEFAULT'];
+}
+
+// ═══════════════════════════
+//  SITES CONFIG
+// ═══════════════════════════
 const SITES = {
   '11778': { name: '3MB Afterschool', pin: '11778' },
   '14569': { name: 'A Beautiful Mind', pin: '14569' },
@@ -992,15 +764,30 @@ const SITES = {
   'MONITOR': { name: 'Monitor Organization', pin: '99999' }
 };
 
+// ═══════════════════════════
+//  STATE
+// ═══════════════════════════
 let currentSite = null;
 let records = JSON.parse(localStorage.getItem('cacfp_v2') || '[]');
 let sheetsURL = localStorage.getItem('cacfp_sheets_url') || '';
+let editingUid = null;
+let pendingUid = null; // UID reserved for current new form
 
 function save() { localStorage.setItem('cacfp_v2', JSON.stringify(records)); }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
+//  UID GENERATOR
+// ═══════════════════════════
+function genUID() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let uid = '';
+  for (let i = 0; i < 8; i++) uid += chars[Math.floor(Math.random() * chars.length)];
+  return uid;
+}
+
+// ═══════════════════════════
 //  AUTH
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
 function doLogin() {
   const s = document.getElementById('ls').value;
   const p = document.getElementById('lp').value;
@@ -1013,12 +800,33 @@ function doLogin() {
   document.getElementById('hdr-site').textContent = SITES[s].name;
   document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   document.getElementById('f-site').value = SITES[s].name;
-  document.getElementById('f-del-date').value = today();
-  document.getElementById('f-svc-date').value = today();
+
+  // Populate staff dropdowns
+  const staff = getSiteStaff(s);
+  ['f-receiver','f-sig-name'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">Select…</option>';
+    staff.forEach(name => { const o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o); });
+  });
+
+  // Populate summary site filter
+  const sumSite = document.getElementById('summary-site');
+  sumSite.innerHTML = '<option value="ALL">All sites</option>';
+  Object.entries(SITES).filter(([k]) => k !== 'MONITOR').forEach(([k, v]) => {
+    const o = document.createElement('option'); o.value = k; o.textContent = v.name; sumSite.appendChild(o);
+  });
+
+  // Default dates/times
+  initFormDefaults();
+  autoFillPrevLeftover();
+
   if (s === 'MONITOR') {
     document.getElementById('tab-admin').style.display = 'inline-block';
+    document.getElementById('tab-tracker').style.display = 'inline-block';
+    document.getElementById('tab-summary').style.display = 'inline-block';
     document.getElementById('tab-setup').style.display = 'inline-block';
     document.getElementById('tab-entry').style.display = 'none';
+    document.getElementById('tab-records').style.display = 'none';
     showTab('admin');
   } else {
     showTab('entry');
@@ -1027,83 +835,121 @@ function doLogin() {
 }
 
 function doLogout() {
-  currentSite = null;
+  currentSite = null; editingUid = null; pendingUid = null;
   document.getElementById('login-page').style.display = 'flex';
   document.getElementById('main-app').style.display = 'none';
   document.getElementById('lp').value = '';
   document.getElementById('ls').value = '';
+  ['tab-admin','tab-tracker','tab-summary','tab-setup'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none';
+  });
+  document.getElementById('tab-entry').style.display = 'inline-block';
+  document.getElementById('tab-records').style.display = 'inline-block';
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
 //  TABS
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
 function showTab(t) {
-  ['entry','records','admin','setup'].forEach(x => {
-    document.getElementById('pane-' + x).style.display = x === t ? 'block' : 'none';
-    const el = document.getElementById('tab-' + x);
-    if (el) el.classList.toggle('active', x === t);
+  ['entry','records','admin','tracker','summary','setup'].forEach(x => {
+    const pane = document.getElementById('pane-' + x);
+    const tab  = document.getElementById('tab-' + x);
+    if (pane) pane.style.display = x === t ? 'block' : 'none';
+    if (tab)  tab.classList.toggle('active', x === t);
   });
   if (t === 'records') renderTable(false);
   if (t === 'admin')   renderTable(true);
+  if (t === 'tracker') { document.getElementById('tracker-date').value = today(); renderTracker(); }
+  if (t === 'summary') { document.getElementById('summary-month').value = today().slice(0,7); renderSummary(); }
 }
 
-// ═══════════════════════════════════════════════
-//  FORM
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
+//  FORM HELPERS
+// ═══════════════════════════
 function today() { return new Date().toISOString().slice(0, 10); }
+function nowTime() { return new Date().toTimeString().slice(0, 5); }
 function n(id) { return parseInt(document.getElementById(id).value) || 0; }
+
+function initFormDefaults() {
+  pendingUid = genUID();
+  document.getElementById('f-record-id').textContent = pendingUid;
+  document.getElementById('f-del-date').value = today();
+  document.getElementById('f-del-time').value = nowTime();
+  document.getElementById('f-svc-date').value = today();
+}
+
+function autoFillPrevLeftover() {
+  if (!currentSite || currentSite === 'MONITOR') return;
+  const siteRecs = records.filter(r => r.site === currentSite).sort((a, b) => b.svcDate.localeCompare(a.svcDate));
+  if (siteRecs.length) {
+    const last = siteRecs[0];
+    document.getElementById('f-prev-left').value = last.leftover || 0;
+    recalc();
+  }
+}
+
+function checkTemp() {
+  const temp = parseFloat(document.getElementById('f-del-temp').value);
+  const alertEl = document.getElementById('temp-alert');
+  if (isNaN(temp)) { alertEl.style.display = 'none'; return; }
+  if (temp < 135 && temp > 41) {
+    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
+    alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; <strong>Temperature out of safe range.</strong> Hot food must be ≥135°F; cold food must be ≤41°F. Current: ' + temp + '°F.';
+  } else if (temp <= 41) {
+    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-info';
+    alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; Cold food temperature (' + temp + '°F) — within safe range (≤41°F).';
+  } else {
+    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-success';
+    alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; Hot food temperature (' + temp + '°F) — within safe range (≥135°F).';
+  }
+}
 
 function recalc() {
   const recv = n('f-recv-qty'), prev = n('f-prev-left');
   const avail = recv + prev;
   document.getElementById('f-avail').value = avail;
   document.getElementById('f-avail-display').textContent = (recv > 0 || prev > 0) ? avail : '—';
-
   const first = n('f-first'), second = n('f-second'), ap = n('f-adult-prog'), anp = n('f-adult-nonprog');
   const served = first + second + ap + anp;
   document.getElementById('f-total-served').value = served;
   document.getElementById('f-total-served-display').textContent = served || '—';
-
   const waste = n('f-waste'), inc = n('f-incomplete');
   const unsrv = waste + inc;
   document.getElementById('f-total-unsrv').value = unsrv;
   document.getElementById('f-total-unsrv-display').textContent = unsrv || '—';
-
   const left = n('f-leftover');
   const sum = served + unsrv + left;
   document.getElementById('s-avail').textContent = avail || '—';
   document.getElementById('s-sum').textContent = avail > 0 ? sum : '—';
-
   const balEl = document.getElementById('s-balance');
   const alertEl = document.getElementById('balance-alert');
   if (avail > 0 && (served > 0 || unsrv > 0 || left > 0)) {
     const diff = avail - sum;
     balEl.textContent = diff === 0 ? '✓ Balanced' : diff > 0 ? '+' + diff : diff;
     balEl.className = 'calc-val ' + (diff === 0 ? 'ok' : 'danger');
+    alertEl.style.display = 'flex';
     if (diff !== 0) {
-      alertEl.style.display = 'flex';
       alertEl.className = 'alert alert-warning';
       alertEl.innerHTML = '<i class="ti ti-alert-triangle"></i>&nbsp; Counts do not balance. Served + Unservable + Leftover (' + sum + ') must equal Available (' + avail + '). Difference: ' + Math.abs(diff) + '.';
     } else {
-      alertEl.style.display = 'flex';
       alertEl.className = 'alert alert-success';
       alertEl.innerHTML = '<i class="ti ti-circle-check"></i>&nbsp; Counts balance correctly.';
     }
   } else {
-    balEl.textContent = '—';
-    balEl.className = 'calc-val';
-    alertEl.style.display = 'none';
+    balEl.textContent = '—'; balEl.className = 'calc-val'; alertEl.style.display = 'none';
   }
 }
 
+// ═══════════════════════════
+//  SAVE RECORD
+// ═══════════════════════════
 async function saveRecord() {
   const alertEl = document.getElementById('entry-alert');
   const required = [
     ['f-receiver','Receiver name'],['f-del-date','Delivery date'],['f-del-time','Delivery time'],
     ['f-del-temp','Delivery temperature'],['f-recv-qty','Received quantity'],
     ['f-svc-date','Serve date'],['f-svc-time','Serve time'],
-    ['f-first','First meal qty'],['f-leftover','Leftover qty'],
-    ['f-sig-name','E-signature name']
+    ['f-first','First meal qty'],['f-leftover','Leftover qty'],['f-sig-name','Signature name']
   ];
   const missing = required.filter(([id]) => !document.getElementById(id).value.trim());
   if (missing.length) {
@@ -1111,33 +957,141 @@ async function saveRecord() {
     alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; Please complete: ' + missing.map(f => f[1]).join(', ') + '.';
     alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return;
   }
+  // Duplicate check
   const dupDate = document.getElementById('f-svc-date').value;
-  const dupCheck = records.find(r =>
-    r.site === currentSite &&
-    r.svcDate === dupDate &&
-    r.id !== editingId
-  );
+  const dupCheck = records.find(r => r.site === currentSite && r.svcDate === dupDate && r.uid !== editingUid);
   if (dupCheck) {
     alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
     alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; A meal record for <strong>' + dupDate + '</strong> already exists for your site. Use the <strong>Edit</strong> button in My Records to update it.';
-    alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    return;
+    alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return;
   }
   if (!document.getElementById('f-sig-confirm').checked) {
     alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
-    alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; Please check the certification box to complete your e-signature.';
-    return;
+    alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; Please check the certification box to complete your e-signature.'; return;
   }
 
-  const avail = parseInt(document.getElementById('f-avail').value) || 0;
+  const now = new Date().toISOString();
+  const avail  = parseInt(document.getElementById('f-avail').value) || 0;
   const served = parseInt(document.getElementById('f-total-served').value) || 0;
-  const unsrv = parseInt(document.getElementById('f-total-unsrv').value) || 0;
-  const left = n('f-leftover');
+  const unsrv  = parseInt(document.getElementById('f-total-unsrv').value) || 0;
 
-  const rec = {
-    id: Date.now(),
+  if (editingUid) {
+    // Update existing record
+    const idx = records.findIndex(r => r.uid === editingUid);
+    if (idx !== -1) {
+      const orig = records[idx];
+      const editCount = (orig.editCount || 0) + 1;
+      const auditLog = orig.auditLog || [];
+      auditLog.push({ at: now, by: document.getElementById('f-sig-name').value, action: 'Edit #' + editCount });
+      records[idx] = {
+        ...orig,
+        isDraft: false,
+        receiver: document.getElementById('f-receiver').value,
+        delDate: document.getElementById('f-del-date').value,
+        delTime: document.getElementById('f-del-time').value,
+        delTemp: document.getElementById('f-del-temp').value,
+        recvQty: n('f-recv-qty'),
+        svcDate: document.getElementById('f-svc-date').value,
+        svcTime: document.getElementById('f-svc-time').value,
+        mealType: document.getElementById('f-meal-type').value,
+        prevLeftover: n('f-prev-left'), availQty: avail,
+        firstMeal: n('f-first'), secondMeal: n('f-second'),
+        adultProg: n('f-adult-prog'), adultNonProg: n('f-adult-nonprog'),
+        totalServed: served, waste: n('f-waste'), incomplete: n('f-incomplete'),
+        totalUnsrv: unsrv, leftover: n('f-leftover'),
+        sigName: document.getElementById('f-sig-name').value, sigCertified: true,
+        notes: document.getElementById('f-notes').value,
+        lastEditedAt: now, editCount, auditLog
+      };
+      save();
+      alertEl.style.display = 'flex'; alertEl.className = 'alert alert-success';
+      alertEl.innerHTML = '<i class="ti ti-circle-check"></i>&nbsp; Record updated (Edit #' + editCount + '). Signed by ' + records[idx].sigName + '.';
+      if (sheetsURL) { setSyncStatus('loading','Syncing to Google Sheets…'); const ok = await postToSheets(records[idx]); setSyncStatus(ok?'ok':'error', ok?'Synced to Google Sheets ✓':'Saved locally — could not reach Sheets.'); }
+    }
+    editingUid = null;
+    clearForm();
+    setTimeout(() => showTab('records'), 800);
+    return;
+  } else {
+    const uid = pendingUid || genUID();
+    const rec = {
+      uid, site: currentSite, siteName: SITES[currentSite].name,
+      receiver: document.getElementById('f-receiver').value,
+      delDate: document.getElementById('f-del-date').value,
+      delTime: document.getElementById('f-del-time').value,
+      delTemp: document.getElementById('f-del-temp').value,
+      recvQty: n('f-recv-qty'),
+      svcDate: document.getElementById('f-svc-date').value,
+      svcTime: document.getElementById('f-svc-time').value,
+      mealType: document.getElementById('f-meal-type').value,
+      prevLeftover: n('f-prev-left'), availQty: avail,
+      firstMeal: n('f-first'), secondMeal: n('f-second'),
+      adultProg: n('f-adult-prog'), adultNonProg: n('f-adult-nonprog'),
+      totalServed: served, waste: n('f-waste'), incomplete: n('f-incomplete'),
+      totalUnsrv: unsrv, leftover: n('f-leftover'),
+      sigName: document.getElementById('f-sig-name').value, sigCertified: true,
+      notes: document.getElementById('f-notes').value,
+      isDraft: false, createdAt: now, lastEditedAt: now, editCount: 0,
+      auditLog: [{ at: now, by: document.getElementById('f-sig-name').value, action: 'Created' }]
+    };
+    records.push(rec); save();
+    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-success';
+    alertEl.innerHTML = '<i class="ti ti-circle-check"></i>&nbsp; Record saved [' + uid + '] for ' + rec.svcDate + '. Signed by ' + rec.sigName + '.';
+    if (sheetsURL) { setSyncStatus('loading','Sending to Google Sheets…'); const ok = await postToSheets(rec); setSyncStatus(ok?'ok':'error', ok?'Saved to Google Sheets ✓':'Saved locally — could not reach Sheets.'); }
+  }
+  clearForm();
+  setTimeout(() => showTab('records'), 800);
+}
+
+// ═══════════════════════════
+//  EDIT RECORD
+// ═══════════════════════════
+function editRecord(uid) {
+  const r = records.find(x => x.uid === uid);
+  if (!r) return;
+  editingUid = uid;
+  showTab('entry');
+  document.getElementById('f-record-id').textContent = uid;
+  document.getElementById('f-receiver').value    = r.receiver || '';
+  document.getElementById('f-del-date').value    = r.delDate || '';
+  document.getElementById('f-del-time').value    = r.delTime || '';
+  document.getElementById('f-del-temp').value    = r.delTemp || '';
+  document.getElementById('f-recv-qty').value    = r.recvQty || '';
+  document.getElementById('f-svc-date').value    = r.svcDate || '';
+  document.getElementById('f-svc-time').value    = r.svcTime || '';
+  document.getElementById('f-prev-left').value   = r.prevLeftover || '';
+  document.getElementById('f-first').value       = r.firstMeal || '';
+  document.getElementById('f-second').value      = r.secondMeal || '';
+  document.getElementById('f-adult-prog').value  = r.adultProg || '';
+  document.getElementById('f-adult-nonprog').value = r.adultNonProg || '';
+  document.getElementById('f-waste').value       = r.waste || '';
+  document.getElementById('f-incomplete').value  = r.incomplete || '';
+  document.getElementById('f-leftover').value    = r.leftover || '';
+  document.getElementById('f-sig-name').value    = r.sigName || '';
+  document.getElementById('f-notes').value       = r.notes || '';
+  document.getElementById('f-sig-confirm').checked = false;
+  checkTemp(); recalc();
+  const banner = document.getElementById('edit-banner');
+  banner.style.display = 'flex';
+  banner.innerHTML = '<i class="ti ti-pencil"></i>&nbsp; Editing record <strong>' + uid + '</strong> from ' + r.svcDate + ' — changes will overwrite the original.';
+  document.getElementById('save-btn').innerHTML = '<i class="ti ti-device-floppy"></i> Update record';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ═══════════════════════════
+//  DRAFT SAVE
+// ═══════════════════════════
+function saveDraft() {
+  const statusEl = document.getElementById('draft-status');
+  const uid = editingUid || pendingUid || genUID();
+  const now = new Date().toISOString();
+  const existing = records.find(r => r.uid === uid);
+  const draft = {
+    ...(existing || {}),
+    uid,
     site: currentSite,
     siteName: SITES[currentSite].name,
+    isDraft: true,
     receiver: document.getElementById('f-receiver').value,
     delDate: document.getElementById('f-del-date').value,
     delTime: document.getElementById('f-del-time').value,
@@ -1147,161 +1101,252 @@ async function saveRecord() {
     svcTime: document.getElementById('f-svc-time').value,
     mealType: document.getElementById('f-meal-type').value,
     prevLeftover: n('f-prev-left'),
-    availQty: avail,
     firstMeal: n('f-first'), secondMeal: n('f-second'),
     adultProg: n('f-adult-prog'), adultNonProg: n('f-adult-nonprog'),
-    totalServed: served,
     waste: n('f-waste'), incomplete: n('f-incomplete'),
-    totalUnsrv: unsrv,
-    leftover: left,
-    sigName: document.getElementById('f-sig-name').value,
-    sigCertified: true,
+    leftover: n('f-leftover'),
     notes: document.getElementById('f-notes').value,
-    savedAt: new Date().toISOString()
+    createdAt: existing ? existing.createdAt : now,
+    lastEditedAt: now,
+    editCount: existing ? (existing.editCount || 0) : 0,
+    auditLog: existing ? existing.auditLog : [{ at: now, by: 'System', action: 'Draft created' }]
   };
-
-  if (editingId) {
-    const idx = records.findIndex(x => x.id === editingId);
-    if (idx !== -1) { rec.id = editingId; records[idx] = rec; }
-    editingId = null;
+  if (existing) {
+    const idx = records.findIndex(r => r.uid === uid);
+    records[idx] = draft;
   } else {
-    records.push(rec);
+    pendingUid = uid;
+    document.getElementById('f-record-id').textContent = uid;
+    records.push(draft);
   }
   save();
-
-  alertEl.style.display = 'flex';
-  alertEl.className = 'alert alert-success';
-  alertEl.innerHTML = '<i class="ti ti-circle-check"></i>&nbsp; Record saved for ' + rec.svcDate + '. Signed by ' + rec.sigName + '.';
-
-  // Send to Google Sheets
-  if (sheetsURL) {
-    setSyncStatus('loading', 'Sending to Google Sheets…');
-    const ok = await postToSheets(rec);
-    setSyncStatus(ok ? 'ok' : 'error', ok ? 'Saved to Google Sheets ✓' : 'Could not reach Google Sheets — record saved locally.');
-  }
-
-  clearForm();
+  statusEl.textContent = 'Draft saved at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  setTimeout(() => { statusEl.textContent = ''; }, 5000);
 }
 
-function setSyncStatus(state, msg) {
-  const row = document.getElementById('sync-status');
-  const dot = document.getElementById('sync-dot');
-  const txt = document.getElementById('sync-msg');
-  row.style.display = 'flex';
-  txt.textContent = msg;
-  dot.className = 'status-dot ' + (state === 'ok' ? 'green' : state === 'error' ? 'red' : '');
-}
-
-async function postToSheets(rec) {
-  if (!sheetsURL) return false;
-  try {
-    await fetch(sheetsURL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(rec)
-    });
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-let editingId = null;
-
-function editRecord(id) {
-  const r = records.find(x => x.id === id);
-  if (!r) return;
-  editingId = id;
-  showTab('entry');
-
-  document.getElementById('f-receiver').value  = r.receiver || '';
-  document.getElementById('f-del-date').value   = r.delDate || '';
-  document.getElementById('f-del-time').value   = r.delTime || '';
-  document.getElementById('f-del-temp').value   = r.delTemp || '';
-  document.getElementById('f-recv-qty').value   = r.recvQty || '';
-  document.getElementById('f-svc-date').value   = r.svcDate || '';
-  document.getElementById('f-svc-time').value   = r.svcTime || '';
-  document.getElementById('f-prev-left').value  = r.prevLeftover || '';
-  document.getElementById('f-first').value      = r.firstMeal || '';
-  document.getElementById('f-second').value     = r.secondMeal || '';
-  document.getElementById('f-adult-prog').value = r.adultProg || '';
-  document.getElementById('f-adult-nonprog').value = r.adultNonProg || '';
-  document.getElementById('f-waste').value      = r.waste || '';
-  document.getElementById('f-incomplete').value = r.incomplete || '';
-  document.getElementById('f-leftover').value   = r.leftover || '';
-  document.getElementById('f-sig-name').value   = r.sigName || '';
-  document.getElementById('f-notes').value      = r.notes || '';
-  document.getElementById('f-sig-confirm').checked = r.sigCertified || false;
-
-  recalc();
-
-  const banner = document.getElementById('edit-banner');
-  banner.style.display = 'flex';
-  banner.innerHTML = '<i class="ti ti-pencil"></i>&nbsp; Editing record from <strong>' + r.svcDate + '</strong> — changes will overwrite the original.';
-
-  document.getElementById('save-btn').innerHTML = '<i class="ti ti-device-floppy"></i> Update record';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
+// ═══════════════════════════
+//  CLEAR FORM
+// ═══════════════════════════
 function clearForm() {
   ['f-receiver','f-del-time','f-del-temp','f-recv-qty','f-svc-time',
    'f-prev-left','f-first','f-second','f-adult-prog','f-adult-nonprog',
    'f-waste','f-incomplete','f-leftover','f-sig-name','f-notes'].forEach(id => {
     document.getElementById(id).value = '';
   });
-  document.getElementById('f-del-date').value = today();
-  document.getElementById('f-svc-date').value = today();
+  initFormDefaults();
   document.getElementById('f-sig-confirm').checked = false;
   ['f-avail-display','f-total-served-display','f-total-unsrv-display','s-avail','s-sum','s-balance'].forEach(id => {
     document.getElementById(id).textContent = '—';
   });
   document.getElementById('balance-alert').style.display = 'none';
-  editingId = null;
+  document.getElementById('temp-alert').style.display = 'none';
   document.getElementById('edit-banner').style.display = 'none';
   document.getElementById('save-btn').innerHTML = '<i class="ti ti-device-floppy"></i> Save record';
+  editingUid = null;
+  autoFillPrevLeftover();
 }
 
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
+//  ANOMALY DETECTION
+// ═══════════════════════════
+function isAnomaly(r) {
+  if (!r.availQty) return false;
+  const wasteRatio = r.waste / r.availQty;
+  const leftoverRatio = r.leftover / r.availQty;
+  return wasteRatio > 0.3 || leftoverRatio > 0.4;
+}
+
+// ═══════════════════════════
 //  RECORDS TABLE
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
 function renderTable(isAdmin) {
   const myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
   const ctr = document.getElementById(isAdmin ? 'all-records' : 'my-records');
-  if (!myRecs.length) {
-    ctr.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i>No records yet.</div>'; return;
-  }
+  if (!myRecs.length) { ctr.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i>No records yet.</div>'; return; }
   const sorted = [...myRecs].sort((a, b) => b.svcDate.localeCompare(a.svcDate));
   let h = '<div style="overflow-x:auto;"><table class="rec-table"><thead><tr>';
-  if (isAdmin) h += '<th style="width:110px;">Site</th>';
-h += '<th style="width:88px;">Serve date</th><th style="width:62px;">Available</th><th style="width:54px;">Served</th><th style="width:64px;">Unservable</th><th style="width:60px;">Leftover</th><th style="width:80px;">Balance</th><th>Signed by</th><th style="width:50px;"></th></tr></thead><tbody>';
+  if (isAdmin) h += '<th style="width:120px;">Site</th>';
+  h += '<th style="width:82px;">Date</th><th style="width:56px;">Avail</th><th style="width:50px;">Served</th><th style="width:56px;">Unsrv</th><th style="width:54px;">Left</th><th style="width:76px;">Balance</th><th style="width:70px;">Status</th><th>Signed by</th><th style="width:36px;"></th></tr></thead><tbody>';
   sorted.forEach(r => {
     const sum = r.totalServed + r.totalUnsrv + r.leftover;
     const bal = r.availQty - sum;
     const ok = bal === 0;
-    h += '<tr>';
-    if (isAdmin) h += '<td title="' + r.siteName + '">' + r.siteName.split(' ')[0] + '…</td>';
+    const anom = isAnomaly(r);
+    const edited = (r.editCount || 0) > 0;
+    h += '<tr class="' + (anom ? 'anomaly' : '') + '" style="' + (r.isDraft ? 'opacity:0.65;font-style:italic;' : '') + '">';
+    if (isAdmin) h += '<td title="' + r.siteName + '">' + r.siteName.substring(0,16) + (r.siteName.length > 16 ? '…':'') + '</td>';
     h += '<td>' + r.svcDate + '</td><td>' + r.availQty + '</td><td>' + r.totalServed + '</td><td>' + r.totalUnsrv + '</td><td>' + r.leftover + '</td>';
-    h += '<td><span class="pill ' + (ok ? 'pill-ok' : 'pill-warn') + '">' + (ok ? 'Balanced' : 'Off by ' + Math.abs(bal)) + '</span></td>';
+    h += '<td><span class="pill ' + (ok ? 'pill-ok' : 'pill-warn') + '">' + (ok ? 'OK' : 'Off ' + Math.abs(bal)) + '</span></td>';
+    h += '<td>' + (r.isDraft ? '<span class="pill pill-warn">Draft</span>' : anom ? '<span class="pill pill-danger">⚠ Anomaly</span>' : edited ? '<span class="pill pill-info">Edited</span>' : '<span class="pill pill-ok">Clean</span>') + '</td>';
     h += '<td title="' + r.sigName + '">' + r.sigName + '</td>';
-if (!isAdmin) h += '<td><button onclick="editRecord(' + r.id + ')" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:4px;background:white;cursor:pointer;color:var(--text-mid);">Edit</button></td>';
-h += '</tr>';
+    const canEdit = !isAdmin || currentSite === 'MONITOR';
+    h += '<td><div style="display:flex;gap:4px;">';
+    if (!isAdmin) h += '<button class="btn-sm blue" onclick="editRecord(\'' + r.uid + '\')"><i class="ti ti-pencil"></i></button>';
+    h += '<button class="btn-sm print-btn" onclick="printRecord(\'' + r.uid + '\')"><i class="ti ti-printer"></i></button>';
+    if (isAdmin) h += '<button class="btn-sm" onclick="showAudit(\'' + r.uid + '\')"><i class="ti ti-history"></i></button>';
+    h += '</div></td></tr>';
+    // Audit log row (admin only, hidden by default)
+    if (isAdmin) {
+      h += '<tr id="audit-' + r.uid + '" style="display:none;"><td colspan="10" style="background:#f8f8f8;padding:8px 12px;">';
+      if (r.auditLog && r.auditLog.length) {
+        r.auditLog.forEach(e => {
+          h += '<div class="audit-entry"><span class="audit-ts">' + e.at.replace('T',' ').slice(0,16) + '</span><span>' + e.action + ' by ' + e.by + '</span></div>';
+        });
+      } else { h += '<span style="font-size:12px;color:var(--text-soft);">No audit log available.</span>'; }
+      h += '</td></tr>';
+    }
   });
   h += '</tbody></table></div>';
+  if (isAdmin) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">⚠ Anomaly = waste &gt;30% or leftover &gt;40% of available qty.</p>';
   ctr.innerHTML = h;
 }
 
-// ═══════════════════════════════════════════════
+function showAudit(uid) {
+  const row = document.getElementById('audit-' + uid);
+  if (row) row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+
+// ═══════════════════════════
+//  SITE TRACKER
+// ═══════════════════════════
+function renderTracker() {
+  const date = document.getElementById('tracker-date').value;
+  if (!date) return;
+  const submitted = new Set(records.filter(r => r.svcDate === date && r.site !== 'MONITOR').map(r => r.site));
+  const allSites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR');
+  const grid = document.getElementById('tracker-grid');
+  const summary = document.getElementById('tracker-summary');
+  summary.innerHTML = '<strong>' + submitted.size + '</strong> of <strong>' + allSites.length + '</strong> sites submitted for ' + date + '.';
+  grid.innerHTML = allSites.map(([k, v]) => {
+    const done = submitted.has(k);
+    return '<div class="tracker-card ' + (done ? 'submitted' : 'missing') + '"><div class="tracker-card-name">' + v.name + '</div><div class="tracker-card-sub">' + (done ? '✓ Submitted' : '✗ Not submitted') + '</div></div>';
+  }).join('');
+}
+
+// ═══════════════════════════
+//  MONTHLY SUMMARY
+// ═══════════════════════════
+function renderSummary() {
+  const month = document.getElementById('summary-month').value;
+  const siteFilter = document.getElementById('summary-site').value;
+  if (!month) return;
+  let recs = records.filter(r => r.svcDate && r.svcDate.startsWith(month));
+  if (siteFilter !== 'ALL') recs = recs.filter(r => r.site === siteFilter);
+  const ctr = document.getElementById('summary-content');
+  if (!recs.length) { ctr.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i>No records for this period.</div>'; return; }
+  const totals = recs.reduce((a, r) => ({
+    received: a.received + r.recvQty,
+    served: a.served + r.totalServed,
+    waste: a.waste + r.waste,
+    incomplete: a.incomplete + r.incomplete,
+    leftover: a.leftover + r.leftover,
+    days: a.days + 1
+  }), { received: 0, served: 0, waste: 0, incomplete: 0, leftover: 0, days: 0 });
+
+  // Per-site breakdown
+  const bySite = {};
+  recs.forEach(r => {
+    if (!bySite[r.site]) bySite[r.site] = { name: r.siteName, received: 0, served: 0, waste: 0, leftover: 0, days: 0 };
+    bySite[r.site].received += r.recvQty;
+    bySite[r.site].served   += r.totalServed;
+    bySite[r.site].waste    += r.waste;
+    bySite[r.site].leftover += r.leftover;
+    bySite[r.site].days     += 1;
+  });
+
+  let h = '<div class="grid3" style="margin-bottom:1.25rem;">';
+  h += stat('Total service days', totals.days);
+  h += stat('Total received', totals.received);
+  h += stat('Total served', totals.served);
+  h += stat('Total waste', totals.waste);
+  h += stat('Total incomplete', totals.incomplete);
+  h += stat('Total leftover', totals.leftover);
+  h += '</div>';
+
+  if (siteFilter === 'ALL' && Object.keys(bySite).length > 1) {
+    h += '<div class="divider"></div><p style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-soft);margin-bottom:0.75rem;">By site</p>';
+    h += '<div style="overflow-x:auto;"><table class="rec-table"><thead><tr><th>Site</th><th>Days</th><th>Received</th><th>Served</th><th>Waste</th><th>Leftover</th></tr></thead><tbody>';
+    Object.values(bySite).sort((a,b) => a.name.localeCompare(b.name)).forEach(s => {
+      h += '<tr><td>' + s.name + '</td><td>' + s.days + '</td><td>' + s.received + '</td><td>' + s.served + '</td><td>' + s.waste + '</td><td>' + s.leftover + '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+  }
+  ctr.innerHTML = h;
+}
+function stat(label, val) {
+  return '<div class="calc-card"><div class="calc-label">' + label + '</div><div class="calc-val">' + val + '</div></div>';
+}
+
+// ═══════════════════════════
+//  PRINT
+// ═══════════════════════════
+function printRecord(uid) {
+  const r = records.find(x => x.uid === uid);
+  if (!r) return;
+  const area = document.getElementById('print-area');
+  area.style.display = 'block';
+  area.innerHTML = `
+    <div class="print-header">
+      <div class="print-title">CACFP Meal Count Record</div>
+      <div class="print-sub">Record ID: ${r.uid} &nbsp;|&nbsp; Site ID: ${r.site} &nbsp;|&nbsp; Printed: ${new Date().toLocaleString()}</div>
+    </div>
+    <div class="print-section">
+      <div class="print-section-title">Site &amp; Delivery</div>
+      <div class="print-grid">
+        <div class="print-field"><label>Site Name</label><span>${r.siteName}</span></div>
+        <div class="print-field"><label>Receiver Name</label><span>${r.receiver}</span></div>
+        <div class="print-field"><label>Delivery Date</label><span>${r.delDate}</span></div>
+        <div class="print-field"><label>Delivery Time</label><span>${r.delTime}</span></div>
+        <div class="print-field"><label>Delivery Temp (°F)</label><span>${r.delTemp}</span></div>
+        <div class="print-field"><label>Received Qty</label><span>${r.recvQty}</span></div>
+      </div>
+    </div>
+    <div class="print-section">
+      <div class="print-section-title">Meal Service</div>
+      <div class="print-grid">
+        <div class="print-field"><label>Serve Date</label><span>${r.svcDate}</span></div>
+        <div class="print-field"><label>Serve Time</label><span>${r.svcTime}</span></div>
+        <div class="print-field"><label>Meal Type</label><span>${r.mealType}</span></div>
+        <div class="print-field"><label>Previous Leftover</label><span>${r.prevLeftover}</span></div>
+        <div class="print-field"><label>Available Qty</label><span>${r.availQty}</span></div>
+        <div class="print-field"><label>First Meal Qty</label><span>${r.firstMeal}</span></div>
+        <div class="print-field"><label>Second Meal Qty</label><span>${r.secondMeal}</span></div>
+        <div class="print-field"><label>Adult Program Qty</label><span>${r.adultProg}</span></div>
+        <div class="print-field"><label>Adult Non-Program Qty</label><span>${r.adultNonProg}</span></div>
+        <div class="print-field"><label>Total Served</label><span>${r.totalServed}</span></div>
+        <div class="print-field"><label>Waste Qty</label><span>${r.waste}</span></div>
+        <div class="print-field"><label>Incomplete Qty</label><span>${r.incomplete}</span></div>
+        <div class="print-field"><label>Total Unservable</label><span>${r.totalUnsrv}</span></div>
+        <div class="print-field"><label>Leftover Qty</label><span>${r.leftover}</span></div>
+      </div>
+    </div>
+    ${r.notes ? '<div class="print-section"><div class="print-section-title">Notes</div><p style="font-size:12px;">' + r.notes + '</p></div>' : ''}
+    <div class="print-sig">
+      <div class="print-sig-line">
+        <div><div class="print-sig-block">${r.sigName}</div><div class="print-sig-label">Signature of person completing record</div></div>
+        <div><div class="print-sig-block">${r.svcDate}</div><div class="print-sig-label">Date</div></div>
+      </div>
+      <p style="font-size:9px;color:#888;margin-top:10px;">I certify that the information recorded above is accurate and was counted at the point of service in accordance with CACFP requirements.</p>
+      ${r.editCount > 0 ? '<p style="font-size:9px;color:#888;">This record was edited ' + r.editCount + ' time(s). Last edited: ' + (r.lastEditedAt||'').replace('T',' ').slice(0,16) + '</p>' : ''}
+    </div>`;
+  window.print();
+  setTimeout(() => { area.style.display = 'none'; area.innerHTML = ''; }, 1000);
+}
+
+// ═══════════════════════════
 //  CSV EXPORT
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
 function exportCSV(isAdmin) {
   const myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
   if (!myRecs.length) return;
-  const hdr = ['Site ID','Site Name','Receiver Name','Delivery Date','Delivery Time','Delivery Temp (F)','Received Qty','Serve Date','Serve Time','Meal Type','Previous Leftover','Available Qty','First Meal','Second Meal','Adult Program','Adult Non-Program','Total Served','Waste','Incomplete','Total Unservable','Leftover','E-Signature Name','Certified','Notes','Saved At'];
+  const hdr = ['Record ID','Site ID','Site Name','Receiver','Del Date','Del Time','Del Temp (F)','Recv Qty','Svc Date','Svc Time','Meal Type','Prev Leftover','Available Qty','First Meal','Second Meal','Adult Program','Adult Non-Program','Total Served','Waste','Incomplete','Total Unservable','Leftover','Sig Name','Certified','Notes','Created At','Last Edited At','Edit Count'];
   const rows = myRecs.map(r => [
-    r.site, q(r.siteName), q(r.receiver), r.delDate, r.delTime, r.delTemp, r.recvQty,
+    r.uid, r.site, q(r.siteName), q(r.receiver), r.delDate, r.delTime, r.delTemp, r.recvQty,
     r.svcDate, r.svcTime, r.mealType, r.prevLeftover, r.availQty,
     r.firstMeal, r.secondMeal, r.adultProg, r.adultNonProg, r.totalServed,
     r.waste, r.incomplete, r.totalUnsrv, r.leftover,
-    q(r.sigName), r.sigCertified ? 'Yes' : 'No', q(r.notes || ''), r.savedAt
+    q(r.sigName), r.sigCertified ? 'Yes' : 'No', q(r.notes || ''),
+    r.createdAt, r.lastEditedAt, r.editCount || 0
   ].join(','));
   const csv = [hdr.join(','), ...rows].join('\n');
   const a = document.createElement('a');
@@ -1311,40 +1356,44 @@ function exportCSV(isAdmin) {
 }
 function q(s) { return '"' + (s || '').replace(/"/g, '""') + '"'; }
 
-// ═══════════════════════════════════════════════
-//  SHEETS SETUP
-// ═══════════════════════════════════════════════
+// ═══════════════════════════
+//  SHEETS
+// ═══════════════════════════
+function setSyncStatus(state, msg) {
+  const row = document.getElementById('sync-status');
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-msg');
+  row.style.display = 'flex';
+  txt.textContent = msg;
+  dot.className = 'status-dot ' + (state === 'ok' ? 'green' : state === 'error' ? 'red' : '');
+}
+async function postToSheets(rec) {
+  if (!sheetsURL) return false;
+  try {
+    await fetch(sheetsURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(rec) });
+    return true;
+  } catch (e) { return false; }
+}
 function saveSheetURL() {
   const url = document.getElementById('sheets-url').value.trim();
   const statusEl = document.getElementById('url-status');
   if (!url.startsWith('https://script.google.com')) {
     statusEl.style.display = 'block';
-    statusEl.innerHTML = '<span style="color:var(--danger-text);"><i class="ti ti-alert-circle"></i> That doesn\'t look like a valid Apps Script URL.</span>';
-    return;
+    statusEl.innerHTML = '<span style="color:var(--danger-text);"><i class="ti ti-alert-circle"></i> That doesn\'t look like a valid Apps Script URL.</span>'; return;
   }
   sheetsURL = url;
   localStorage.setItem('cacfp_sheets_url', url);
   statusEl.style.display = 'block';
-  statusEl.innerHTML = '<span style="color:var(--success-text);"><i class="ti ti-circle-check"></i> URL saved! New records will be sent to Google Sheets automatically.</span>';
+  statusEl.innerHTML = '<span style="color:var(--success-text);"><i class="ti ti-circle-check"></i> URL saved! Records will sync automatically.</span>';
 }
-
 async function syncAllToSheets() {
   const statusEl = document.getElementById('bulk-sync-status');
-  if (!sheetsURL) {
-    statusEl.style.display = 'block';
-    statusEl.innerHTML = '<span style="color:var(--warning-text);">Please save your Sheets URL first.</span>';
-    return;
-  }
-  statusEl.style.display = 'block';
-  statusEl.innerHTML = 'Syncing ' + records.length + ' records…';
+  if (!sheetsURL) { statusEl.style.display = 'block'; statusEl.innerHTML = '<span style="color:var(--warning-text);">Save your Sheets URL first.</span>'; return; }
+  statusEl.style.display = 'block'; statusEl.innerHTML = 'Syncing ' + records.length + ' records…';
   let ok = 0, fail = 0;
-  for (const rec of records) {
-    const result = await postToSheets(rec);
-    result ? ok++ : fail++;
-  }
+  for (const rec of records) { (await postToSheets(rec)) ? ok++ : fail++; }
   statusEl.innerHTML = '<span style="color:var(--success-text);">Done — ' + ok + ' sent' + (fail ? ', ' + fail + ' failed' : '') + '.</span>';
 }
-
 function copyScript() {
   const text = document.getElementById('apps-script-code').value;
   navigator.clipboard.writeText(text).then(() => {
