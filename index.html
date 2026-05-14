@@ -1,119 +1,539 @@
-
-<h2 class="sr-only">CACFP Meal Counter — record delivery and supper meal service data, with auto-calculated totals, balance check, e-signature, and CSV export.</h2>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CACFP Meal Counter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-.app{max-width:680px;margin:0 auto;padding:1rem 0 3rem;font-family:var(--font-sans);font-size:15px;color:var(--color-text-primary);}
-.header{border-bottom:0.5px solid var(--color-border-tertiary);padding-bottom:1rem;margin-bottom:1.25rem;}
-.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
-.section{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1.25rem;margin-bottom:1rem;}
-.sec-title{font-size:12px;font-weight:500;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:1rem;display:flex;align-items:center;gap:7px;}
-.sec-title i{font-size:16px;}
-.fg{display:flex;flex-direction:column;gap:5px;}
-label{font-size:13px;color:var(--color-text-secondary);}
-input,select,textarea{width:100%;}
-textarea{resize:vertical;min-height:56px;}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:11px;}
-.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;}
-.full{grid-column:1/-1;}
-.calc-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:.75rem;}
-.calc-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.65rem .9rem;}
-.calc-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px;}
-.calc-val{font-size:20px;font-weight:500;}
-.calc-val.ok{color:var(--color-text-success);}
-.calc-val.warn{color:var(--color-text-warning);}
-.calc-val.danger{color:var(--color-text-danger);}
-.alert{border-radius:var(--border-radius-md);padding:9px 13px;font-size:13px;margin-bottom:.85rem;display:flex;align-items:center;gap:8px;}
-.alert-success{background:var(--color-background-success);color:var(--color-text-success);}
-.alert-danger{background:var(--color-background-danger);color:var(--color-text-danger);}
-.alert-warning{background:var(--color-background-warning);color:var(--color-text-warning);}
-.alert-info{background:var(--color-background-info);color:var(--color-text-info);}
-.divider{height:.5px;background:var(--color-border-tertiary);margin:.9rem 0;}
-.btn-row{display:flex;gap:9px;margin-top:1rem;flex-wrap:wrap;}
-.btn-primary{background:var(--color-text-primary);color:var(--color-background-primary);border:none;border-radius:var(--border-radius-md);padding:0 18px;height:36px;font-size:14px;font-weight:500;cursor:pointer;}
-.btn-primary:hover{opacity:.85;}
-.btn-sec{background:transparent;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:0 18px;height:36px;font-size:14px;color:var(--color-text-primary);cursor:pointer;}
-.btn-sec:hover{background:var(--color-background-secondary);}
-.login-wrap{max-width:360px;margin:2.5rem auto;}
-.login-card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:2rem;}
-.tabs{display:flex;gap:2px;margin-bottom:1.2rem;border-bottom:0.5px solid var(--color-border-tertiary);}
-.tab{padding:8px 15px;font-size:14px;border:none;background:transparent;color:var(--color-text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
-.tab.active{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary);font-weight:500;}
-.site-chip{font-size:12px;background:var(--color-background-info);color:var(--color-text-info);padding:2px 10px;border-radius:20px;}
-.rec-table{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed;}
-.rec-table th{text-align:left;padding:7px 8px;font-weight:500;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px;overflow:hidden;white-space:nowrap;}
-.rec-table td{padding:7px 8px;border-bottom:0.5px solid var(--color-border-tertiary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.rec-table tr:last-child td{border-bottom:none;}
-.pill{display:inline-block;font-size:10px;padding:2px 7px;border-radius:20px;font-weight:500;}
-.pill-ok{background:var(--color-background-success);color:var(--color-text-success);}
-.pill-warn{background:var(--color-background-warning);color:var(--color-text-warning);}
-.empty{text-align:center;padding:2rem;color:var(--color-text-tertiary);font-size:14px;}
-.esig-box{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:1rem;margin-top:.5rem;}
-.esig-check{display:flex;align-items:flex-start;gap:10px;margin-top:.75rem;font-size:13px;color:var(--color-text-secondary);line-height:1.5;}
-.esig-check input[type=checkbox]{width:16px;height:16px;flex-shrink:0;margin-top:2px;accent-color:var(--color-text-primary);}
-.readonly-field{background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-md);padding:7px 10px;font-size:14px;font-weight:500;color:var(--color-text-primary);min-height:36px;display:flex;align-items:center;}
+:root {
+  --navy: #1a2744;
+  --navy-mid: #243156;
+  --navy-light: #2e3e6b;
+  --amber: #e8a020;
+  --amber-light: #fdf3e0;
+  --amber-dark: #b87a10;
+  --cream: #faf8f4;
+  --white: #ffffff;
+  --border: #ddd8ce;
+  --border-soft: #ece8e0;
+  --text-main: #1a1a1a;
+  --text-mid: #4a4a5a;
+  --text-soft: #8a8a9a;
+  --success-bg: #edf7f0;
+  --success-text: #1a6e38;
+  --warning-bg: #fff8e6;
+  --warning-text: #8a5a00;
+  --danger-bg: #fef0f0;
+  --danger-text: #c0392b;
+  --info-bg: #eef4fd;
+  --info-text: #1a4a8a;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 3px rgba(26,39,68,0.08), 0 4px 16px rgba(26,39,68,0.06);
+  --shadow-card: 0 2px 8px rgba(26,39,68,0.10), 0 1px 2px rgba(26,39,68,0.06);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--text-main);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background: var(--navy);
+  color: white;
+  padding: 0 1.5rem;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18);
+}
+.topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: -0.01em;
+}
+.topbar-brand i { color: var(--amber); font-size: 20px; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.site-badge {
+  background: rgba(232,160,32,0.18);
+  color: var(--amber);
+  border: 1px solid rgba(232,160,32,0.3);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.btn-signout {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  height: 30px;
+  font-size: 12px;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.btn-signout:hover { background: rgba(255,255,255,0.18); }
+
+/* ── LAYOUT ── */
+.app { max-width: 700px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+
+/* ── TABS ── */
+.tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+.tab {
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'DM Sans', sans-serif;
+  border: none;
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.15s;
+}
+.tab.active { color: var(--navy); border-bottom-color: var(--navy); }
+.tab:hover:not(.active) { color: var(--text-mid); }
+
+/* ── DATE STRIP ── */
+.date-strip {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.date-strip i { font-size: 14px; }
+
+/* ── CARD / SECTION ── */
+.card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-card);
+}
+.card-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.card-title i { font-size: 15px; color: var(--navy-light); }
+
+/* ── FORM ── */
+.fg { display: flex; flex-direction: column; gap: 5px; }
+label { font-size: 12px; font-weight: 500; color: var(--text-mid); }
+input[type=text], input[type=number], input[type=date],
+input[type=time], input[type=password], select, textarea {
+  width: 100%;
+  height: 38px;
+  padding: 0 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text-main);
+  background: var(--white);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a9a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+textarea { height: auto; min-height: 68px; padding: 9px 11px; resize: vertical; line-height: 1.5; }
+input:focus, select:focus, textarea:focus {
+  border-color: var(--navy-light);
+  box-shadow: 0 0 0 3px rgba(46,62,107,0.10);
+}
+input[readonly] { background: var(--cream); color: var(--text-mid); }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.full { grid-column: 1 / -1; }
+
+/* ── READONLY DISPLAY ── */
+.ro-field {
+  height: 38px;
+  padding: 0 11px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--cream);
+  font-family: 'DM Mono', monospace;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+}
+.ro-field.big { font-size: 18px; }
+
+/* ── CALC CARDS ── */
+.calc-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 1rem;
+}
+.calc-card {
+  background: var(--cream);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  text-align: center;
+}
+.calc-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); margin-bottom: 4px; }
+.calc-val { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--text-main); }
+.calc-val.ok { color: var(--success-text); }
+.calc-val.warn { color: var(--warning-text); }
+.calc-val.danger { color: var(--danger-text); }
+
+/* ── DIVIDER ── */
+.divider { height: 1px; background: var(--border-soft); margin: 1rem 0; }
+
+/* ── ALERTS ── */
+.alert {
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 13px;
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  line-height: 1.5;
+}
+.alert i { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.alert-success { background: var(--success-bg); color: var(--success-text); border: 1px solid #b8e8c8; }
+.alert-danger  { background: var(--danger-bg);  color: var(--danger-text);  border: 1px solid #f5c6c2; }
+.alert-warning { background: var(--warning-bg); color: var(--warning-text); border: 1px solid #fde8a0; }
+.alert-info    { background: var(--info-bg);    color: var(--info-text);    border: 1px solid #c0d8f8; }
+
+/* ── BUTTONS ── */
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1.25rem; }
+.btn-primary {
+  background: var(--navy);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0 20px;
+  height: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn-primary:hover { background: var(--navy-light); }
+.btn-primary:active { transform: scale(0.98); }
+.btn-primary.amber { background: var(--amber); color: var(--navy); }
+.btn-primary.amber:hover { background: var(--amber-dark); }
+.btn-sec {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0 16px;
+  height: 40px;
+  font-size: 14px;
+  font-family: 'DM Sans', sans-serif;
+  color: var(--text-mid);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.15s;
+}
+.btn-sec:hover { background: var(--cream); }
+
+/* ── E-SIG ── */
+.esig-box {
+  background: var(--cream);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: 1.1rem;
+}
+.esig-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 0.9rem;
+  font-size: 13px;
+  color: var(--text-mid);
+  line-height: 1.55;
+}
+.esig-check input[type=checkbox] {
+  width: 17px; height: 17px;
+  flex-shrink: 0;
+  margin-top: 2px;
+  accent-color: var(--navy);
+  cursor: pointer;
+}
+
+/* ── RECORDS TABLE ── */
+.rec-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
+.rec-table th {
+  text-align: left;
+  padding: 8px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-soft);
+  border-bottom: 2px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.rec-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-main);
+}
+.rec-table tr:last-child td { border-bottom: none; }
+.rec-table tr:hover td { background: var(--cream); }
+.pill {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.pill-ok   { background: var(--success-bg); color: var(--success-text); }
+.pill-warn { background: var(--warning-bg); color: var(--warning-text); }
+.empty {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--text-soft);
+  font-size: 14px;
+}
+.empty i { font-size: 28px; display: block; margin-bottom: 8px; opacity: 0.5; }
+
+/* ── LOGIN ── */
+.login-page {
+  min-height: 100vh;
+  background: var(--navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.login-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.login-logo {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+.login-logo-icon {
+  width: 56px; height: 56px;
+  background: var(--amber-light);
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+.login-logo-icon i { font-size: 28px; color: var(--amber-dark); }
+.login-logo h1 { font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+.login-logo p { font-size: 13px; color: var(--text-soft); }
+.login-demo {
+  margin-top: 1.25rem;
+  background: var(--cream);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--text-soft);
+  text-align: center;
+}
+.login-demo strong { color: var(--text-mid); }
+
+/* ── SPINNER ── */
+.spinner {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── SHEETS SETUP CARD ── */
+.setup-banner {
+  background: var(--info-bg);
+  border: 1px solid #c0d8f8;
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1rem;
+  font-size: 13px;
+  color: var(--info-text);
+}
+.setup-banner strong { font-weight: 600; }
+.setup-banner ol { margin: 8px 0 0 18px; line-height: 2; }
+.setup-banner code {
+  background: rgba(26,74,138,0.1);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+}
+.sheets-url-row { display: flex; gap: 8px; align-items: flex-end; margin-top: 10px; }
+.sheets-url-row input { flex: 1; }
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+  background: #ccc;
+}
+.status-dot.green { background: var(--success-text); }
+.status-dot.red   { background: var(--danger-text); }
+
+/* ── SYNC STATUS ── */
+.sync-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-top: 8px;
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 500px) {
+  .grid2, .grid3 { grid-template-columns: 1fr; }
+  .calc-row { grid-template-columns: 1fr; }
+  .full { grid-column: 1; }
+  .topbar { padding: 0 1rem; }
+  .login-card { padding: 1.75rem 1.25rem; }
+}
 </style>
+</head>
+<body>
 
-<div class="app" id="app">
+<!-- ════════════════════════════════════
+     LOGIN SCREEN
+═══════════════════════════════════════ -->
+<div id="login-page" class="login-page">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon"><i class="ti ti-salad"></i></div>
+      <h1>CACFP Meal Counter</h1>
+      <p>After-school supper program</p>
+    </div>
+    <div id="login-err" class="alert alert-danger" style="display:none;margin-bottom:1rem;">
+      <i class="ti ti-alert-circle"></i><span>Invalid site or PIN. Please try again.</span>
+    </div>
+    <div class="fg" style="margin-bottom:12px;">
+      <label for="ls">Site</label>
+      <select id="ls">
+        <option value="">Select your site…</option>
+        <option value="SITE-A">Roosevelt After-School Center</option>
+        <option value="SITE-B">Lincoln Community Program</option>
+        <option value="SITE-C">Jefferson Kids Club</option>
+        <option value="MONITOR">Monitor Organization (Admin)</option>
+      </select>
+    </div>
+    <div class="fg" style="margin-bottom:1.25rem;">
+      <label for="lp">5-digit PIN</label>
+      <input type="password" id="lp" placeholder="Enter 5-digit PIN" maxlength="5" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn-primary" style="width:100%;justify-content:center;height:44px;font-size:15px;" onclick="doLogin()">
+      <i class="ti ti-login"></i> Sign in
+    </button>
+    <div class="login-demo">
+      Demo PINs — Sites: <strong>12345</strong> &nbsp;·&nbsp; Admin: <strong>99999</strong>
+    </div>
+  </div>
+</div>
 
-  <!-- LOGIN -->
-  <div id="login-screen">
-    <div class="login-wrap">
-      <div style="text-align:center;margin-bottom:1.5rem;">
-        <i class="ti ti-salad" style="font-size:32px;color:var(--color-text-info);" aria-hidden="true"></i>
-        <h1 style="font-size:18px;font-weight:500;margin-top:8px;">CACFP Meal Counter</h1>
-        <p style="font-size:13px;color:var(--color-text-secondary);margin-top:3px;">After-school supper program</p>
-      </div>
-      <div class="login-card">
-        <div id="login-err" class="alert alert-danger" style="display:none;"><i class="ti ti-alert-circle" aria-hidden="true"></i><span>Invalid site or PIN.</span></div>
-        <div class="fg" style="margin-bottom:11px;">
-          <label for="ls">Site</label>
-          <select id="ls">
-            <option value="">Select your site...</option>
-            <option value="SITE-A">Roosevelt After-School Center</option>
-            <option value="SITE-B">Lincoln Community Program</option>
-            <option value="SITE-C">Jefferson Kids Club</option>
-            <option value="MONITOR">Monitor Organization (Admin)</option>
-          </select>
-        </div>
-        <div class="fg" style="margin-bottom:16px;">
-          <label for="lp">5-digit PIN</label>
-          <input type="password" id="lp" placeholder="Enter 5-digit PIN" maxlength="5" inputmode="numeric">
-        </div>
-        <button class="btn-primary" style="width:100%;" onclick="doLogin()">Sign in</button>
-        <p style="font-size:12px;color:var(--color-text-tertiary);text-align:center;margin-top:11px;">Demo PINs — sites: <strong>12345</strong> &nbsp;|&nbsp; admin: <strong>99999</strong></p>
-      </div>
+<!-- ════════════════════════════════════
+     MAIN APP
+═══════════════════════════════════════ -->
+<div id="main-app" style="display:none;">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <i class="ti ti-salad"></i>
+      CACFP Meal Counter
+    </div>
+    <div class="topbar-right">
+      <span class="site-badge" id="hdr-site"></span>
+      <button class="btn-signout" onclick="doLogout()"><i class="ti ti-logout" style="font-size:13px;"></i> Sign out</button>
     </div>
   </div>
 
-  <!-- MAIN -->
-  <div id="main-screen" style="display:none;">
-    <div class="header">
-      <div class="header-top">
-        <div style="display:flex;align-items:center;gap:9px;">
-          <i class="ti ti-salad" style="font-size:20px;color:var(--color-text-info);" aria-hidden="true"></i>
-          <span style="font-size:17px;font-weight:500;">CACFP Meal Counter</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:9px;">
-          <span class="site-chip" id="hdr-site"></span>
-          <button class="btn-sec" onclick="doLogout()" style="height:30px;font-size:12px;">Sign out</button>
-        </div>
-      </div>
-      <p style="font-size:13px;color:var(--color-text-secondary);" id="hdr-date"></p>
-    </div>
+  <div class="app">
+    <div class="date-strip"><i class="ti ti-calendar"></i><span id="hdr-date"></span></div>
 
     <div class="tabs">
-      <button class="tab active" id="tab-entry" onclick="showTab('entry')">Log meal record</button>
-      <button class="tab" id="tab-records" onclick="showTab('records')">My records</button>
-      <button class="tab" id="tab-admin" onclick="showTab('admin')" style="display:none;">All sites (admin)</button>
+      <button class="tab active" id="tab-entry"   onclick="showTab('entry')">Log meal record</button>
+      <button class="tab"        id="tab-records" onclick="showTab('records')">My records</button>
+      <button class="tab"        id="tab-admin"   onclick="showTab('admin')"  style="display:none;">All sites (admin)</button>
+      <button class="tab"        id="tab-setup"   onclick="showTab('setup')"  style="display:none;">Google Sheets setup</button>
     </div>
 
-    <!-- ENTRY TAB -->
+    <!-- ─── ENTRY TAB ─── -->
     <div id="pane-entry">
-      <div id="entry-alert" style="display:none;"></div>
+      <div id="entry-alert" style="display:none;margin-bottom:1rem;"></div>
 
-      <!-- DELIVERY -->
-      <div class="section">
-        <div class="sec-title"><i class="ti ti-truck-delivery" aria-hidden="true"></i>Delivery information</div>
+      <!-- Delivery -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-truck-delivery"></i>Delivery information</div>
         <div class="grid2">
           <div class="fg">
             <label for="f-site">Site name</label>
@@ -132,7 +552,7 @@ textarea{resize:vertical;min-height:56px;}
             <input type="time" id="f-del-time">
           </div>
           <div class="fg">
-            <label for="f-del-temp">Delivery temperature (°F)</label>
+            <label for="f-del-temp">Delivery temp (°F)</label>
             <input type="number" id="f-del-temp" step="0.1" placeholder="e.g. 165.0">
           </div>
           <div class="fg">
@@ -142,9 +562,9 @@ textarea{resize:vertical;min-height:56px;}
         </div>
       </div>
 
-      <!-- SERVICE -->
-      <div class="section">
-        <div class="sec-title"><i class="ti ti-clipboard-list" aria-hidden="true"></i>Meal service</div>
+      <!-- Meal Service -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-clipboard-list"></i>Meal service</div>
         <div class="grid2">
           <div class="fg">
             <label for="f-svc-date">Serve date</label>
@@ -168,46 +588,42 @@ textarea{resize:vertical;min-height:56px;}
 
         <div class="divider"></div>
 
-        <!-- AUTO-CALC: AVAILABLE -->
-        <div class="grid2" style="margin-bottom:.75rem;">
-          <div class="fg full">
-            <label>Available qty <span style="font-size:11px;color:var(--color-text-tertiary);">(received + previous leftover — auto-calculated)</span></label>
-            <div class="readonly-field" id="f-avail-display">—</div>
-            <input type="hidden" id="f-avail">
-          </div>
+        <!-- Available -->
+        <div class="fg" style="margin-bottom:1rem;">
+          <label>Available qty <span style="font-size:11px;color:var(--text-soft);">(received + prev leftover — auto-calculated)</span></label>
+          <div class="ro-field big" id="f-avail-display">—</div>
+          <input type="hidden" id="f-avail">
         </div>
 
-        <!-- SERVED BREAKDOWN -->
-        <div class="grid2">
+        <!-- Served -->
+        <div class="grid2" style="margin-bottom:0.75rem;">
           <div class="fg">
             <label for="f-first">First meal qty</label>
-            <input type="number" id="f-first" min="0" placeholder="Children — 1st serving" oninput="recalc()">
+            <input type="number" id="f-first" min="0" placeholder="Children — 1st" oninput="recalc()">
           </div>
           <div class="fg">
             <label for="f-second">Second meal qty</label>
-            <input type="number" id="f-second" min="0" placeholder="Children — 2nd serving" oninput="recalc()">
+            <input type="number" id="f-second" min="0" placeholder="Children — 2nd" oninput="recalc()">
           </div>
           <div class="fg">
             <label for="f-adult-prog">Adult program qty</label>
-            <input type="number" id="f-adult-prog" min="0" placeholder="Program staff meals" oninput="recalc()">
+            <input type="number" id="f-adult-prog" min="0" placeholder="Program staff" oninput="recalc()">
           </div>
           <div class="fg">
             <label for="f-adult-nonprog">Adult non-program qty</label>
             <input type="number" id="f-adult-nonprog" min="0" placeholder="Non-program adults" oninput="recalc()">
           </div>
         </div>
-
-        <!-- AUTO-CALC: TOTAL SERVED -->
-        <div style="margin:.75rem 0;">
-          <label>Total served qty <span style="font-size:11px;color:var(--color-text-tertiary);">(auto-calculated)</span></label>
-          <div class="readonly-field ok" id="f-total-served-display" style="margin-top:5px;">—</div>
+        <div class="fg" style="margin-bottom:1rem;">
+          <label>Total served qty <span style="font-size:11px;color:var(--text-soft);">(auto-calculated)</span></label>
+          <div class="ro-field" id="f-total-served-display" style="color:var(--success-text);">—</div>
           <input type="hidden" id="f-total-served">
         </div>
 
         <div class="divider"></div>
 
-        <!-- UNSERVABLE BREAKDOWN -->
-        <div class="grid2">
+        <!-- Unservable -->
+        <div class="grid2" style="margin-bottom:0.75rem;">
           <div class="fg">
             <label for="f-waste">Waste qty</label>
             <input type="number" id="f-waste" min="0" placeholder="Disposed / spoiled" oninput="recalc()">
@@ -217,29 +633,27 @@ textarea{resize:vertical;min-height:56px;}
             <input type="number" id="f-incomplete" min="0" placeholder="Missing components" oninput="recalc()">
           </div>
         </div>
-
-        <!-- AUTO-CALC: TOTAL UNSERVABLE -->
-        <div style="margin:.75rem 0;">
-          <label>Total unservable qty <span style="font-size:11px;color:var(--color-text-tertiary);">(waste + incomplete — auto-calculated)</span></label>
-          <div class="readonly-field warn" id="f-total-unsrv-display" style="margin-top:5px;">—</div>
+        <div class="fg" style="margin-bottom:1rem;">
+          <label>Total unservable qty <span style="font-size:11px;color:var(--text-soft);">(waste + incomplete — auto-calculated)</span></label>
+          <div class="ro-field" id="f-total-unsrv-display" style="color:var(--warning-text);">—</div>
           <input type="hidden" id="f-total-unsrv">
         </div>
 
         <div class="divider"></div>
 
         <div class="fg">
-          <label for="f-leftover">Leftover qty <span style="font-size:11px;color:var(--color-text-tertiary);">(carried to next service)</span></label>
+          <label for="f-leftover">Leftover qty <span style="font-size:11px;color:var(--text-soft);">(carried to next service)</span></label>
           <input type="number" id="f-leftover" min="0" placeholder="Remaining usable meals" oninput="recalc()">
         </div>
 
-        <!-- BALANCE SUMMARY -->
-        <div class="calc-row" id="calc-row">
+        <!-- Balance summary -->
+        <div class="calc-row">
           <div class="calc-card">
             <div class="calc-label">Available</div>
             <div class="calc-val" id="s-avail">—</div>
           </div>
           <div class="calc-card">
-            <div class="calc-label">Served + Unservable + Leftover</div>
+            <div class="calc-label">Served + Unsrv + Left</div>
             <div class="calc-val" id="s-sum">—</div>
           </div>
           <div class="calc-card">
@@ -247,21 +661,21 @@ textarea{resize:vertical;min-height:56px;}
             <div class="calc-val" id="s-balance">—</div>
           </div>
         </div>
-        <div id="balance-alert" style="display:none;margin-top:.75rem;"></div>
+        <div id="balance-alert" style="display:none;margin-top:0.75rem;"></div>
       </div>
 
-      <!-- NOTES -->
-      <div class="section">
-        <div class="sec-title"><i class="ti ti-notes" aria-hidden="true"></i>Notes</div>
+      <!-- Notes -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-notes"></i>Notes</div>
         <div class="fg">
           <label for="f-notes">Notes (optional)</label>
-          <textarea id="f-notes" placeholder="Any issues, substitutions, temperature concerns, or other observations..."></textarea>
+          <textarea id="f-notes" placeholder="Issues, substitutions, temperature concerns, or other observations…"></textarea>
         </div>
       </div>
 
-      <!-- E-SIGNATURE -->
-      <div class="section">
-        <div class="sec-title"><i class="ti ti-pen" aria-hidden="true"></i>E-signature</div>
+      <!-- E-Signature -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-pen"></i>E-signature</div>
         <div class="esig-box">
           <div class="fg">
             <label for="f-sig-name">Full name of person completing this record</label>
@@ -269,260 +683,446 @@ textarea{resize:vertical;min-height:56px;}
           </div>
           <div class="esig-check">
             <input type="checkbox" id="f-sig-confirm">
-            <label for="f-sig-confirm" style="color:var(--color-text-primary);">I certify that the information recorded above is accurate and was counted at the point of service in accordance with CACFP requirements.</label>
+            <label for="f-sig-confirm" style="color:var(--text-main);font-size:13px;font-weight:400;">I certify that the information recorded above is accurate and was counted at the point of service in accordance with CACFP requirements.</label>
           </div>
         </div>
       </div>
 
       <div class="btn-row">
-        <button class="btn-primary" onclick="saveRecord()"><i class="ti ti-device-floppy" aria-hidden="true"></i>&nbsp; Save record</button>
-        <button class="btn-sec" onclick="clearForm()">Clear form</button>
+        <button class="btn-primary" id="save-btn" onclick="saveRecord()">
+          <i class="ti ti-device-floppy"></i> Save record
+        </button>
+        <button class="btn-sec" onclick="clearForm()">
+          <i class="ti ti-refresh"></i> Clear form
+        </button>
+      </div>
+      <div id="sync-status" class="sync-row" style="display:none;">
+        <span class="status-dot" id="sync-dot"></span>
+        <span id="sync-msg"></span>
       </div>
     </div>
 
-    <!-- RECORDS TAB -->
+    <!-- ─── RECORDS TAB ─── -->
     <div id="pane-records" style="display:none;">
-      <div class="section">
+      <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
-          <div class="sec-title" style="margin-bottom:0;"><i class="ti ti-table" aria-hidden="true"></i>My site records</div>
-          <button class="btn-sec" onclick="exportCSV(false)" style="font-size:13px;height:32px;"><i class="ti ti-download" aria-hidden="true"></i>&nbsp; Export CSV</button>
+          <div class="card-title" style="margin-bottom:0;"><i class="ti ti-table"></i>My site records</div>
+          <button class="btn-sec" onclick="exportCSV(false)" style="font-size:12px;height:34px;">
+            <i class="ti ti-download"></i> Export CSV
+          </button>
         </div>
         <div id="my-records"></div>
       </div>
     </div>
 
-    <!-- ADMIN TAB -->
+    <!-- ─── ADMIN TAB ─── -->
     <div id="pane-admin" style="display:none;">
-      <div class="section">
+      <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
-          <div class="sec-title" style="margin-bottom:0;"><i class="ti ti-building-community" aria-hidden="true"></i>All sites — combined view</div>
-          <button class="btn-sec" onclick="exportCSV(true)" style="font-size:13px;height:32px;"><i class="ti ti-download" aria-hidden="true"></i>&nbsp; Export all CSV</button>
+          <div class="card-title" style="margin-bottom:0;"><i class="ti ti-building-community"></i>All sites — combined view</div>
+          <button class="btn-sec" onclick="exportCSV(true)" style="font-size:12px;height:34px;">
+            <i class="ti ti-download"></i> Export all CSV
+          </button>
         </div>
         <div id="all-records"></div>
       </div>
     </div>
 
-  </div>
-</div>
+    <!-- ─── SETUP TAB ─── -->
+    <div id="pane-setup" style="display:none;">
+      <div class="setup-banner">
+        <strong><i class="ti ti-brand-google" style="font-size:15px;"></i> Connect to Google Sheets</strong>
+        <p style="margin-top:6px;">Follow these steps once to send every saved record directly to a Google Sheet:</p>
+        <ol>
+          <li>Open <strong>Google Sheets</strong> and create a new spreadsheet.</li>
+          <li>Go to <strong>Extensions → Apps Script</strong>.</li>
+          <li>Delete the default code, then paste the script below and click <strong>Save</strong>.</li>
+          <li>Click <strong>Deploy → New deployment</strong>, set type to <strong>Web app</strong>, set "Who has access" to <strong>Anyone</strong>, and click <strong>Deploy</strong>.</li>
+          <li>Copy the <strong>Web app URL</strong> and paste it in the field below, then click <strong>Save URL</strong>.</li>
+        </ol>
+      </div>
+
+      <!-- Apps Script to copy -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-code"></i>Apps Script — copy &amp; paste this into your project</div>
+        <textarea readonly id="apps-script-code" style="font-family:'DM Mono',monospace;font-size:11px;min-height:220px;background:var(--cream);color:var(--text-main);line-height:1.7;border-color:var(--border-soft);">function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("CACFP Records") || ss.insertSheet("CACFP Records");
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow([
+        "ID","Site ID","Site Name","Receiver","Del Date","Del Time",
+        "Del Temp","Recv Qty","Svc Date","Svc Time","Meal Type",
+        "Prev Leftover","Available","First Meal","Second Meal",
+        "Adult Program","Adult Non-Prog","Total Served","Waste",
+        "Incomplete","Total Unservable","Leftover","Sig Name",
+        "Certified","Notes","Saved At"
+      ]);
+    }
+    sheet.appendRow([
+      data.id, data.site, data.siteName, data.receiver,
+      data.delDate, data.delTime, data.delTemp, data.recvQty,
+      data.svcDate, data.svcTime, data.mealType, data.prevLeftover,
+      data.availQty, data.firstMeal, data.secondMeal,
+      data.adultProg, data.adultNonProg, data.totalServed,
+      data.waste, data.incomplete, data.totalUnsrv, data.leftover,
+      data.sigName, data.sigCertified ? "Yes" : "No",
+      data.notes, data.savedAt
+    ]);
+    return ContentService.createTextOutput(JSON.stringify({status:"ok"}))
+      .setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({status:"error",message:err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}</textarea>
+        <button class="btn-sec" style="margin-top:10px;font-size:12px;height:32px;" onclick="copyScript()">
+          <i class="ti ti-copy"></i> Copy script
+        </button>
+      </div>
+
+      <!-- URL input -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-link"></i>Your Apps Script Web App URL</div>
+        <div class="sheets-url-row">
+          <div class="fg" style="flex:1;">
+            <label for="sheets-url">Paste your deployment URL here</label>
+            <input type="text" id="sheets-url" placeholder="https://script.google.com/macros/s/…/exec">
+          </div>
+          <button class="btn-primary amber" style="flex-shrink:0;height:38px;" onclick="saveSheetURL()">
+            <i class="ti ti-check"></i> Save URL
+          </button>
+        </div>
+        <div id="url-status" style="margin-top:8px;font-size:13px;display:none;"></div>
+
+        <div class="divider"></div>
+        <p style="font-size:12px;color:var(--text-soft);">Once saved, every new record will be sent to your Sheet automatically. Existing local records can be synced below.</p>
+        <div class="btn-row">
+          <button class="btn-sec" onclick="syncAllToSheets()"><i class="ti ti-cloud-upload"></i> Sync all local records to Sheets</button>
+        </div>
+        <div id="bulk-sync-status" style="margin-top:8px;font-size:13px;display:none;"></div>
+      </div>
+    </div>
+
+  </div><!-- /app -->
+</div><!-- /main-app -->
 
 <script>
-const SITES={
-  'SITE-A':{name:'Roosevelt After-School Center',pin:'12345'},
-  'SITE-B':{name:'Lincoln Community Program',pin:'12345'},
-  'SITE-C':{name:'Jefferson Kids Club',pin:'12345'},
-  'MONITOR':{name:'Monitor Organization',pin:'99999'}
+// ═══════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════
+const SITES = {
+  'SITE-A': { name: 'Roosevelt After-School Center', pin: '12345' },
+  'SITE-B': { name: 'Lincoln Community Program',     pin: '12345' },
+  'SITE-C': { name: 'Jefferson Kids Club',           pin: '12345' },
+  'MONITOR':{ name: 'Monitor Organization',          pin: '99999' }
 };
-let currentSite=null;
-let records=JSON.parse(localStorage.getItem('cacfp_v2')||'[]');
 
-function save(){localStorage.setItem('cacfp_v2',JSON.stringify(records));}
+let currentSite = null;
+let records = JSON.parse(localStorage.getItem('cacfp_v2') || '[]');
+let sheetsURL = localStorage.getItem('cacfp_sheets_url') || '';
 
-function doLogin(){
-  const s=document.getElementById('ls').value;
-  const p=document.getElementById('lp').value;
-  const err=document.getElementById('login-err');
-  if(!s||!SITES[s]||SITES[s].pin!==p){err.style.display='flex';return;}
-  err.style.display='none';
-  currentSite=s;
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('main-screen').style.display='block';
-  document.getElementById('hdr-site').textContent=SITES[s].name;
-  document.getElementById('hdr-date').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  document.getElementById('f-site').value=SITES[s].name;
-  document.getElementById('f-del-date').value=new Date().toISOString().slice(0,10);
-  document.getElementById('f-svc-date').value=new Date().toISOString().slice(0,10);
-  if(s==='MONITOR'){
-    document.getElementById('tab-admin').style.display='inline-block';
-    document.getElementById('tab-entry').style.display='none';
+function save() { localStorage.setItem('cacfp_v2', JSON.stringify(records)); }
+
+// ═══════════════════════════════════════════════
+//  AUTH
+// ═══════════════════════════════════════════════
+function doLogin() {
+  const s = document.getElementById('ls').value;
+  const p = document.getElementById('lp').value;
+  const err = document.getElementById('login-err');
+  if (!s || !SITES[s] || SITES[s].pin !== p) { err.style.display = 'flex'; return; }
+  err.style.display = 'none';
+  currentSite = s;
+  document.getElementById('login-page').style.display = 'none';
+  document.getElementById('main-app').style.display = 'block';
+  document.getElementById('hdr-site').textContent = SITES[s].name;
+  document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('f-site').value = SITES[s].name;
+  document.getElementById('f-del-date').value = today();
+  document.getElementById('f-svc-date').value = today();
+  if (s === 'MONITOR') {
+    document.getElementById('tab-admin').style.display = 'inline-block';
+    document.getElementById('tab-setup').style.display = 'inline-block';
+    document.getElementById('tab-entry').style.display = 'none';
     showTab('admin');
   } else {
+    document.getElementById('tab-setup').style.display = 'inline-block';
     showTab('entry');
   }
+  if (sheetsURL) document.getElementById('sheets-url').value = sheetsURL;
 }
 
-function doLogout(){
-  currentSite=null;
-  document.getElementById('login-screen').style.display='block';
-  document.getElementById('main-screen').style.display='none';
-  document.getElementById('lp').value='';
-  document.getElementById('ls').value='';
+function doLogout() {
+  currentSite = null;
+  document.getElementById('login-page').style.display = 'flex';
+  document.getElementById('main-app').style.display = 'none';
+  document.getElementById('lp').value = '';
+  document.getElementById('ls').value = '';
 }
 
-function showTab(t){
-  ['entry','records','admin'].forEach(x=>{
-    document.getElementById('pane-'+x).style.display=x===t?'block':'none';
-    const el=document.getElementById('tab-'+x);
-    if(el)el.classList.toggle('active',x===t);
+// ═══════════════════════════════════════════════
+//  TABS
+// ═══════════════════════════════════════════════
+function showTab(t) {
+  ['entry','records','admin','setup'].forEach(x => {
+    document.getElementById('pane-' + x).style.display = x === t ? 'block' : 'none';
+    const el = document.getElementById('tab-' + x);
+    if (el) el.classList.toggle('active', x === t);
   });
-  if(t==='records')renderTable(false);
-  if(t==='admin')renderTable(true);
+  if (t === 'records') renderTable(false);
+  if (t === 'admin')   renderTable(true);
 }
 
-function n(id){return parseInt(document.getElementById(id).value)||0;}
+// ═══════════════════════════════════════════════
+//  FORM
+// ═══════════════════════════════════════════════
+function today() { return new Date().toISOString().slice(0, 10); }
+function n(id) { return parseInt(document.getElementById(id).value) || 0; }
 
-function recalc(){
-  const recv=n('f-recv-qty');
-  const prev=n('f-prev-left');
-  const avail=recv+prev;
-  document.getElementById('f-avail').value=avail;
-  document.getElementById('f-avail-display').textContent=avail>0||recv>0||prev>0?avail:'—';
+function recalc() {
+  const recv = n('f-recv-qty'), prev = n('f-prev-left');
+  const avail = recv + prev;
+  document.getElementById('f-avail').value = avail;
+  document.getElementById('f-avail-display').textContent = (recv > 0 || prev > 0) ? avail : '—';
 
-  const first=n('f-first'),second=n('f-second'),ap=n('f-adult-prog'),anp=n('f-adult-nonprog');
-  const served=first+second+ap+anp;
-  document.getElementById('f-total-served').value=served;
-  document.getElementById('f-total-served-display').textContent=served||'—';
+  const first = n('f-first'), second = n('f-second'), ap = n('f-adult-prog'), anp = n('f-adult-nonprog');
+  const served = first + second + ap + anp;
+  document.getElementById('f-total-served').value = served;
+  document.getElementById('f-total-served-display').textContent = served || '—';
 
-  const waste=n('f-waste'),inc=n('f-incomplete');
-  const unsrv=waste+inc;
-  document.getElementById('f-total-unsrv').value=unsrv;
-  document.getElementById('f-total-unsrv-display').textContent=unsrv||'—';
+  const waste = n('f-waste'), inc = n('f-incomplete');
+  const unsrv = waste + inc;
+  document.getElementById('f-total-unsrv').value = unsrv;
+  document.getElementById('f-total-unsrv-display').textContent = unsrv || '—';
 
-  const left=n('f-leftover');
-  const sum=served+unsrv+left;
-  document.getElementById('s-avail').textContent=avail||'—';
-  document.getElementById('s-sum').textContent=avail>0?sum:'—';
+  const left = n('f-leftover');
+  const sum = served + unsrv + left;
+  document.getElementById('s-avail').textContent = avail || '—';
+  document.getElementById('s-sum').textContent = avail > 0 ? sum : '—';
 
-  const balEl=document.getElementById('s-balance');
-  const alertEl=document.getElementById('balance-alert');
-  if(avail>0&&(served>0||unsrv>0||left>0)){
-    const diff=avail-sum;
-    balEl.textContent=diff===0?'✓ Balanced':diff>0?'+'+diff:diff;
-    balEl.className='calc-val '+(diff===0?'ok':'danger');
-    if(diff!==0){
-      alertEl.style.display='flex';
-      alertEl.className='alert alert-warning';
-      alertEl.innerHTML='<i class="ti ti-alert-triangle" aria-hidden="true"></i>&nbsp; Counts do not balance. Served + Unservable + Leftover ('+sum+') must equal Available ('+avail+'). Difference: '+Math.abs(diff)+'.';
+  const balEl = document.getElementById('s-balance');
+  const alertEl = document.getElementById('balance-alert');
+  if (avail > 0 && (served > 0 || unsrv > 0 || left > 0)) {
+    const diff = avail - sum;
+    balEl.textContent = diff === 0 ? '✓ Balanced' : diff > 0 ? '+' + diff : diff;
+    balEl.className = 'calc-val ' + (diff === 0 ? 'ok' : 'danger');
+    if (diff !== 0) {
+      alertEl.style.display = 'flex';
+      alertEl.className = 'alert alert-warning';
+      alertEl.innerHTML = '<i class="ti ti-alert-triangle"></i>&nbsp; Counts do not balance. Served + Unservable + Leftover (' + sum + ') must equal Available (' + avail + '). Difference: ' + Math.abs(diff) + '.';
     } else {
-      alertEl.style.display='flex';
-      alertEl.className='alert alert-success';
-      alertEl.innerHTML='<i class="ti ti-circle-check" aria-hidden="true"></i>&nbsp; Counts balance correctly.';
+      alertEl.style.display = 'flex';
+      alertEl.className = 'alert alert-success';
+      alertEl.innerHTML = '<i class="ti ti-circle-check"></i>&nbsp; Counts balance correctly.';
     }
   } else {
-    balEl.textContent='—';
-    balEl.className='calc-val';
-    alertEl.style.display='none';
+    balEl.textContent = '—';
+    balEl.className = 'calc-val';
+    alertEl.style.display = 'none';
   }
 }
 
-function saveRecord(){
-  const alertEl=document.getElementById('entry-alert');
-  const required=[
+async function saveRecord() {
+  const alertEl = document.getElementById('entry-alert');
+  const required = [
     ['f-receiver','Receiver name'],['f-del-date','Delivery date'],['f-del-time','Delivery time'],
     ['f-del-temp','Delivery temperature'],['f-recv-qty','Received quantity'],
     ['f-svc-date','Serve date'],['f-svc-time','Serve time'],
     ['f-first','First meal qty'],['f-leftover','Leftover qty'],
     ['f-sig-name','E-signature name']
   ];
-  const missing=required.filter(([id])=>!document.getElementById(id).value.trim());
-  if(missing.length){
-    alertEl.style.display='flex';alertEl.className='alert alert-danger';
-    alertEl.innerHTML='<i class="ti ti-alert-circle" aria-hidden="true"></i>&nbsp; Please complete: '+missing.map(f=>f[1]).join(', ')+'.';
-    alertEl.scrollIntoView({behavior:'smooth',block:'nearest'});return;
+  const missing = required.filter(([id]) => !document.getElementById(id).value.trim());
+  if (missing.length) {
+    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
+    alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; Please complete: ' + missing.map(f => f[1]).join(', ') + '.';
+    alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return;
   }
-  if(!document.getElementById('f-sig-confirm').checked){
-    alertEl.style.display='flex';alertEl.className='alert alert-danger';
-    alertEl.innerHTML='<i class="ti ti-alert-circle" aria-hidden="true"></i>&nbsp; Please check the certification box to complete your e-signature.';
+  if (!document.getElementById('f-sig-confirm').checked) {
+    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
+    alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; Please check the certification box to complete your e-signature.';
     return;
   }
-  const avail=parseInt(document.getElementById('f-avail').value)||0;
-  const served=parseInt(document.getElementById('f-total-served').value)||0;
-  const unsrv=parseInt(document.getElementById('f-total-unsrv').value)||0;
-  const left=n('f-leftover');
-  if(avail>0&&(served+unsrv+left)!==avail){
-    alertEl.style.display='flex';alertEl.className='alert alert-warning';
-    alertEl.innerHTML='<i class="ti ti-alert-triangle" aria-hidden="true"></i>&nbsp; Warning: counts do not balance. You may still save, but please verify your numbers.';
-  } else {
-    alertEl.style.display='none';
-  }
-  const rec={
-    id:Date.now(),site:currentSite,siteName:SITES[currentSite].name,
-    receiver:document.getElementById('f-receiver').value,
-    delDate:document.getElementById('f-del-date').value,
-    delTime:document.getElementById('f-del-time').value,
-    delTemp:document.getElementById('f-del-temp').value,
-    recvQty:n('f-recv-qty'),
-    svcDate:document.getElementById('f-svc-date').value,
-    svcTime:document.getElementById('f-svc-time').value,
-    mealType:document.getElementById('f-meal-type').value,
-    prevLeftover:n('f-prev-left'),
-    availQty:avail,
-    firstMeal:n('f-first'),secondMeal:n('f-second'),
-    adultProg:n('f-adult-prog'),adultNonProg:n('f-adult-nonprog'),
-    totalServed:served,
-    waste:n('f-waste'),incomplete:n('f-incomplete'),
-    totalUnsrv:unsrv,
-    leftover:left,
-    sigName:document.getElementById('f-sig-name').value,
-    sigCertified:true,
-    notes:document.getElementById('f-notes').value,
-    savedAt:new Date().toISOString()
+
+  const avail = parseInt(document.getElementById('f-avail').value) || 0;
+  const served = parseInt(document.getElementById('f-total-served').value) || 0;
+  const unsrv = parseInt(document.getElementById('f-total-unsrv').value) || 0;
+  const left = n('f-leftover');
+
+  const rec = {
+    id: Date.now(),
+    site: currentSite,
+    siteName: SITES[currentSite].name,
+    receiver: document.getElementById('f-receiver').value,
+    delDate: document.getElementById('f-del-date').value,
+    delTime: document.getElementById('f-del-time').value,
+    delTemp: document.getElementById('f-del-temp').value,
+    recvQty: n('f-recv-qty'),
+    svcDate: document.getElementById('f-svc-date').value,
+    svcTime: document.getElementById('f-svc-time').value,
+    mealType: document.getElementById('f-meal-type').value,
+    prevLeftover: n('f-prev-left'),
+    availQty: avail,
+    firstMeal: n('f-first'), secondMeal: n('f-second'),
+    adultProg: n('f-adult-prog'), adultNonProg: n('f-adult-nonprog'),
+    totalServed: served,
+    waste: n('f-waste'), incomplete: n('f-incomplete'),
+    totalUnsrv: unsrv,
+    leftover: left,
+    sigName: document.getElementById('f-sig-name').value,
+    sigCertified: true,
+    notes: document.getElementById('f-notes').value,
+    savedAt: new Date().toISOString()
   };
-  records.push(rec);save();
-  const saved=document.createElement('div');
-  saved.className='alert alert-success';
-  saved.innerHTML='<i class="ti ti-circle-check" aria-hidden="true"></i>&nbsp; Record saved for '+rec.svcDate+'. Signed by '+rec.sigName+'.';
-  document.getElementById('entry-alert').replaceWith(saved);
-  document.getElementById('entry-alert') || saved.setAttribute('id','entry-alert');
-  saved.id='entry-alert';
+
+  records.push(rec); save();
+
+  alertEl.style.display = 'flex';
+  alertEl.className = 'alert alert-success';
+  alertEl.innerHTML = '<i class="ti ti-circle-check"></i>&nbsp; Record saved for ' + rec.svcDate + '. Signed by ' + rec.sigName + '.';
+
+  // Send to Google Sheets
+  if (sheetsURL) {
+    setSyncStatus('loading', 'Sending to Google Sheets…');
+    const ok = await postToSheets(rec);
+    setSyncStatus(ok ? 'ok' : 'error', ok ? 'Saved to Google Sheets ✓' : 'Could not reach Google Sheets — record saved locally.');
+  }
+
   clearForm();
 }
 
-function clearForm(){
+function setSyncStatus(state, msg) {
+  const row = document.getElementById('sync-status');
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-msg');
+  row.style.display = 'flex';
+  txt.textContent = msg;
+  dot.className = 'status-dot ' + (state === 'ok' ? 'green' : state === 'error' ? 'red' : '');
+}
+
+async function postToSheets(rec) {
+  if (!sheetsURL) return false;
+  try {
+    await fetch(sheetsURL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(rec)
+    });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function clearForm() {
   ['f-receiver','f-del-time','f-del-temp','f-recv-qty','f-svc-time',
    'f-prev-left','f-first','f-second','f-adult-prog','f-adult-nonprog',
-   'f-waste','f-incomplete','f-leftover','f-sig-name','f-notes'].forEach(id=>{
-    document.getElementById(id).value='';
+   'f-waste','f-incomplete','f-leftover','f-sig-name','f-notes'].forEach(id => {
+    document.getElementById(id).value = '';
   });
-  document.getElementById('f-del-date').value=new Date().toISOString().slice(0,10);
-  document.getElementById('f-svc-date').value=new Date().toISOString().slice(0,10);
-  document.getElementById('f-sig-confirm').checked=false;
-  document.getElementById('f-avail-display').textContent='—';
-  document.getElementById('f-total-served-display').textContent='—';
-  document.getElementById('f-total-unsrv-display').textContent='—';
-  document.getElementById('s-avail').textContent='—';
-  document.getElementById('s-sum').textContent='—';
-  document.getElementById('s-balance').textContent='—';
-  document.getElementById('balance-alert').style.display='none';
+  document.getElementById('f-del-date').value = today();
+  document.getElementById('f-svc-date').value = today();
+  document.getElementById('f-sig-confirm').checked = false;
+  ['f-avail-display','f-total-served-display','f-total-unsrv-display','s-avail','s-sum','s-balance'].forEach(id => {
+    document.getElementById(id).textContent = '—';
+  });
+  document.getElementById('balance-alert').style.display = 'none';
 }
 
-function renderTable(isAdmin){
-  const myRecs=isAdmin?records:records.filter(r=>r.site===currentSite);
-  const ctr=document.getElementById(isAdmin?'all-records':'my-records');
-  if(!myRecs.length){ctr.innerHTML='<div class="empty"><i class="ti ti-inbox" style="font-size:24px;display:block;margin-bottom:8px;" aria-hidden="true"></i>No records yet.</div>';return;}
-  const sorted=[...myRecs].sort((a,b)=>b.svcDate.localeCompare(a.svcDate));
-  let h='<div style="overflow-x:auto;"><table class="rec-table"><thead><tr>';
-  if(isAdmin)h+='<th style="width:110px;">Site</th>';
-  h+='<th style="width:82px;">Serve date</th><th style="width:58px;">Available</th><th style="width:52px;">Served</th><th style="width:58px;">Unservable</th><th style="width:56px;">Leftover</th><th style="width:70px;">Balance</th><th>Signed by</th></tr></thead><tbody>';
-  sorted.forEach(r=>{
-    const sum=r.totalServed+r.totalUnsrv+r.leftover;
-    const bal=r.availQty-sum;
-    const ok=bal===0;
-    h+='<tr>';
-    if(isAdmin)h+='<td title="'+r.siteName+'">'+r.siteName.split(' ')[0]+'…</td>';
-    h+='<td>'+r.svcDate+'</td><td>'+r.availQty+'</td><td>'+r.totalServed+'</td><td>'+r.totalUnsrv+'</td><td>'+r.leftover+'</td>';
-    h+='<td><span class="pill '+(ok?'pill-ok':'pill-warn')+'">'+(ok?'Balanced':'Off by '+Math.abs(bal))+'</span></td>';
-    h+='<td title="'+r.sigName+'">'+r.sigName+'</td></tr>';
+// ═══════════════════════════════════════════════
+//  RECORDS TABLE
+// ═══════════════════════════════════════════════
+function renderTable(isAdmin) {
+  const myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
+  const ctr = document.getElementById(isAdmin ? 'all-records' : 'my-records');
+  if (!myRecs.length) {
+    ctr.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i>No records yet.</div>'; return;
+  }
+  const sorted = [...myRecs].sort((a, b) => b.svcDate.localeCompare(a.svcDate));
+  let h = '<div style="overflow-x:auto;"><table class="rec-table"><thead><tr>';
+  if (isAdmin) h += '<th style="width:110px;">Site</th>';
+  h += '<th style="width:88px;">Serve date</th><th style="width:62px;">Available</th><th style="width:54px;">Served</th><th style="width:64px;">Unservable</th><th style="width:60px;">Leftover</th><th style="width:80px;">Balance</th><th>Signed by</th></tr></thead><tbody>';
+  sorted.forEach(r => {
+    const sum = r.totalServed + r.totalUnsrv + r.leftover;
+    const bal = r.availQty - sum;
+    const ok = bal === 0;
+    h += '<tr>';
+    if (isAdmin) h += '<td title="' + r.siteName + '">' + r.siteName.split(' ')[0] + '…</td>';
+    h += '<td>' + r.svcDate + '</td><td>' + r.availQty + '</td><td>' + r.totalServed + '</td><td>' + r.totalUnsrv + '</td><td>' + r.leftover + '</td>';
+    h += '<td><span class="pill ' + (ok ? 'pill-ok' : 'pill-warn') + '">' + (ok ? 'Balanced' : 'Off by ' + Math.abs(bal)) + '</span></td>';
+    h += '<td title="' + r.sigName + '">' + r.sigName + '</td></tr>';
   });
-  h+='</tbody></table></div>';
-  ctr.innerHTML=h;
+  h += '</tbody></table></div>';
+  ctr.innerHTML = h;
 }
 
-function exportCSV(isAdmin){
-  const myRecs=isAdmin?records:records.filter(r=>r.site===currentSite);
-  if(!myRecs.length){return;}
-  const hdr=['Site ID','Site Name','Receiver Name','Delivery Date','Delivery Time','Delivery Temp (F)','Received Qty','Serve Date','Serve Time','Meal Type','Previous Leftover Qty','Available Qty','First Meal Qty','Second Meal Qty','Adult Program Qty','Adult Non-Program Qty','Total Served Qty','Waste Qty','Incomplete Qty','Total Unservable Qty','Leftover Qty','E-Signature Name','Certified','Notes','Saved At'];
-  const rows=myRecs.map(r=>[
-    r.site,q(r.siteName),q(r.receiver),r.delDate,r.delTime,r.delTemp,r.recvQty,
-    r.svcDate,r.svcTime,r.mealType,r.prevLeftover,r.availQty,
-    r.firstMeal,r.secondMeal,r.adultProg,r.adultNonProg,r.totalServed,
-    r.waste,r.incomplete,r.totalUnsrv,r.leftover,
-    q(r.sigName),r.sigCertified?'Yes':'No',q(r.notes||''),r.savedAt
+// ═══════════════════════════════════════════════
+//  CSV EXPORT
+// ═══════════════════════════════════════════════
+function exportCSV(isAdmin) {
+  const myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
+  if (!myRecs.length) return;
+  const hdr = ['Site ID','Site Name','Receiver Name','Delivery Date','Delivery Time','Delivery Temp (F)','Received Qty','Serve Date','Serve Time','Meal Type','Previous Leftover','Available Qty','First Meal','Second Meal','Adult Program','Adult Non-Program','Total Served','Waste','Incomplete','Total Unservable','Leftover','E-Signature Name','Certified','Notes','Saved At'];
+  const rows = myRecs.map(r => [
+    r.site, q(r.siteName), q(r.receiver), r.delDate, r.delTime, r.delTemp, r.recvQty,
+    r.svcDate, r.svcTime, r.mealType, r.prevLeftover, r.availQty,
+    r.firstMeal, r.secondMeal, r.adultProg, r.adultNonProg, r.totalServed,
+    r.waste, r.incomplete, r.totalUnsrv, r.leftover,
+    q(r.sigName), r.sigCertified ? 'Yes' : 'No', q(r.notes || ''), r.savedAt
   ].join(','));
-  const csv=[hdr.join(','),...rows].join('\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download='CACFP_'+new Date().toISOString().slice(0,10)+'.csv';
+  const csv = [hdr.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = 'CACFP_' + today() + '.csv';
   a.click();
 }
-function q(s){return '"'+(s||'').replace(/"/g,'""')+'"';}
+function q(s) { return '"' + (s || '').replace(/"/g, '""') + '"'; }
+
+// ═══════════════════════════════════════════════
+//  SHEETS SETUP
+// ═══════════════════════════════════════════════
+function saveSheetURL() {
+  const url = document.getElementById('sheets-url').value.trim();
+  const statusEl = document.getElementById('url-status');
+  if (!url.startsWith('https://script.google.com')) {
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = '<span style="color:var(--danger-text);"><i class="ti ti-alert-circle"></i> That doesn\'t look like a valid Apps Script URL.</span>';
+    return;
+  }
+  sheetsURL = url;
+  localStorage.setItem('cacfp_sheets_url', url);
+  statusEl.style.display = 'block';
+  statusEl.innerHTML = '<span style="color:var(--success-text);"><i class="ti ti-circle-check"></i> URL saved! New records will be sent to Google Sheets automatically.</span>';
+}
+
+async function syncAllToSheets() {
+  const statusEl = document.getElementById('bulk-sync-status');
+  if (!sheetsURL) {
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = '<span style="color:var(--warning-text);">Please save your Sheets URL first.</span>';
+    return;
+  }
+  statusEl.style.display = 'block';
+  statusEl.innerHTML = 'Syncing ' + records.length + ' records…';
+  let ok = 0, fail = 0;
+  for (const rec of records) {
+    const result = await postToSheets(rec);
+    result ? ok++ : fail++;
+  }
+  statusEl.innerHTML = '<span style="color:var(--success-text);">Done — ' + ok + ' sent' + (fail ? ', ' + fail + ' failed' : '') + '.</span>';
+}
+
+function copyScript() {
+  const text = document.getElementById('apps-script-code').value;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target.closest('button');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<i class="ti ti-check"></i> Copied!';
+    setTimeout(() => { btn.innerHTML = orig; }, 2000);
+  });
+}
 </script>
+</body>
+</html>
