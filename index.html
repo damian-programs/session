@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 <script>
@@ -50,7 +51,7 @@
   --shadow-card: 0 2px 8px rgba(63,114,184,0.10), 0 1px 2px rgba(63,114,184,0.06);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text-main); min-height: 100vh; font-size: 15px; line-height: 1.5; }
+body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text-main); min-height: 100vh; font-size: 16px; line-height: 1.6; }
 
 /* TOPBAR */
 .topbar { background: var(--navy); color: white; padding: 0 1.5rem; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
@@ -62,7 +63,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
 .btn-signout:hover { background: rgba(255,255,255,0.18); }
 
 /* LAYOUT */
-.app { max-width: 740px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
+.app { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 
 /* TABS */
 .tabs { display: flex; gap: 2px; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; flex-wrap: wrap; }
@@ -76,15 +77,15 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
 
 /* CARD */
 .card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow-card); }
-.card-title { font-size: 11px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1.1rem; display: flex; align-items: center; gap: 7px; }
+.card-title { font-size: 12px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1.1rem; display: flex; align-items: center; gap: 7px; }
 .card-title i { font-size: 15px; color: var(--navy-light); }
 
 /* FORM */
 .fg { display: flex; flex-direction: column; gap: 5px; }
-label { font-size: 12px; font-weight: 500; color: var(--text-mid); }
+label { font-size: 13px; font-weight: 500; color: var(--text-mid); }
 input[type=text], input[type=number], input[type=date], input[type=time], input[type=password], select, textarea {
   width: 100%; height: 38px; padding: 0 11px; border: 1px solid var(--border); border-radius: var(--radius-sm);
-  font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text-main); background: var(--white);
+  font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text-main); background: var(--white);
   transition: border-color 0.15s, box-shadow 0.15s; outline: none; appearance: none; -webkit-appearance: none;
 }
 select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a8a9a' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
@@ -141,8 +142,8 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 
 /* RECORDS TABLE */
 .rec-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
-.rec-table th { text-align: left; padding: 8px 8px; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); border-bottom: 2px solid var(--border); white-space: nowrap; overflow: hidden; }
-.rec-table td { padding: 8px 6px; border-bottom: 1px solid var(--border-soft); overflow: visible; white-space: nowrap; color: var(--text-main); vertical-align: middle; }
+.rec-table th { text-align: left; padding: 9px 9px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-soft); border-bottom: 2px solid var(--border); white-space: nowrap; overflow: hidden; }
+.rec-table td { padding: 8px 8px; border-bottom: 1px solid var(--border-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-main); vertical-align: middle; }
 .rec-table tr:last-child td { border-bottom: none; }
 .rec-table tr:hover td { background: var(--cream); }
 .pill { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
@@ -177,11 +178,11 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 
 /* LOGIN */
 .login-page { min-height: 100vh; background: #2a4f85; display: flex; align-items: center; justify-content: center; padding: 2rem; }
-.login-card { background: white; border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(63,114,184,0.25); }
+.login-card { background: white; border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(63,114,184,0.25); }
 .login-logo { text-align: center; margin-bottom: 2rem; }
 .login-logo-icon { width: 56px; height: 56px; background: var(--amber-light); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; }
 .login-logo-icon i { font-size: 28px; color: var(--amber-dark); }
-.login-logo h1 { font-size: 20px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
+.login-logo h1 { font-size: 22px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
 .login-logo p { font-size: 13px; color: var(--text-soft); }
 .login-demo { margin-top: 1.25rem; background: var(--cream); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; color: var(--text-soft); text-align: center; }
 .login-demo strong { color: var(--text-mid); }
@@ -244,6 +245,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
     <div class="login-logo">
       <div class="login-logo-icon"><i class="ti ti-salad"></i></div>
       <h1>Meal Receipt & Service Information Tracker</h1>
+      <p>After-school supper program</p>
     </div>
     <div id="login-err" class="alert alert-danger" style="display:none;margin-bottom:1rem;">
       <i class="ti ti-alert-circle"></i><span>Invalid site or PIN. Please try again.</span>
@@ -542,12 +544,40 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
           <div class="card-title" style="margin-bottom:0;"><i class="ti ti-building-community"></i>All sites — combined view</div>
-          <div style="display:flex;gap:8px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn-sec" onclick="showTab('admin')" style="font-size:12px;height:34px;"><i class="ti ti-refresh"></i> Refresh</button>
-            <button class="btn-sec" onclick="exportCSV(true)" style="font-size:12px;height:34px;"><i class="ti ti-download"></i> Export all CSV</button>
+            <button class="btn-sec" onclick="exportCSV(true)" style="font-size:12px;height:34px;"><i class="ti ti-download"></i> Export CSV</button>
           </div>
         </div>
         <div id="all-records"></div>
+      </div>
+
+      <!-- Site Audit Export -->
+      <div class="card" style="border-left:3px solid var(--navy);">
+        <div class="card-title"><i class="ti ti-report-analytics"></i>Site audit export</div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Generate a detailed audit report for a single site across a date range — matching the CACFP audit format with daily detail, monthly averages, and monthly totals.</p>
+        <div class="grid2" style="margin-bottom:1rem;">
+          <div class="fg">
+            <label for="audit-site">Site</label>
+            <select id="audit-site">
+              <option value="">Select site…</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Date range</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="date" id="audit-start" style="flex:1;">
+              <span style="color:var(--text-soft);font-size:13px;">to</span>
+              <input type="date" id="audit-end" style="flex:1;">
+            </div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" onclick="exportSiteAudit()">
+            <i class="ti ti-file-spreadsheet"></i> Export Site Audit Report
+          </button>
+        </div>
+        <div id="audit-export-status" style="margin-top:8px;font-size:13px;display:none;"></div>
       </div>
     </div>
 
@@ -574,6 +604,11 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
               <option value="ALL">All sites</option>
             </select>
           </div>
+        </div>
+        <div class="btn-row" style="margin-bottom:1rem;">
+          <button class="btn-primary green" onclick="exportMonthlyReport(document.getElementById('summary-month').value, document.getElementById('summary-site').value)">
+            <i class="ti ti-file-spreadsheet"></i> Export Monthly Report (Excel)
+          </button>
         </div>
         <div id="summary-content"></div>
       </div>
@@ -720,7 +755,6 @@ const SITES = {
   '12009': { name: 'Woodhill Community Center-TCB', pin: '12009' },
   '14566': { name: 'You Care We Care', pin: '14566' },
   '14562': { name: 'Young Achievers', pin: '14562' },
-  '55555': { name: 'Test Site', pin: '55555' },
   'MONITOR': { name: 'Monitor Organization', pin: '99999' }
 };
 
@@ -835,6 +869,15 @@ function doLogin() {
   Object.entries(SITES).filter(([k]) => k !== 'MONITOR').forEach(([k, v]) => {
     const o = document.createElement('option'); o.value = k; o.textContent = v.name; sumSite.appendChild(o);
   });
+
+  // Populate audit site dropdown
+  const auditSite = document.getElementById('audit-site');
+  if (auditSite) {
+    auditSite.innerHTML = '<option value="">Select site…</option>';
+    Object.entries(SITES).filter(([k]) => k !== 'MONITOR').forEach(([k, v]) => {
+      const o = document.createElement('option'); o.value = k; o.textContent = v.name; auditSite.appendChild(o);
+    });
+  }
 
   // Show tabs
   if (s === 'MONITOR') {
@@ -1187,10 +1230,22 @@ function clearForm() {
 //  ANOMALY DETECTION
 // ═══════════════════════════
 function isAnomaly(r) {
-  if (!r.availQty) return false;
+  if (!r.availQty) return null;
+  const flags = [];
   const wasteRatio = r.waste / r.availQty;
   const leftoverRatio = r.leftover / r.availQty;
-  return wasteRatio > 0.3 || leftoverRatio > 0.4;
+  const servedRatio = r.totalServed / r.availQty;
+  const sum = r.totalServed + r.totalUnsrv + r.leftover;
+  const bal = r.availQty - sum;
+  if (wasteRatio > 0.3)
+    flags.push('Waste is ' + Math.round(wasteRatio * 100) + '% of available (' + r.waste + '/' + r.availQty + ')');
+  if (leftoverRatio > 0.4)
+    flags.push('Leftover is ' + Math.round(leftoverRatio * 100) + '% of available (' + r.leftover + '/' + r.availQty + ')');
+  if (servedRatio < 0.3 && r.totalServed > 0)
+    flags.push('Only ' + Math.round(servedRatio * 100) + '% of available meals were served (' + r.totalServed + '/' + r.availQty + ')');
+  if (bal !== 0)
+    flags.push('Balance off by ' + Math.abs(bal) + ' meal' + (Math.abs(bal) > 1 ? 's' : '') + ' (served+unsrv+left=' + sum + ', available=' + r.availQty + ')');
+  return flags.length ? flags : null;
 }
 
 // ═══════════════════════════
@@ -1203,25 +1258,30 @@ function renderTable(isAdmin) {
   const sorted = [...myRecs].sort((a, b) => b.svcDate.localeCompare(a.svcDate));
   let h = '<div style="overflow-x:auto;"><table class="rec-table"><thead><tr>';
   if (isAdmin) h += '<th style="width:120px;">Site</th>';
-  h += '<th style="width:90px;">Date</th><th style="width:56px;">Avail</th><th style="width:56px;">Served</th><th style="width:56px;">Unsrv</th><th style="width:54px;">Left</th><th style="width:76px;">Balance</th><th style="width:80px;">Status</th><th>Signed by</th><th style="width:100px;"></th></tr></thead><tbody>';
+  h += '<th style="width:90px;">Date</th><th style="width:60px;">Avail</th><th style="width:60px;">Served</th><th style="width:60px;">Unsrv</th><th style="width:60px;">Left</th><th style="width:80px;">Balance</th><th style="width:90px;">Status</th><th>Signed by</th><th style="width:120px;"></th></tr></thead><tbody>';
   sorted.forEach(r => {
     const sum = r.totalServed + r.totalUnsrv + r.leftover;
     const bal = r.availQty - sum;
     const ok = bal === 0;
-    const anom = isAnomaly(r);
+    const anomFlags = isAnomaly(r);
+    const anom = !!anomFlags;
     const edited = (r.editCount || 0) > 0;
     h += '<tr class="' + (anom ? 'anomaly' : '') + '" style="' + (r.isDraft ? 'opacity:0.65;font-style:italic;' : '') + '">';
     if (isAdmin) h += '<td title="' + r.siteName + '">' + r.siteName.substring(0,16) + (r.siteName.length > 16 ? '…':'') + '</td>';
     h += '<td>' + r.svcDate + '</td><td>' + r.availQty + '</td><td>' + r.totalServed + '</td><td>' + r.totalUnsrv + '</td><td>' + r.leftover + '</td>';
     h += '<td><span class="pill ' + (ok ? 'pill-ok' : 'pill-warn') + '">' + (ok ? 'OK' : 'Off ' + Math.abs(bal)) + '</span></td>';
-    h += '<td>' + (r.isDraft ? '<span class="pill pill-warn">Draft</span>' : anom ? '<span class="pill pill-danger">⚠ Anomaly</span>' : edited ? '<span class="pill pill-info">Edited</span>' : '<span class="pill pill-ok">Clean</span>') + '</td>';
+    const anomTip = anom ? anomFlags.join(' | ') : '';
+    h += '<td>' + (r.isDraft ? '<span class="pill pill-warn">Draft</span>' : anom ? '<span class="pill pill-danger" title="' + anomTip + '" style="cursor:help;">⚠ ' + anomFlags.length + ' flag' + (anomFlags.length > 1 ? 's' : '') + '</span>' : edited ? '<span class="pill pill-info">Edited</span>' : '<span class="pill pill-ok">Clean</span>') + '</td>';
     h += '<td title="' + r.sigName + '">' + r.sigName + '</td>';
     const canEdit = !isAdmin || currentSite === 'MONITOR';
-    h += '<td><div style="display:flex;gap:4px;">';
-    if (!isAdmin) h += '<button class="btn-sm blue" onclick="editRecord(\'' + r.uid + '\')"><i class="ti ti-pencil"></i></button>';
-    h += '<button class="btn-sm print-btn" onclick="printRecord(\'' + r.uid + '\')"><i class="ti ti-printer"></i></button>';
-    if (isAdmin) h += '<button class="btn-sm" onclick="showAudit(\'' + r.uid + '\')"><i class="ti ti-history"></i></button>';
-    if (isAdmin) h += '<button class="btn-sm" style="border-color:#c0392b;color:#c0392b;" onclick="deleteRecord(\'' + r.uid + '\')"><i class="ti ti-trash"></i></button>';
+    h += '<td><div style="display:flex;gap:3px;flex-wrap:wrap;">';
+    if (!isAdmin) h += '<button class="btn-sm blue" title="Edit" onclick="editRecord(\'' + r.uid + '\')"><i class="ti ti-pencil"></i></button>';
+    h += '<button class="btn-sm print-btn" title="Print" onclick="printRecord(\'' + r.uid + '\')"><i class="ti ti-printer"></i></button>';
+    if (isAdmin) {
+      h += '<button class="btn-sm" title="Meal Count Sheet" style="border-color:var(--amber);color:var(--amber-dark);" onclick="exportMealCountSheet(\'' + r.uid + '\')"><i class="ti ti-file-spreadsheet"></i></button>';
+      h += '<button class="btn-sm" title="Audit log" onclick="showAudit(\'' + r.uid + '\')"><i class="ti ti-history"></i></button>';
+      h += '<button class="btn-sm" title="Delete" style="border-color:#c0392b;color:#c0392b;" onclick="deleteRecord(\'' + r.uid + '\')"><i class="ti ti-trash"></i></button>';
+    }
     h += '</div></td></tr>';
     // Audit log row (admin only, hidden by default)
     if (isAdmin) {
@@ -1235,22 +1295,18 @@ function renderTable(isAdmin) {
     }
   });
   h += '</tbody></table></div>';
-  if (isAdmin) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">⚠ Anomaly = waste &gt;30% or leftover &gt;40% of available qty.</p>';
+  if (isAdmin) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">⚠ Anomaly flags: waste &gt;30% of available, leftover &gt;40% of available, served &lt;30% of available, or balance mismatch. Hover flag count for details.</p>';
   ctr.innerHTML = h;
 }
 
 async function deleteRecord(uid) {
-  if (!confirm('Are you sure you want to delete this record? This cannot be undone.')) return;
+  if (!confirm('Delete this record? This cannot be undone.')) return;
   records = records.filter(r => r.uid !== uid);
   saveLocal();
-  try {
-    await _db.collection('meal_records').doc(uid).delete();
-  } catch(e) {
-    console.warn('Firebase delete failed:', e);
-  }
-  renderTable(currentSite === 'MONITOR');
-}  
-  
+  try { await _db.collection('meal_records').doc(uid).delete(); } catch(e) { console.warn('Firebase delete failed:', e); }
+  renderTable(true);
+}
+
 function showAudit(uid) {
   const row = document.getElementById('audit-' + uid);
   if (row) row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
@@ -1407,6 +1463,460 @@ async function syncAllToFirebase() {
   el.innerHTML = '<span style="color:var(--success-text);">Done — ' + ok + ' saved' + (fail ? ', ' + fail + ' failed' : '') + '.</span>';
 }
 
+
+// ═══════════════════════════
+//  MEAL COUNT SHEET EXPORT
+// ═══════════════════════════
+function exportMealCountSheet(uid) {
+  const r = records.find(x => x.uid === uid);
+  if (!r) return;
+  const wb = XLSX.utils.book_new();
+  const ws = {};
+  const merge = [];
+  let row = 1;
+
+  function setCell(r2, c2, v, opts) {
+    const addr = XLSX.utils.encode_cell({r: r2-1, c: c2-1});
+    ws[addr] = { v: v, t: typeof v === 'number' ? 'n' : 's' };
+    if (opts && opts.bold) ws[addr].s = { font: { bold: true } };
+  }
+  function mergeRange(r1,c1,r2,c2) { merge.push({s:{r:r1-1,c:c1-1},e:{r:r2-1,c:c2-1}}); }
+
+  // Title
+  mergeRange(row,1,row,20);
+  setCell(row,1,'DAILY MEAL COUNT FORM', {bold:true});
+  row++;
+
+  // Attachment label
+  setCell(row,17,'Attachment 18');
+  row++;
+
+  // Site info
+  setCell(row,1,'Site Name:'); mergeRange(row,2,row,9); setCell(row,2, r.siteName);
+  setCell(row,11,'Meal Type:'); setCell(row,14, r.mealType);
+  setCell(row,18,'Site Number:'); setCell(row,19, r.site);
+  row++;
+
+  setCell(row,1,'Address:');
+  setCell(row,10,'Telephone:');
+  row++;
+
+  setCell(row,1,"Supervisor's Name:"); mergeRange(row,4,row,8); setCell(row,4, r.receiver);
+  setCell(row,9,'Delivery Time:'); mergeRange(row,12,row,14); setCell(row,12, r.delTime);
+  setCell(row,15,'Date:'); mergeRange(row,16,row,20); setCell(row,16, r.svcDate);
+  row++;
+
+  // [1] Available
+  mergeRange(row,1,row,16);
+  setCell(row,1, 'Meals received/prepared: ' + r.recvQty + '  +  Prev leftover: ' + r.prevLeftover + '  =  Total meals available [1]: ' + r.availQty, {bold:true});
+  setCell(row,17, r.availQty);
+  row++;
+
+  // First meals grid header
+  mergeRange(row,1,row,20);
+  setCell(row,1, 'First Meals Served to Children (cross off number as each child receives a meal):');
+  row++;
+
+  // Number grid 1-150 (rows of 20, highlight up to firstMeal)
+  for (let start = 1; start <= 150; start += 20) {
+    for (let col = 0; col < 20 && (start+col) <= 150; col++) {
+      const num = start + col;
+      const addr = XLSX.utils.encode_cell({r: row-1, c: col});
+      const crossed = num <= (r.firstMeal || 0);
+      ws[addr] = { v: crossed ? '✓' + num : num, t: crossed ? 's' : 'n' };
+    }
+    row++;
+  }
+
+  // Total first meals [2]
+  mergeRange(row,1,row,15); setCell(row,1,'');
+  mergeRange(row,16,row,18); setCell(row,16,'Total First Meals + [2]', {bold:true});
+  setCell(row,19, r.firstMeal || 0);
+  row++;
+
+  // Second meals
+  mergeRange(row,1,row,20); setCell(row,1,'Second Meals Served to Children:');
+  row++;
+  for (let col = 1; col <= 10; col++) setCell(row, col, col <= (r.secondMeal||0) ? '✓'+col : col);
+  mergeRange(row,11,row,18); setCell(row,11,'Total Second Meals + [3]', {bold:true});
+  setCell(row,19, r.secondMeal || 0);
+  row++;
+
+  // Program adults
+  mergeRange(row,1,row,20); setCell(row,1,'Meals Served to Program Adults:');
+  row++;
+  for (let col = 1; col <= 10; col++) setCell(row, col, col <= (r.adultProg||0) ? '✓'+col : col);
+  mergeRange(row,11,row,18); setCell(row,11,'Total Program Adult Meals + [4]', {bold:true});
+  setCell(row,19, r.adultProg || 0);
+  row++;
+
+  // Non-program adults
+  mergeRange(row,1,row,20); setCell(row,1,'Meals Served to Non-Program Adults:');
+  row++;
+  for (let col = 1; col <= 10; col++) setCell(row, col, col <= (r.adultNonProg||0) ? '✓'+col : col);
+  mergeRange(row,11,row,18); setCell(row,11,'Total Non-Program Adult Meals + [5]', {bold:true});
+  setCell(row,19, r.adultNonProg || 0);
+  row++;
+
+  // Total served [6]
+  mergeRange(row,1,row,18); setCell(row,1,'TOTAL MEALS SERVED = [6]', {bold:true});
+  setCell(row,19, r.totalServed || 0);
+  row++;
+
+  // Unservable [7]
+  mergeRange(row,1,row,18); setCell(row,1,'Total damaged/incomplete/other non-reimbursable meals + [7]', {bold:true});
+  setCell(row,19, r.totalUnsrv || 0);
+  row++;
+
+  // Leftover [8]
+  mergeRange(row,1,row,18); setCell(row,1,'Total leftover meals + [8]', {bold:true});
+  setCell(row,19, r.leftover || 0);
+  row++;
+
+  // Balance [9]
+  const balance = r.totalServed + r.totalUnsrv + r.leftover;
+  mergeRange(row,1,row,20);
+  setCell(row,1,'Total of Items [6]+[7]+[8] = [9]: ' + balance + '  (should equal [1]: ' + r.availQty + ')  ' + (balance === r.availQty ? '✓ BALANCED' : '⚠ MISMATCH'), {bold:true});
+  row++;
+
+  // Notes
+  if (r.notes) {
+    mergeRange(row,1,row,20); setCell(row,1,'Notes: ' + r.notes);
+    row++;
+  }
+
+  // Signature
+  mergeRange(row,1,row,10); setCell(row,1,'By signing below, I certify that the above information is true and accurate:');
+  row++;
+  mergeRange(row,1,row,8); setCell(row,1, r.sigName);
+  setCell(row,9,'Signature');
+  mergeRange(row,13,row,18); setCell(row,13, r.svcDate);
+  setCell(row,19,'Date');
+  row++;
+
+  // Footer
+  mergeRange(row,1,row,20);
+  setCell(row,1,'Record ID: ' + r.uid + '  |  Generated from CACFP Meal Receipt & Service Information Tracker');
+
+  ws['!ref'] = XLSX.utils.encode_range({s:{r:0,c:0}, e:{r:row, c:19}});
+  ws['!merges'] = merge;
+  ws['!cols'] = Array(20).fill({wch: 5});
+
+  XLSX.utils.book_append_sheet(wb, ws, 'Meal Count Sheet');
+  XLSX.writeFile(wb, 'MealCountSheet_' + r.siteName.replace(/[^a-z0-9]/gi,'_') + '_' + r.svcDate + '.xlsx');
+}
+
+// ═══════════════════════════
+//  MONTHLY AUDIT REPORT EXPORT
+//  Matches: Sponsor Monthly Meal Count Summary by Site
+// ═══════════════════════════
+function exportMonthlyReport(month, siteFilter) {
+  let recs = records.filter(r => r.svcDate && r.svcDate.startsWith(month) && !r.isDraft);
+  if (siteFilter && siteFilter !== 'ALL') recs = recs.filter(r => r.site === siteFilter);
+  if (!recs.length) { alert('No records found for the selected period.'); return; }
+
+  const wb = XLSX.utils.book_new();
+  const monthLabel = new Date(month + '-02').toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+  // ── Build per-site aggregates ─────────────────────────────
+  const bySite = {};
+  recs.forEach(r => {
+    if (!bySite[r.site]) bySite[r.site] = {
+      name: r.siteName, id: r.site, days: 0,
+      received: 0, available: 0,
+      firstMeal: 0, secondMeal: 0, adultProg: 0, adultNonProg: 0,
+      totalServed: 0, incomplete: 0, waste: 0, leftover: 0,
+      firstMealMax: 0, flags: []
+    };
+    const s = bySite[r.site];
+    s.days++;
+    s.received   += (r.recvQty || 0);
+    s.available  += (r.availQty || 0);
+    s.firstMeal  += (r.firstMeal || 0);
+    s.secondMeal += (r.secondMeal || 0);
+    s.adultProg  += (r.adultProg || 0);
+    s.adultNonProg += (r.adultNonProg || 0);
+    s.totalServed  += (r.totalServed || 0);
+    s.incomplete   += (r.incomplete || 0);
+    s.waste        += (r.waste || 0);
+    s.leftover     += (r.leftover || 0);
+    if ((r.firstMeal || 0) > s.firstMealMax) s.firstMealMax = r.firstMeal;
+    const af = isAnomaly(r);
+    if (af) s.flags.push(r.svcDate + ': ' + af.join('; '));
+  });
+
+  const sites = Object.values(bySite).sort((a,b) => a.name.localeCompare(b.name));
+
+  // ── Sheet 1: Sponsor Monthly Meal Count Summary ───────────
+  // Row 1: Title
+  const summaryRows = [
+    ['Sponsor Monthly Meal Count Summary by Site'],
+    [monthLabel],
+    [],
+    // Group headers row
+    ['Program','','Meal','','','Site','','','Days','','Meal Counts'],
+    // Column headers — exactly matching the real file
+    [
+      'Program Abbreviation','Program Description',
+      'Meal Abbreviation','Meal Description','Sort Order',
+      'Name','Number','Multiple Serving Lines (MSL)',
+      'Days Served','Revision',
+      'Ordered','Received','Available',
+      'First Meal','Second Meal','Adult Program','Adult Non-Program','Total',
+      'Incomplete','Waste','Leftover','ADP','First Meal Max'
+    ]
+  ];
+
+  sites.forEach(s => {
+    const adp = s.days > 0 ? Math.round((s.firstMeal / s.days) * 100) / 100 : 0;
+    summaryRows.push([
+      'CACFP', 'Child and Adult Care Food Program',
+      'SUP', 'Supper', 5,
+      s.name, s.id, 'FALSE',
+      s.days, 0,
+      s.received, s.received, s.available,
+      s.firstMeal, s.secondMeal, s.adultProg, s.adultNonProg, s.totalServed,
+      s.incomplete, s.waste, s.leftover,
+      adp, s.firstMealMax
+    ]);
+  });
+
+  // Totals row
+  const T = sites.reduce((a,s) => ({
+    days: a.days+s.days, received: a.received+s.received, available: a.available+s.available,
+    firstMeal: a.firstMeal+s.firstMeal, secondMeal: a.secondMeal+s.secondMeal,
+    adultProg: a.adultProg+s.adultProg, adultNonProg: a.adultNonProg+s.adultNonProg,
+    totalServed: a.totalServed+s.totalServed, incomplete: a.incomplete+s.incomplete,
+    waste: a.waste+s.waste, leftover: a.leftover+s.leftover
+  }), {days:0,received:0,available:0,firstMeal:0,secondMeal:0,adultProg:0,adultNonProg:0,totalServed:0,incomplete:0,waste:0,leftover:0});
+  const tadp = T.days > 0 ? Math.round((T.firstMeal / T.days) * 100) / 100 : 0;
+
+  summaryRows.push([]);
+  summaryRows.push([
+    'TOTALS','','','','',
+    'All Sites', '', '',
+    T.days, '',
+    T.received, T.received, T.available,
+    T.firstMeal, T.secondMeal, T.adultProg, T.adultNonProg, T.totalServed,
+    T.incomplete, T.waste, T.leftover, tadp, ''
+  ]);
+  summaryRows.push([]);
+  summaryRows.push(['Generated from CACFP Meal Receipt & Service Information Tracker — ' + new Date().toLocaleDateString()]);
+
+  const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+  wsSummary['!cols'] = [
+    {wch:10},{wch:36},{wch:8},{wch:12},{wch:7},
+    {wch:40},{wch:12},{wch:6},
+    {wch:8},{wch:7},
+    {wch:8},{wch:8},{wch:8},
+    {wch:10},{wch:10},{wch:12},{wch:14},{wch:8},
+    {wch:10},{wch:8},{wch:8},{wch:8},{wch:12}
+  ];
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Sponsor Monthly Meal Count Summ');
+
+  // ── Sheet 2: Anomaly / Review Flags ──────────────────────
+  const flagRows = [
+    ['CACFP Meal Count — Anomaly & Review Flags'],
+    [monthLabel],
+    [],
+    ['Site Name','Site ID','Serve Date','Available','Served','Waste','Leftover','Flag Details']
+  ];
+  recs.sort((a,b) => a.siteName.localeCompare(b.siteName)||a.svcDate.localeCompare(b.svcDate))
+    .forEach(r => {
+      const af = isAnomaly(r);
+      if (af) flagRows.push([r.siteName, r.site, r.svcDate, r.availQty, r.totalServed, r.waste, r.leftover, af.join(' | ')]);
+    });
+  if (flagRows.length === 4) flagRows.push(['No anomalies found for this period.']);
+  const wsFlags = XLSX.utils.aoa_to_sheet(flagRows);
+  wsFlags['!cols'] = [{wch:38},{wch:10},{wch:10},{wch:8},{wch:8},{wch:8},{wch:8},{wch:60}];
+  XLSX.utils.book_append_sheet(wb, wsFlags, 'Review Flags');
+
+  // ── Sheet 3: Raw Daily Data ───────────────────────────────
+  const rawRows = [[
+    'Record ID','Site Name','Site ID','Serve Date','Meal','Day of Week',
+    'Delivery Date','Delivery Temp','Received','Previous Leftover','Available',
+    'First Meal','Second Meal','Adult Program','Adult Non-Program','Total Served',
+    'Waste','Incomplete','Total Unservable','Leftover',
+    'Signed By','Notes','Created At','Last Edited','Edit Count'
+  ]];
+  recs.sort((a,b) => a.siteName.localeCompare(b.siteName)||a.svcDate.localeCompare(b.svcDate))
+    .forEach(r => {
+      const dow = r.svcDate ? new Date(r.svcDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long'}) : '';
+      rawRows.push([
+        r.uid, r.siteName, r.site, r.svcDate, r.mealType || 'SUPPER', dow,
+        r.delDate, r.delTemp, r.recvQty, r.prevLeftover, r.availQty,
+        r.firstMeal, r.secondMeal, r.adultProg, r.adultNonProg, r.totalServed,
+        r.waste, r.incomplete, r.totalUnsrv, r.leftover,
+        r.sigName, r.notes||'',
+        (r.createdAt||'').slice(0,16).replace('T',' '),
+        (r.lastEditedAt||'').slice(0,16).replace('T',' '),
+        r.editCount||0
+      ]);
+    });
+  const wsRaw = XLSX.utils.aoa_to_sheet(rawRows);
+  wsRaw['!cols'] = Array(25).fill({wch:13}); wsRaw['!cols'][1]={wch:38}; wsRaw['!cols'][3]={wch:10};
+  XLSX.utils.book_append_sheet(wb, wsRaw, 'Daily Detail');
+
+  const fname = 'MonthlyAuditReport_' + month + (siteFilter && siteFilter!=='ALL' ? '_'+siteFilter:'') + '.xlsx';
+  XLSX.writeFile(wb, fname);
+}
+
+// ═══════════════════════════
+//  SITE AUDIT REPORT EXPORT
+//  Matches: AUDIT_{Site}_{DateRange} format
+//  Sheets: Daily Meal Details, Monthly Averages, Monthly Totals, Site Information
+// ═══════════════════════════
+function exportSiteAudit() {
+  const siteId  = document.getElementById('audit-site').value;
+  const startDt = document.getElementById('audit-start').value;
+  const endDt   = document.getElementById('audit-end').value;
+  const statusEl = document.getElementById('audit-export-status');
+
+  if (!siteId || !startDt || !endDt) {
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = '<span style="color:var(--danger-text);">Please select a site and date range.</span>';
+    return;
+  }
+  if (startDt > endDt) {
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = '<span style="color:var(--danger-text);">Start date must be before end date.</span>';
+    return;
+  }
+
+  const siteName = SITES[siteId] ? SITES[siteId].name : siteId;
+  let recs = records.filter(r =>
+    r.site === siteId && !r.isDraft &&
+    r.svcDate >= startDt && r.svcDate <= endDt
+  ).sort((a,b) => a.svcDate.localeCompare(b.svcDate));
+
+  if (!recs.length) {
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = '<span style="color:var(--warning-text);">No records found for this site and date range.</span>';
+    return;
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  // ── Sheet 1: Daily Meal Details ───────────────────────────
+  const dailyRows = [[
+    'Date','Meal','Day of the Week','ServingLines','Stranded',
+    'Delivery Date','Delivery Temp','Received','Previous Leftover','Available',
+    'First Meal','Second Meal','Adult Program','Adult Non-Program','Total Served',
+    'Additional Meal Requests','Waste','Incomplete','Total Unservable','Leftovers',
+    'Revisions','Revision Date/Time','Receiver'
+  ]];
+  recs.forEach(r => {
+    const dow = r.svcDate ? new Date(r.svcDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long'}) : '';
+    dailyRows.push([
+      r.svcDate, (r.mealType||'SUPPER').toUpperCase(), dow, 1, 'No',
+      r.delDate + (r.delTime ? ' ' + r.delTime : ''),
+      r.delTemp || 0,
+      r.recvQty || 0, r.prevLeftover || 0, r.availQty || 0,
+      r.firstMeal || 0, r.secondMeal || 0, r.adultProg || 0, r.adultNonProg || 0, r.totalServed || 0,
+      0,
+      r.waste || 0, r.incomplete || 0, r.totalUnsrv || 0, r.leftover || 0,
+      r.editCount || 1,
+      (r.lastEditedAt||r.createdAt||'').slice(0,16).replace('T',' ') + ' UTC',
+      r.sigName || ''
+    ]);
+  });
+  const wsDaily = XLSX.utils.aoa_to_sheet(dailyRows);
+  wsDaily['!cols'] = [{wch:10},{wch:8},{wch:11},{wch:6},{wch:7},{wch:16},{wch:10},
+    {wch:8},{wch:10},{wch:8},{wch:10},{wch:10},{wch:12},{wch:14},{wch:10},
+    {wch:8},{wch:8},{wch:10},{wch:12},{wch:8},{wch:8},{wch:22},{wch:20}];
+  XLSX.utils.book_append_sheet(wb, wsDaily, 'Daily Meal Details');
+
+  // ── Build monthly buckets for averages & totals ───────────
+  const byMonth = {};
+  recs.forEach(r => {
+    const mo = r.svcDate.slice(0,7); // YYYY-MM
+    if (!byMonth[mo]) byMonth[mo] = {
+      days:0, firstMeal:0, secondMeal:0, adultProg:0, adultNonProg:0,
+      totalServed:0, waste:0, incomplete:0, totalUnsrv:0, leftover:0,
+      received:0, prevLeftover:0, available:0, delTemp:0, tempCount:0,
+      firstMealMax:0, revisions:0
+    };
+    const m = byMonth[mo];
+    m.days++;
+    m.received    += r.recvQty||0; m.prevLeftover += r.prevLeftover||0;
+    m.available   += r.availQty||0;
+    m.firstMeal   += r.firstMeal||0; m.secondMeal += r.secondMeal||0;
+    m.adultProg   += r.adultProg||0; m.adultNonProg += r.adultNonProg||0;
+    m.totalServed += r.totalServed||0;
+    m.waste       += r.waste||0; m.incomplete += r.incomplete||0;
+    m.totalUnsrv  += r.totalUnsrv||0; m.leftover += r.leftover||0;
+    m.revisions   += r.editCount||1;
+    if ((r.firstMeal||0) > m.firstMealMax) m.firstMealMax = r.firstMeal||0;
+    if (r.delTemp && parseFloat(r.delTemp) > 0) { m.delTemp += parseFloat(r.delTemp); m.tempCount++; }
+  });
+
+  const moLabel = mo => {
+    const [yr,mn] = mo.split('-');
+    return new Date(yr,parseInt(mn)-1,1).toLocaleString('en-US',{month:'short',year:'2-digit'}).replace(' ','-');
+  };
+  const avg = (v,d) => d > 0 ? Math.round((v/d)*100)/100 : 0;
+
+  // ── Sheet 2: Monthly Averages ─────────────────────────────
+  const avgRows = [[
+    '','Meal','Days Served','ADP','Delivery Temp AVG','Received AVG',
+    'Previous Leftover AVG','Available AVG','First Meal AVG','Second Meal AVG',
+    'Adult Program AVG','Adult Non-Program AVG','Total Served AVG',
+    'Additional Meal Requests AVG','Waste AVG','Incomplete AVG',
+    'Total Unservable AVG','Leftovers Average','Revision Avg'
+  ]];
+  Object.entries(byMonth).sort(([a],[b])=>a.localeCompare(b)).forEach(([mo,m]) => {
+    const adp = avg(m.firstMeal, m.days);
+    avgRows.push([
+      moLabel(mo), 'SUPPER', m.days, adp,
+      m.tempCount > 0 ? avg(m.delTemp, m.tempCount) : 0,
+      avg(m.received, m.days), avg(m.prevLeftover, m.days), avg(m.available, m.days),
+      avg(m.firstMeal, m.days), avg(m.secondMeal, m.days),
+      avg(m.adultProg, m.days), avg(m.adultNonProg, m.days), avg(m.totalServed, m.days),
+      0, avg(m.waste, m.days), avg(m.incomplete, m.days),
+      avg(m.totalUnsrv, m.days), avg(m.leftover, m.days), avg(m.revisions, m.days)
+    ]);
+  });
+  const wsAvg = XLSX.utils.aoa_to_sheet(avgRows);
+  wsAvg['!cols'] = Array(19).fill({wch:12}); wsAvg['!cols'][0]={wch:8};
+  XLSX.utils.book_append_sheet(wb, wsAvg, 'Monthly Averages');
+
+  // ── Sheet 3: Monthly Totals ───────────────────────────────
+  const totRows = [[
+    'Month','Meal','Days Served','First Meal Max','Received Total',
+    'Previous Leftover Totals','Available Total','First Meal Totals',
+    'Second Meal Totals','Adult Program Totals','Adult Non-Program Totals',
+    'Served Total','Additional Meal Requests Totals','Waste Total',
+    'Incomplete Total','Total Unservable','Leftovers','Revision Total'
+  ]];
+  Object.entries(byMonth).sort(([a],[b])=>a.localeCompare(b)).forEach(([mo,m]) => {
+    totRows.push([
+      moLabel(mo), 'SUPPER', m.days, m.firstMealMax,
+      m.received, m.prevLeftover, m.available,
+      m.firstMeal, m.secondMeal, m.adultProg, m.adultNonProg, m.totalServed,
+      0, m.waste, m.incomplete, m.totalUnsrv, m.leftover, m.revisions
+    ]);
+  });
+  const wsTot = XLSX.utils.aoa_to_sheet(totRows);
+  wsTot['!cols'] = Array(18).fill({wch:12}); wsTot['!cols'][0]={wch:8};
+  XLSX.utils.book_append_sheet(wb, wsTot, 'Monthly Totals');
+
+  // ── Sheet 4: Site Information ─────────────────────────────
+  const siteRows = [
+    ['State','Sponsor Name','Sponsor Number','Site Name','Site Number','Program','Program Year'],
+    ['OH','Greater Cleveland Food Bank','SAS-OH-100', siteName, siteId, 'CACFP',
+      startDt.slice(0,4) + '-' + endDt.slice(0,4)]
+  ];
+  const wsSite = XLSX.utils.aoa_to_sheet(siteRows);
+  wsSite['!cols'] = [{wch:6},{wch:28},{wch:14},{wch:40},{wch:12},{wch:8},{wch:10}];
+  XLSX.utils.book_append_sheet(wb, wsSite, 'Site Information');
+
+  // ── Write file ────────────────────────────────────────────
+  const safeName = siteName.replace(/[^a-z0-9]/gi,'_').slice(0,30);
+  XLSX.writeFile(wb, 'AUDIT_' + safeName + '_' + siteId + '_' + startDt + '_to_' + endDt + '.xlsx');
+
+  statusEl.style.display = 'block';
+  statusEl.innerHTML = '<span style="color:var(--success-text);">✓ Audit report exported — ' + recs.length + ' service records across ' + Object.keys(byMonth).length + ' month(s).</span>';
+}
 
 function exportCSV(isAdmin) {
   const myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
