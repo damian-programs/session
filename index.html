@@ -223,6 +223,18 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
   .print-sig-label { font-size: 9px; color: #888; margin-top: 3px; }
 }
 
+/* TRACKER TABLE */
+.tracker-table { width:100%; border-collapse:collapse; font-size:12px; }
+.tracker-table th { padding:7px 8px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:2px solid var(--border); text-align:center; }
+.tracker-table th.site-col { text-align:left; width:200px; }
+.tracker-table td { padding:6px 8px; border-bottom:1px solid var(--border-soft); text-align:center; vertical-align:middle; }
+.tracker-table td.site-col { text-align:left; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:200px; }
+.tracker-table tr:hover td { background:var(--cream); }
+.day-cell-ok   { background:var(--success-bg); color:var(--success-text); border-radius:4px; padding:2px 5px; font-size:10px; font-weight:600; }
+.day-cell-miss { background:var(--danger-bg);  color:var(--danger-text);  border-radius:4px; padding:2px 5px; font-size:10px; font-weight:600; }
+.day-cell-na   { color:var(--text-soft); font-size:10px; }
+.tracker-card.submitted .send-btn { display:none; }
+
 /* RESPONSIVE */
 @media (max-width: 500px) {
   .grid2, .grid3 { grid-template-columns: 1fr; }
@@ -584,11 +596,44 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
     <!-- TRACKER TAB -->
     <div id="pane-tracker" style="display:none;">
       <div class="card">
-        <div class="card-title"><i class="ti ti-checklist"></i>Daily submission tracker</div>
-        <div class="filter-row">
+        <div class="card-title"><i class="ti ti-checklist"></i>Submission tracker</div>
+
+        <!-- View toggle -->
+        <div style="display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;">
+          <button class="btn-sec" id="tview-daily"   onclick="setTrackerView('daily')"   style="font-size:12px;height:32px;">Daily</button>
+          <button class="btn-sec" id="tview-weekly"  onclick="setTrackerView('weekly')"  style="font-size:12px;height:32px;">Weekly</button>
+          <button class="btn-sec" id="tview-monthly" onclick="setTrackerView('monthly')" style="font-size:12px;height:32px;">Monthly</button>
+        </div>
+
+        <!-- Daily controls -->
+        <div id="tracker-ctrl-daily" class="filter-row" style="margin-bottom:1rem;">
           <div class="fg"><label for="tracker-date">Date</label><input type="date" id="tracker-date" oninput="renderTracker()" style="width:160px;"></div>
         </div>
+
+        <!-- Weekly controls -->
+        <div id="tracker-ctrl-weekly" style="display:none;margin-bottom:1rem;">
+          <div class="filter-row">
+            <div class="fg"><label for="tracker-week-start">Week start (Monday)</label><input type="date" id="tracker-week-start" oninput="renderTrackerWeekly()" style="width:160px;"></div>
+          </div>
+        </div>
+
+        <!-- Monthly controls -->
+        <div id="tracker-ctrl-monthly" style="display:none;margin-bottom:1rem;">
+          <div class="filter-row">
+            <div class="fg"><label for="tracker-month">Month</label><input type="month" id="tracker-month" oninput="renderTrackerMonthly()" style="width:160px;"></div>
+          </div>
+        </div>
+
         <div id="tracker-summary" style="margin-bottom:1rem;font-size:13px;color:var(--text-mid);"></div>
+
+        <!-- Send all reminders button (shown for weekly/monthly) -->
+        <div id="tracker-send-all-row" style="display:none;margin-bottom:1rem;">
+          <button class="btn-primary" onclick="sendAllReminders()">
+            <i class="ti ti-mail-forward"></i> Open all reminder emails
+          </button>
+          <span style="font-size:12px;color:var(--text-soft);margin-left:10px;">Opens one Outlook draft per missing site with an email address on file.</span>
+        </div>
+
         <div class="tracker-grid" id="tracker-grid"></div>
       </div>
     </div>
@@ -641,6 +686,24 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
           <button class="btn-sec" onclick="exportCSV(true)"><i class="ti ti-file-spreadsheet"></i> Export all records as CSV</button>
         </div>
       </div>
+      <div class="card">
+        <div class="card-title"><i class="ti ti-mail-cog"></i>Email configuration</div>
+        <div class="fg" style="margin-bottom:1rem;">
+          <label for="dept-email-input">Department email (sender / reply-to)</label>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="dept-email-input" placeholder="cacfp@yourdepartment.org" style="flex:1;">
+            <button class="btn-primary green" style="height:38px;flex-shrink:0;" onclick="saveDeptEmail()"><i class="ti ti-check"></i> Save</button>
+          </div>
+          <div id="dept-email-status" style="font-size:12px;margin-top:6px;display:none;"></div>
+        </div>
+        <div class="divider"></div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:0.75rem;">Site supervisor emails — enter one per site to enable reminder emails from the Site Tracker.</p>
+        <div id="site-email-list" style="max-height:400px;overflow-y:auto;"></div>
+        <div class="btn-row" style="margin-top:1rem;">
+          <button class="btn-primary" onclick="saveSiteEmails()"><i class="ti ti-device-floppy"></i> Save site emails</button>
+        </div>
+        <div id="site-email-status" style="font-size:12px;margin-top:8px;display:none;"></div>
+      </div>
     </div>
 
     </div>
@@ -659,6 +722,107 @@ const STAFF = {
 function getSiteStaff(siteId) {
   return STAFF[siteId] || STAFF['DEFAULT'];
 }
+
+// ═══════════════════════════
+//  DEPARTMENT & SITE EMAILS
+//  Replace DEPT_EMAIL with your department's actual email address
+// ═══════════════════════════
+const DEPT_EMAIL = 'cacfp@yourdepartment.org'; // ← replace this
+
+const SITE_EMAILS = {
+  '11778': 'supervisor@3mbafterschool.org',
+  '14569': '',
+  '12152': '',
+  '11550': '',
+  '11551': '',
+  '12221': '',
+  '12003': '',
+  '11935': '',
+  '11936': '',
+  '12004': '',
+  '12005': '',
+  '12036': '',
+  '12006': '',
+  '12295': '',
+  '12035': '',
+  '12034': '',
+  '11849': '',
+  '11655': '',
+  '11694': '',
+  '11855': '',
+  '13318': '',
+  '12008': '',
+  '11926': '',
+  '12102': '',
+  '11686': '',
+  '11698': '',
+  '11938': '',
+  '11759': '',
+  '11644': '',
+  '11760': '',
+  '11646': '',
+  '11647': '',
+  '11699': '',
+  '11850': '',
+  '11648': '',
+  '11761': '',
+  '11939': '',
+  '11649': '',
+  '11940': '',
+  '11941': '',
+  '11762': '',
+  '11942': '',
+  '11937': '',
+  '11690': '',
+  '11650': '',
+  '11943': '',
+  '11763': '',
+  '11651': '',
+  '11944': '',
+  '11945': '',
+  '11684': '',
+  '11869': '',
+  '11509': '',
+  '12262': '',
+  '11930': '',
+  '12266': '',
+  '13319': '',
+  '12261': '',
+  '14474': '',
+  '14560': '',
+  '14473': '',
+  '12223': '',
+  '11948': '',
+  '11681': '',
+  '11764': '',
+  '12268': '',
+  '12032': '',
+  '14581': '',
+  '14563': '',
+  '14579': '',
+  '12244': '',
+  '11522': '',
+  '13322': '',
+  '14484': '',
+  '14477': '',
+  '14559': '',
+  '11642': '',
+  '11552': '',
+  '11472': '',
+  '14483': '',
+  '12063': '',
+  '12031': '',
+  '12104': '',
+  '11868': '',
+  '13325': '',
+  '11434': '',
+  '12288': '',
+  '13334': '',
+  '12009': '',
+  '14566': '',
+  '14562': '',
+  '55555': 'test@testsite.org',
+};
 
 // ═══════════════════════════
 //  SITES CONFIG
@@ -932,13 +1096,16 @@ function showTab(t) {
   }
   if (t === 'tracker') {
     document.getElementById('tracker-date').value = today();
-    renderTracker();
+    setTrackerView('daily');
     loadFromFirebase('ALL').then(() => renderTracker());
   }
   if (t === 'summary') {
     document.getElementById('summary-month').value = today().slice(0,7);
     renderSummary();
     loadFromFirebase('ALL').then(() => renderSummary());
+  }
+  if (t === 'setup') {
+    renderSiteEmailList();
   }
 }
 
@@ -1315,18 +1482,194 @@ function showAudit(uid) {
 // ═══════════════════════════
 //  SITE TRACKER
 // ═══════════════════════════
+// ═══════════════════════════
+//  TRACKER VIEW MANAGEMENT
+// ═══════════════════════════
+let trackerView = 'daily';
+
+function setTrackerView(v) {
+  trackerView = v;
+  ['daily','weekly','monthly'].forEach(x => {
+    document.getElementById('tracker-ctrl-' + x).style.display = x === v ? 'block' : 'none';
+    const btn = document.getElementById('tview-' + x);
+    btn.style.background = x === v ? 'var(--navy)' : '';
+    btn.style.color = x === v ? 'white' : '';
+    btn.style.borderColor = x === v ? 'var(--navy)' : '';
+  });
+  document.getElementById('tracker-send-all-row').style.display = v !== 'daily' ? 'flex' : 'none';
+  document.getElementById('tracker-summary').innerHTML = '';
+  document.getElementById('tracker-grid').innerHTML = '';
+  if (v === 'daily')   renderTracker();
+  if (v === 'weekly')  renderTrackerWeekly();
+  if (v === 'monthly') renderTrackerMonthly();
+}
+
+// ── Daily ─────────────────────────────────────────────────
 function renderTracker() {
   const date = document.getElementById('tracker-date').value;
   if (!date) return;
-  const submitted = new Set(records.filter(r => r.svcDate === date && r.site !== 'MONITOR').map(r => r.site));
+  const submitted = new Set(records.filter(r => r.svcDate === date && r.site !== 'MONITOR' && !r.isDraft).map(r => r.site));
   const allSites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR');
   const grid = document.getElementById('tracker-grid');
   const summary = document.getElementById('tracker-summary');
-  summary.innerHTML = '<strong>' + submitted.size + '</strong> of <strong>' + allSites.length + '</strong> sites submitted for ' + date + '.';
+  const missing = allSites.filter(([k]) => !submitted.has(k));
+  summary.innerHTML = '<strong>' + submitted.size + '</strong> of <strong>' + allSites.length + '</strong> sites submitted for ' + date + '. <span style="color:var(--danger-text);">' + missing.length + ' missing.</span>';
   grid.innerHTML = allSites.map(([k, v]) => {
     const done = submitted.has(k);
-    return '<div class="tracker-card ' + (done ? 'submitted' : 'missing') + '"><div class="tracker-card-name">' + v.name + '</div><div class="tracker-card-sub">' + (done ? '✓ Submitted' : '✗ Not submitted') + '</div></div>';
+    const hasEmail = !!SITE_EMAILS[k];
+    const emailBtn = !done && hasEmail
+      ? '<button class="btn-sm" style="margin-top:5px;font-size:10px;border-color:var(--navy);color:var(--navy);" onclick="sendReminderEmail('' + k + '',['' + date + ''])"><i class="ti ti-mail"></i> Email</button>'
+      : (!done && !hasEmail ? '<span style="font-size:10px;color:var(--text-soft);">No email on file</span>' : '');
+    return '<div class="tracker-card ' + (done ? 'submitted' : 'missing') + '" style="display:flex;flex-direction:column;justify-content:space-between;">'
+      + '<div><div class="tracker-card-name">' + v.name + '</div>'
+      + '<div class="tracker-card-sub">' + (done ? '✓ Submitted' : '✗ Not submitted') + '</div></div>'
+      + (emailBtn ? '<div style="margin-top:4px;">' + emailBtn + '</div>' : '')
+      + '</div>';
   }).join('');
+}
+
+// ── Weekly ────────────────────────────────────────────────
+function renderTrackerWeekly() {
+  const startVal = document.getElementById('tracker-week-start').value;
+  if (!startVal) return;
+  const monday = new Date(startVal + 'T12:00:00');
+  // Snap to Monday
+  const dow = monday.getDay();
+  if (dow !== 1) { monday.setDate(monday.getDate() - (dow === 0 ? 6 : dow - 1)); }
+  const weekDays = [];
+  for (let i = 0; i < 5; i++) {
+    const d = new Date(monday); d.setDate(d.getDate() + i);
+    weekDays.push(d.toISOString().slice(0,10));
+  }
+  const allSites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR');
+  const submittedByDate = {};
+  weekDays.forEach(d => {
+    submittedByDate[d] = new Set(records.filter(r => r.svcDate === d && !r.isDraft).map(r => r.site));
+  });
+  const dayLabels = weekDays.map(d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'numeric',day:'numeric'}));
+  const summary = document.getElementById('tracker-summary');
+  const grid = document.getElementById('tracker-grid');
+  let totalMissing = 0;
+  let h = '<div style="overflow-x:auto;"><table class="tracker-table"><thead><tr><th class="site-col">Site</th>';
+  dayLabels.forEach(d => { h += '<th>' + d + '</th>'; });
+  h += '<th>Status</th><th>Action</th></tr></thead><tbody>';
+  allSites.forEach(([k, v]) => {
+    const missingDays = weekDays.filter(d => !submittedByDate[d].has(k));
+    const submittedDays = weekDays.filter(d => submittedByDate[d].has(k));
+    const allOk = missingDays.length === 0;
+    const hasEmail = !!SITE_EMAILS[k];
+    if (!allOk) totalMissing++;
+    h += '<tr>';
+    h += '<td class="site-col" title="' + v.name + '">' + v.name + '</td>';
+    weekDays.forEach(d => {
+      const ok = submittedByDate[d].has(k);
+      h += '<td><span class="' + (ok ? 'day-cell-ok' : 'day-cell-miss') + '">' + (ok ? '✓' : '✗') + '</span></td>';
+    });
+    h += '<td><span class="pill ' + (allOk ? 'pill-ok' : 'pill-danger') + '">' + submittedDays.length + '/5</span></td>';
+    if (!allOk) {
+      if (hasEmail) {
+        h += '<td><button class="btn-sm" style="font-size:10px;border-color:var(--navy);color:var(--navy);" onclick="sendReminderEmail('' + k + '',' + JSON.stringify(missingDays) + ')"><i class="ti ti-mail"></i> Email</button></td>';
+      } else {
+        h += '<td><span style="font-size:10px;color:var(--text-soft);">No email</span></td>';
+      }
+    } else {
+      h += '<td></td>';
+    }
+    h += '</tr>';
+  });
+  h += '</tbody></table></div>';
+  grid.innerHTML = h;
+  summary.innerHTML = 'Week of ' + dayLabels[0] + ' — <strong>' + totalMissing + '</strong> site(s) with missing submissions.';
+}
+
+// ── Monthly ───────────────────────────────────────────────
+function renderTrackerMonthly() {
+  const month = document.getElementById('tracker-month').value;
+  if (!month) return;
+  const [yr, mo] = month.split('-').map(Number);
+  const daysInMonth = new Date(yr, mo, 0).getDate();
+  // Build list of weekdays in month
+  const weekdays = [];
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dt = new Date(yr, mo-1, d);
+    const dow = dt.getDay();
+    if (dow >= 1 && dow <= 5) weekdays.push(dt.toISOString().slice(0,10));
+  }
+  const allSites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR');
+  const submittedByDate = {};
+  weekdays.forEach(d => {
+    submittedByDate[d] = new Set(records.filter(r => r.svcDate === d && !r.isDraft).map(r => r.site));
+  });
+  const summary = document.getElementById('tracker-summary');
+  const grid = document.getElementById('tracker-grid');
+  let totalMissing = 0;
+  let h = '<div style="overflow-x:auto;"><table class="tracker-table"><thead><tr>'
+    + '<th class="site-col">Site</th><th>Expected Days</th><th>Submitted</th><th>Missing</th><th>Rate</th><th>Missing Dates</th><th>Action</th>'
+    + '</tr></thead><tbody>';
+  allSites.forEach(([k, v]) => {
+    const submitted = weekdays.filter(d => submittedByDate[d].has(k));
+    const missing   = weekdays.filter(d => !submittedByDate[d].has(k));
+    const rate = weekdays.length > 0 ? Math.round((submitted.length / weekdays.length) * 100) : 0;
+    const hasEmail = !!SITE_EMAILS[k];
+    const allOk = missing.length === 0;
+    if (!allOk) totalMissing++;
+    const missingFmt = missing.map(d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'numeric',day:'numeric'})).join(', ');
+    const rateColor = rate === 100 ? 'var(--success-text)' : rate >= 80 ? 'var(--warning-text)' : 'var(--danger-text)';
+    h += '<tr>';
+    h += '<td class="site-col" title="' + v.name + '">' + v.name + '</td>';
+    h += '<td style="text-align:center;">' + weekdays.length + '</td>';
+    h += '<td style="text-align:center;">' + submitted.length + '</td>';
+    h += '<td style="text-align:center;color:' + (missing.length ? 'var(--danger-text)' : 'var(--success-text)') + ';">' + missing.length + '</td>';
+    h += '<td style="text-align:center;font-weight:600;color:' + rateColor + ';">' + rate + '%</td>';
+    h += '<td style="font-size:11px;color:var(--text-mid);max-width:220px;white-space:normal;">' + (missing.length ? missingFmt : '<span style="color:var(--success-text);">All submitted ✓</span>') + '</td>';
+    if (!allOk) {
+      if (hasEmail) {
+        h += '<td><button class="btn-sm" style="font-size:10px;border-color:var(--navy);color:var(--navy);" onclick="sendReminderEmail('' + k + '',' + JSON.stringify(missing) + ')"><i class="ti ti-mail"></i> Email</button></td>';
+      } else {
+        h += '<td><span style="font-size:10px;color:var(--text-soft);">No email</span></td>';
+      }
+    } else {
+      h += '<td></td>';
+    }
+    h += '</tr>';
+  });
+  h += '</tbody></table></div>';
+  grid.innerHTML = h;
+  const monthLabel = new Date(yr, mo-1, 1).toLocaleString('en-US',{month:'long',year:'numeric'});
+  summary.innerHTML = monthLabel + ' — <strong>' + totalMissing + '</strong> site(s) with missing submissions out of ' + weekdays.length + ' expected service days.';
+}
+
+// ─────────────────────────────────────────────────────────
+//  EMAIL REMINDER
+// ─────────────────────────────────────────────────────────
+function sendReminderEmail(siteId, missingDates) {
+  const siteName = SITES[siteId] ? SITES[siteId].name : siteId;
+  const email = SITE_EMAILS[siteId];
+  if (!email) { alert('No email address on file for ' + siteName + '.'); return; }
+  const dateList = missingDates
+    .map(d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}))
+    .join('\n  - ');
+  const subject = encodeURIComponent('CACFP Meal Count Submission Reminder — ' + siteName);
+  const body = encodeURIComponent(
+    'Dear ' + siteName + ' Site Supervisor,\n\n' +
+    'This is a reminder that meal count records have not yet been submitted for the following date(s):\n\n' +
+    '  - ' + dateList + '\n\n' +
+    'Please log in to the CACFP Meal Receipt & Service Information Tracker and submit your meal count records at your earliest convenience:\n\n' +
+    '  https://gcfb-kids.github.io/cacfp/\n\n' +
+    'If you have any questions or need assistance, please do not hesitate to contact us.\n\n' +
+    'Thank you,\n' +
+    'Greater Cleveland Food Bank — Kids Cafe Program\n' +
+    DEPT_EMAIL
+  );
+  window.open('mailto:' + email + '?from=' + encodeURIComponent(DEPT_EMAIL) + '&subject=' + subject + '&body=' + body);
+}
+
+function sendAllReminders() {
+  const grid = document.getElementById('tracker-grid');
+  const btns = grid.querySelectorAll('button[onclick^="sendReminderEmail"]');
+  if (!btns.length) { alert('No missing sites with email addresses on file.'); return; }
+  if (!confirm('This will open ' + btns.length + ' Outlook email draft(s). Continue?')) return;
+  btns.forEach((btn, i) => setTimeout(() => btn.click(), i * 600));
 }
 
 // ═══════════════════════════
@@ -1916,6 +2259,53 @@ function exportSiteAudit() {
 
   statusEl.style.display = 'block';
   statusEl.innerHTML = '<span style="color:var(--success-text);">✓ Audit report exported — ' + recs.length + ' service records across ' + Object.keys(byMonth).length + ' month(s).</span>';
+}
+
+// ═══════════════════════════
+//  EMAIL MANAGEMENT (Setup tab)
+// ═══════════════════════════
+function renderSiteEmailList() {
+  const ctr = document.getElementById('site-email-list');
+  if (!ctr) return;
+  const saved = JSON.parse(localStorage.getItem('cacfp_site_emails') || '{}');
+  // Merge saved into SITE_EMAILS
+  Object.keys(saved).forEach(k => { if (SITE_EMAILS.hasOwnProperty(k)) SITE_EMAILS[k] = saved[k]; });
+  let h = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+  h += '<thead><tr><th style="text-align:left;padding:6px 8px;font-size:11px;color:var(--text-soft);border-bottom:2px solid var(--border);">Site</th><th style="text-align:left;padding:6px 8px;font-size:11px;color:var(--text-soft);border-bottom:2px solid var(--border);">Supervisor Email</th></tr></thead><tbody>';
+  Object.entries(SITES).filter(([k]) => k !== 'MONITOR').forEach(([k, v]) => {
+    h += '<tr><td style="padding:5px 8px;border-bottom:1px solid var(--border-soft);color:var(--text-mid);font-size:12px;">' + v.name + '</td>';
+    h += '<td style="padding:4px 8px;border-bottom:1px solid var(--border-soft);"><input type="email" data-site="' + k + '" value="' + (SITE_EMAILS[k]||'') + '" placeholder="supervisor@site.org" style="width:100%;height:30px;padding:0 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:DM Sans,sans-serif;"></td></tr>';
+  });
+  h += '</tbody></table>';
+  ctr.innerHTML = h;
+  // Pre-fill dept email
+  const saved_dept = localStorage.getItem('cacfp_dept_email');
+  if (saved_dept) document.getElementById('dept-email-input').value = saved_dept;
+}
+
+function saveDeptEmail() {
+  const val = document.getElementById('dept-email-input').value.trim();
+  const el = document.getElementById('dept-email-status');
+  if (!val) return;
+  localStorage.setItem('cacfp_dept_email', val);
+  // Update the runtime constant
+  window._DEPT_EMAIL_OVERRIDE = val;
+  el.style.display = 'block';
+  el.innerHTML = '<span style="color:var(--success-text);">✓ Department email saved.</span>';
+}
+
+function saveSiteEmails() {
+  const inputs = document.querySelectorAll('#site-email-list input[data-site]');
+  const saved = {};
+  inputs.forEach(inp => {
+    const k = inp.getAttribute('data-site');
+    SITE_EMAILS[k] = inp.value.trim();
+    if (inp.value.trim()) saved[k] = inp.value.trim();
+  });
+  localStorage.setItem('cacfp_site_emails', JSON.stringify(saved));
+  const el = document.getElementById('site-email-status');
+  el.style.display = 'block';
+  el.innerHTML = '<span style="color:var(--success-text);">✓ Site emails saved — ' + Object.keys(saved).length + ' address(es) on file.</span>';
 }
 
 function exportCSV(isAdmin) {
