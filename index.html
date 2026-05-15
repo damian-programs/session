@@ -1095,9 +1095,14 @@ function showTab(t) {
     loadFromFirebase('ALL').then(() => renderTable(true));
   }
   if (t === 'tracker') {
-    document.getElementById('tracker-date').value = today();
-    setTrackerView('daily');
-    loadFromFirebase('ALL').then(() => renderTracker());
+    const tdate = document.getElementById('tracker-date');
+    if (tdate && !tdate.value) tdate.value = today();
+    setTrackerView(trackerView || 'daily');
+    loadFromFirebase('ALL').then(() => {
+      if (trackerView === 'daily') renderTracker();
+      else if (trackerView === 'weekly') renderTrackerWeekly();
+      else renderTrackerMonthly();
+    });
   }
   if (t === 'summary') {
     document.getElementById('summary-month').value = today().slice(0,7);
@@ -1490,15 +1495,17 @@ let trackerView = 'daily';
 function setTrackerView(v) {
   trackerView = v;
   ['daily','weekly','monthly'].forEach(x => {
-    document.getElementById('tracker-ctrl-' + x).style.display = x === v ? 'block' : 'none';
+    const ctrl = document.getElementById('tracker-ctrl-' + x);
+    if (ctrl) ctrl.style.display = x === v ? 'block' : 'none';
     const btn = document.getElementById('tview-' + x);
-    btn.style.background = x === v ? 'var(--navy)' : '';
-    btn.style.color = x === v ? 'white' : '';
-    btn.style.borderColor = x === v ? 'var(--navy)' : '';
+    if (btn) { btn.style.background = x === v ? 'var(--navy)' : ''; btn.style.color = x === v ? 'white' : ''; btn.style.borderColor = x === v ? 'var(--navy)' : ''; }
   });
-  document.getElementById('tracker-send-all-row').style.display = v !== 'daily' ? 'flex' : 'none';
-  document.getElementById('tracker-summary').innerHTML = '';
-  document.getElementById('tracker-grid').innerHTML = '';
+  const sar = document.getElementById('tracker-send-all-row');
+  if (sar) sar.style.display = v !== 'daily' ? 'flex' : 'none';
+  const sum = document.getElementById('tracker-summary');
+  const grid = document.getElementById('tracker-grid');
+  if (sum) sum.innerHTML = '';
+  if (grid) grid.innerHTML = '';
   if (v === 'daily')   renderTracker();
   if (v === 'weekly')  renderTrackerWeekly();
   if (v === 'monthly') renderTrackerMonthly();
@@ -1530,6 +1537,9 @@ function renderTracker() {
 
 // ── Weekly ────────────────────────────────────────────────
 function renderTrackerWeekly() {
+  const grid = document.getElementById('tracker-grid');
+  const summary = document.getElementById('tracker-summary');
+  if (!grid || !summary) return;
   const startVal = document.getElementById('tracker-week-start').value;
   if (!startVal) return;
   const monday = new Date(startVal + 'T12:00:00');
@@ -1584,6 +1594,9 @@ function renderTrackerWeekly() {
 
 // ── Monthly ───────────────────────────────────────────────
 function renderTrackerMonthly() {
+  const grid = document.getElementById('tracker-grid');
+  const summary = document.getElementById('tracker-summary');
+  if (!grid || !summary) return;
   const month = document.getElementById('tracker-month').value;
   if (!month) return;
   const [yr, mo] = month.split('-').map(Number);
