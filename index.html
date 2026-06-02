@@ -30,13 +30,13 @@
   --amber: #58923a;
   --amber-light: #edf5e8;
   --amber-dark: #3d6828;
-  --cream: #faf8f4;
+  --cream: #f5f5f7;
   --white: #ffffff;
   --border: #ddd8ce;
   --border-soft: #ece8e0;
-  --text-main: #1a1a1a;
-  --text-mid: #4a4a5a;
-  --text-soft: #8a8a9a;
+  --text-main: #111111;
+  --text-mid: #333344;
+  --text-soft: #666677;
   --success-bg: #edf7f0;
   --success-text: #1a6e38;
   --warning-bg: #fff8e6;
@@ -51,14 +51,14 @@
   --shadow-card: 0 2px 8px rgba(63,114,184,0.10), 0 1px 2px rgba(63,114,184,0.06);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text-main); min-height: 100vh; font-size: 16px; line-height: 1.6; }
+body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text-main); min-height: 100vh; font-size: 17px; line-height: 1.65; }
 
 /* TOPBAR */
 .topbar { background: var(--navy); color: white; padding: 0 1.5rem; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
 .topbar-brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 16px; letter-spacing: -0.01em; }
 .topbar-brand i { color: var(--amber); font-size: 20px; }
 .topbar-right { display: flex; align-items: center; gap: 10px; }
-.site-badge { background: rgba(88,146,58,0.18); color: var(--amber); border: 1px solid rgba(88,146,58,0.3); font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.03em; text-transform: uppercase; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.site-badge { background: white; color: var(--navy); border: 2px solid rgba(255,255,255,0.7); font-size: 11px; font-weight: 700; padding: 3px 12px; border-radius: 20px; letter-spacing: 0.03em; text-transform: uppercase; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .btn-signout { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; border-radius: var(--radius-sm); padding: 0 12px; height: 30px; font-size: 12px; font-family: 'DM Sans', sans-serif; cursor: pointer; font-weight: 500; transition: background 0.15s; }
 .btn-signout:hover { background: rgba(255,255,255,0.18); }
 
@@ -82,7 +82,7 @@ body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(
 
 /* FORM */
 .fg { display: flex; flex-direction: column; gap: 5px; }
-label { font-size: 13px; font-weight: 500; color: var(--text-mid); }
+label { font-size: 14px; font-weight: 600; color: var(--text-mid); }
 input[type=text], input[type=number], input[type=date], input[type=time], input[type=password], select, textarea {
   width: 100%; height: 38px; padding: 0 11px; border: 1px solid var(--border); border-radius: var(--radius-sm);
   font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text-main); background: var(--white);
@@ -180,8 +180,6 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 .login-page { min-height: 100vh; background: #2a4f85; display: flex; align-items: center; justify-content: center; padding: 2rem; }
 .login-card { background: white; border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(63,114,184,0.25); }
 .login-logo { text-align: center; margin-bottom: 2rem; }
-.login-logo-icon { width: 56px; height: 56px; background: var(--amber-light); border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 12px; }
-.login-logo-icon i { font-size: 28px; color: var(--amber-dark); }
 .login-logo h1 { font-size: 22px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
 .login-logo p { font-size: 13px; color: var(--text-soft); }
 .login-demo { margin-top: 1.25rem; background: var(--cream); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; color: var(--text-soft); text-align: center; }
@@ -223,6 +221,17 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
   .print-sig-label { font-size: 9px; color: #888; margin-top: 3px; }
 }
 
+.counter-btn {
+  width: 100%; max-width: 200px; height: 52px; border-radius: 12px;
+  border: 2.5px solid #111; background: white;
+  color: #111; font-size: 28px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: background 0.12s, color 0.12s;
+  font-family: 'DM Sans', sans-serif; line-height: 1;
+}
+.counter-btn:hover { background: #111; color: white; }
+.counter-btn:active { transform: scale(0.96); }
+
 /* TRACKER TABLE */
 .tracker-table { width:100%; border-collapse:collapse; font-size:12px; }
 .tracker-table th { padding:7px 8px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); border-bottom:2px solid var(--border); text-align:center; }
@@ -255,109 +264,18 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 <div id="login-page" class="login-page">
   <div class="login-card">
     <div class="login-logo">
-      <div class="login-logo-icon"><i class="ti ti-salad"></i></div>
       <h1>Meal Receipt & Service Information Tracker</h1>
+      <p>After-school supper program</p>
     </div>
     <div id="login-err" class="alert alert-danger" style="display:none;margin-bottom:1rem;">
       <i class="ti ti-alert-circle"></i><span>Invalid site or PIN. Please try again.</span>
     </div>
     <div class="fg" style="margin-bottom:12px;">
       <label for="ls">Site</label>
-      <select id="ls">
-        <option value="">Select your site…</option>
-        <option value="11778">3MB Afterschool</option>
-        <option value="14569">A Beautiful Mind</option>
-        <option value="12152">ACE Ohio Wellness</option>
-        <option value="11550">Applewood Centers - Cleveland</option>
-        <option value="11551">Bellefaire Jewish Children's Bureau-ASP</option>
-        <option value="12221">CCPL - Brook Park Branch</option>
-        <option value="12003">CCPL - Brooklyn Branch</option>
-        <option value="11935">CCPL - Garfield Heights Branch</option>
-        <option value="11936">CCPL - Maple Heights Branch</option>
-        <option value="12004">CCPL - North Olmsted Branch</option>
-        <option value="12005">CCPL - Parma Branch</option>
-        <option value="12036">CCPL - Parma Heights Branch</option>
-        <option value="12006">CCPL - Parma Snow Branch</option>
-        <option value="12295">CCPL - Richmond Heights</option>
-        <option value="12035">CCPL - South Euclid-Lyndhurst Branch</option>
-        <option value="12034">CCPL - Southeast Branch</option>
-        <option value="11849">CCPL - Warrensville Branch</option>
-        <option value="11655">CH-UH Noble Library</option>
-        <option value="11694">Chagrin Falls Community Park</option>
-        <option value="11855">Clear Fork Christian Preschool &amp; Learning Center</option>
-        <option value="13318">Cleveland Institute of Art</option>
-        <option value="12008">CMHA - Lakeview Community Center</option>
-        <option value="11926">CMHA - Outhwaite Homes Afterschool Enrichment Progr</option>
-        <option value="12102">CMHA - Riverside</option>
-        <option value="11686">CPL - 131st Street Branch</option>
-        <option value="11698">CPL - Addison</option>
-        <option value="11938">CPL - Brooklyn Branch</option>
-        <option value="11759">CPL - Carnegie West</option>
-        <option value="11644">CPL - Collinwood Branch</option>
-        <option value="11760">CPL - Eastman</option>
-        <option value="11646">CPL - Fleet Branch</option>
-        <option value="11647">CPL - Fulton Branch</option>
-        <option value="11699">CPL - Garden Valley</option>
-        <option value="11850">CPL - Glenville Branch</option>
-        <option value="11648">CPL - Harvard Lee Branch</option>
-        <option value="11761">CPL - Hough Branch</option>
-        <option value="11939">CPL - Jefferson Branch</option>
-        <option value="11649">CPL - Langston Hughes Branch</option>
-        <option value="11940">CPL - Lorain Branch</option>
-        <option value="11941">CPL - Main Branch</option>
-        <option value="11762">CPL - Martin Luther King Branch</option>
-        <option value="11942">CPL - Memorial Nottingham Branch</option>
-        <option value="11937">CPL - Mt. Pleasant Branch</option>
-        <option value="11690">CPL - Rice Branch</option>
-        <option value="11650">CPL - Rockport Branch</option>
-        <option value="11943">CPL - South Branch</option>
-        <option value="11763">CPL - South Brooklyn</option>
-        <option value="11651">CPL - Sterling Branch</option>
-        <option value="11944">CPL - Union Branch</option>
-        <option value="11945">CPL - West Park Branch</option>
-        <option value="11684">CPL - Woodland Branch</option>
-        <option value="11869">East Cleveland Public Library</option>
-        <option value="11509">Fatima Family Center</option>
-        <option value="12262">Horizon - Clara E. Westropp</option>
-        <option value="11930">Horizon - Global Ambassadors Language Academy</option>
-        <option value="12266">Horizon - Old Brooklyn Community</option>
-        <option value="13319">Horizon - Stockyard</option>
-        <option value="12261">Horizon - West Park Community</option>
-        <option value="14474">Living Faith-DBA Guiding Point</option>
-        <option value="14560">New Mercy Outreach</option>
-        <option value="14473">Open Doors Academy- Anton Grdina</option>
-        <option value="12223">Open Doors Academy - Citizens Academy East</option>
-        <option value="11948">Open Doors Academy - Citizens Academy Southeast</option>
-        <option value="11681">Open Doors Academy - E-Prep Cliffs</option>
-        <option value="11764">Open Doors Academy - E-Prep Woodland Hills</option>
-        <option value="12268">Open Doors Academy - Max Hayes</option>
-        <option value="12032">Open Doors Academy - Orchard</option>
-        <option value="14581">Open Doors Academy- Wade Park School</option>
-        <option value="14563">Open Doors Academy - Willard</option>
-        <option value="14579">Open Doors Academy- Willson School</option>
-        <option value="12244">PHASTAR Corporation</option>
-        <option value="11522">Rainey Institute</option>
-        <option value="13322">Rainey Institute- Pivot Center</option>
-        <option value="14484">Re:Source Cleveland</option>
-        <option value="14477">River of Life Ministries</option>
-        <option value="14559">Salvation Army - Dewald Community Center</option>
-        <option value="11642">Salvation Army - Temple Corps</option>
-        <option value="11552">Scranton Road Ministries</option>
-        <option value="11472">St. Martin De Porres Center</option>
-        <option value="14483">Stepstone Academy</option>
-        <option value="12063">Team Couture Youth Center</option>
-        <option value="12031">Team DNA</option>
-        <option value="12104">The Garden Christian Academy</option>
-        <option value="11868">University Settlement</option>
-        <option value="13325">University Settlement- Broadway Academy</option>
-        <option value="11434">Urban Community School</option>
-        <option value="12288">Urban Squash</option>
-        <option value="13334">West Park Academy</option>
-        <option value="12009">Woodhill Community Center-TCB</option>
-        <option value="14566">You Care We Care</option>
-        <option value="14562">Young Achievers</option>
-        <option value="MONITOR">Monitor Organization (Admin)</option>
+      <select id="ls" disabled>
+        <option value="">Loading sites…</option>
       </select>
+      <div id="login-sites-status" style="font-size:11px;color:var(--text-soft);margin-top:4px;display:none;"></div>
     </div>
     <div class="fg" style="margin-bottom:1.25rem;">
       <label for="lp">5-digit PIN</label>
@@ -373,7 +291,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 <!-- MAIN APP -->
 <div id="main-app" style="display:none;">
   <div class="topbar">
-    <div class="topbar-brand"><i class="ti ti-salad"></i>Meal Receipt & Service Tracker</div>
+    <div class="topbar-brand">Meal Receipt &amp; Service Tracker</div>
     <div class="topbar-right">
       <span class="site-badge" id="hdr-site"></span>
       <button class="btn-signout" onclick="doLogout()"><i class="ti ti-logout" style="font-size:13px;"></i> Sign out</button>
@@ -388,7 +306,8 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
       <button class="tab"        id="tab-admin"   onclick="showTab('admin')"   style="display:none;">All sites</button>
       <button class="tab"        id="tab-tracker" onclick="showTab('tracker')" style="display:none;">Site tracker</button>
       <button class="tab"        id="tab-summary" onclick="showTab('summary')" style="display:none;">Monthly summary</button>
-      <button class="tab"        id="tab-setup"   onclick="showTab('setup')"   style="display:none;">Sheets setup</button>
+      <button class="tab"        id="tab-siteinfo" onclick="showTab('siteinfo')" style="display:none;">Site info</button>
+      <button class="tab"        id="tab-setup"   onclick="showTab('setup')"   style="display:none;">Settings</button>
     </div>
 
     <!-- ENTRY TAB -->
@@ -458,7 +377,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
           </div>
           <div class="fg">
             <label for="f-meal-type">Meal type</label>
-            <select id="f-meal-type"><option value="Supper">Supper</option></select>
+<select id="f-meal-type"><option value="KidsCafe_Supper">Kids Cafe — Supper</option></select>
           </div>
           <div class="fg">
             <label for="f-prev-left">Previous leftover qty</label>
@@ -472,8 +391,24 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
           <input type="hidden" id="f-avail">
         </div>
         <div class="grid2" style="margin-bottom:0.75rem;">
-          <div class="fg"><label for="f-first">First meal qty</label><input type="number" id="f-first" min="0" placeholder="Children — 1st" oninput="recalc()"></div>
-          <div class="fg"><label for="f-second">Second meal qty</label><input type="number" id="f-second" min="0" placeholder="Children — 2nd" oninput="recalc()"></div>
+          <div class="fg">
+            <label for="f-first">First meal qty</label>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;max-width:200px;">
+              <input type="number" id="f-first" min="0" placeholder="0" oninput="recalc()"
+                style="text-align:center;font-size:32px;font-weight:700;height:80px;border-radius:16px;width:100%;border:2.5px solid var(--border);">
+              <button type="button" class="counter-btn counter-plus" onclick="adjustCount('f-first',1)">+</button>
+              <button type="button" class="counter-btn counter-minus" onclick="adjustCount('f-first',-1)">−</button>
+            </div>
+          </div>
+          <div class="fg">
+            <label for="f-second">Second meal qty</label>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;max-width:200px;">
+              <input type="number" id="f-second" min="0" placeholder="0" oninput="recalc()"
+                style="text-align:center;font-size:32px;font-weight:700;height:80px;border-radius:16px;width:100%;border:2.5px solid var(--border);">
+              <button type="button" class="counter-btn counter-plus" onclick="adjustCount('f-second',1)">+</button>
+              <button type="button" class="counter-btn counter-minus" onclick="adjustCount('f-second',-1)">−</button>
+            </div>
+          </div>
           <div class="fg"><label for="f-adult-prog">Adult program qty</label><input type="number" id="f-adult-prog" min="0" placeholder="Program staff" oninput="recalc()"></div>
           <div class="fg"><label for="f-adult-nonprog">Adult non-program qty</label><input type="number" id="f-adult-nonprog" min="0" placeholder="Non-program adults" oninput="recalc()"></div>
         </div>
@@ -517,10 +452,21 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
       <!-- E-Signature -->
       <div class="card">
         <div class="card-title"><i class="ti ti-pen"></i>E-signature</div>
+        <div id="locked-banner" class="alert alert-warning" style="display:none;margin-bottom:1rem;">
+          <i class="ti ti-lock"></i>&nbsp; This record has been certified and <strong>locked</strong>. Only a monitor administrator can unlock it for editing.
+        </div>
         <div class="esig-box">
           <div class="fg">
             <label for="f-sig-name">Person completing this record</label>
             <select id="f-sig-name"><option value="">Select name…</option></select>
+          </div>
+          <div class="fg" style="margin-top:0.75rem;">
+            <label for="f-sig-drawn">Signature</label>
+            <div style="position:relative;">
+              <canvas id="f-sig-drawn" width="400" height="80"
+                style="border:1px solid var(--border);border-radius:6px;background:white;cursor:crosshair;width:100%;touch-action:none;"></canvas>
+              <button type="button" onclick="clearSig()" style="position:absolute;top:4px;right:6px;font-size:10px;padding:2px 7px;border:1px solid var(--border);border-radius:4px;background:white;cursor:pointer;color:var(--text-soft);">Clear</button>
+            </div>
           </div>
           <div class="esig-check">
             <input type="checkbox" id="f-sig-confirm">
@@ -552,16 +498,6 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 
     <!-- ADMIN TAB -->
     <div id="pane-admin" style="display:none;">
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
-          <div class="card-title" style="margin-bottom:0;"><i class="ti ti-building-community"></i>All sites — combined view</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn-sec" onclick="showTab('admin')" style="font-size:12px;height:34px;"><i class="ti ti-refresh"></i> Refresh</button>
-            <button class="btn-sec" onclick="exportCSV(true)" style="font-size:12px;height:34px;"><i class="ti ti-download"></i> Export CSV</button>
-          </div>
-        </div>
-        <div id="all-records"></div>
-      </div>
 
       <!-- Site Audit Export -->
       <div class="card" style="border-left:3px solid var(--navy);">
@@ -589,6 +525,18 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
           </button>
         </div>
         <div id="audit-export-status" style="margin-top:8px;font-size:13px;display:none;"></div>
+      </div>
+
+      <!-- All Sites Combined View -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+          <div class="card-title" style="margin-bottom:0;"><i class="ti ti-building-community"></i>All sites — combined view</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-sec" onclick="showTab('admin')" style="font-size:12px;height:34px;"><i class="ti ti-refresh"></i> Refresh</button>
+            <button class="btn-sec" onclick="exportCSV(true)" style="font-size:12px;height:34px;"><i class="ti ti-download"></i> Export CSV</button>
+          </div>
+        </div>
+        <div id="all-records"></div>
       </div>
     </div>
 
@@ -659,6 +607,95 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
     </div>
 
     <!-- SETUP TAB -->
+    <!-- SITE INFO TAB -->
+    <div id="pane-siteinfo" style="display:none;">
+      <!-- Excel Import -->
+      <div class="card" style="border-left:3px solid var(--amber);">
+        <div class="card-title"><i class="ti ti-file-import"></i>Import from Excel</div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
+          Upload your <strong>site_info_import_template.xlsx</strong> to bulk-import all site information.
+          Columns mapped: <strong>Training Attendee 1/2</strong> + <strong>On-Site Supervisor</strong> → Staff &nbsp;·&nbsp;
+          <strong>AGENCY NO</strong> → Site ID &nbsp;·&nbsp; <strong>Admin Email</strong> → Primary email (used for reminders) &nbsp;·&nbsp;
+          <strong>Administrator Contact</strong> → Admin contact.
+        </p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <label style="cursor:pointer;">
+            <input type="file" id="si-import-file" accept=".xlsx,.xls" style="display:none;" onchange="previewImport(event)">
+            <span class="btn-sec" style="display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 16px;cursor:pointer;font-family:DM Sans,sans-serif;font-size:14px;border:1px solid var(--border);border-radius:6px;background:white;color:var(--text-mid);">
+              <i class="ti ti-upload"></i> Choose Excel file
+            </span>
+          </label>
+          <button class="btn-primary" id="si-import-btn" onclick="runImport()" style="display:none;">
+            <i class="ti ti-cloud-upload"></i> Import to Firebase
+          </button>
+        </div>
+        <div id="si-import-preview" style="margin-top:1rem;display:none;"></div>
+        <div id="si-import-status" style="margin-top:8px;font-size:13px;display:none;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="ti ti-building-skyscraper"></i>Site information manager</div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
+          Select a site to view and edit its trained personnel, supervisor email, agency name, and agency number.
+          All changes save directly to Firebase — not to local storage or GitHub.
+        </p>
+        <div class="filter-row" style="margin-bottom:1rem;">
+          <div class="fg">
+            <label for="si-site-select">Select site</label>
+            <select id="si-site-select" onchange="loadSiteInfo()" style="width:320px;">
+              <option value="">Choose a site…</option>
+            </select>
+          </div>
+        </div>
+        <div id="si-form" style="display:none;">
+          <div class="grid2" style="margin-bottom:1rem;">
+            <div class="fg">
+              <label for="si-agency-name">Agency name</label>
+              <input type="text" id="si-agency-name" placeholder="e.g. Greater Cleveland Food Bank">
+            </div>
+            <div class="fg">
+              <label for="si-agency-number">Agency number</label>
+              <input type="text" id="si-agency-number" placeholder="e.g. 12345">
+            </div>
+            <div class="fg">
+              <label for="si-pin">Site PIN / Password</label>
+              <input type="text" id="si-pin" placeholder="5-digit PIN" maxlength="10">
+            </div>
+            <div class="fg">
+              <label for="si-email">Supervisor email</label>
+              <input type="email" id="si-email" placeholder="supervisor@site.org">
+            </div>
+            <div class="fg">
+              <label for="si-phone">Phone number</label>
+              <input type="text" id="si-phone" placeholder="(216) 555-0100">
+            </div>
+          </div>
+          <div class="fg" style="margin-bottom:1rem;">
+            <label>Trained personnel <span style="font-size:12px;color:var(--text-soft);">— one name per line</span></label>
+            <textarea id="si-staff" rows="5" placeholder="Jane Smith&#10;John Doe&#10;Maria Lopez" style="height:130px;"></textarea>
+          </div>
+          <div class="fg" style="margin-bottom:1rem;">
+            <label for="si-notes">Site notes (optional)</label>
+            <textarea id="si-notes" placeholder="Any additional information about this site…" style="height:80px;"></textarea>
+          </div>
+          <div class="btn-row">
+            <button class="btn-primary" onclick="saveSiteInfo()"><i class="ti ti-device-floppy"></i> Save to Firebase</button>
+            <button class="btn-sec" onclick="clearSiteInfoForm()"><i class="ti ti-x"></i> Clear</button>
+          </div>
+          <div id="si-status" style="margin-top:10px;font-size:13px;display:none;"></div>
+        </div>
+      </div>
+
+      <!-- Bulk view -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-table"></i>All sites — info overview</div>
+        <div style="display:flex;gap:8px;margin-bottom:1rem;">
+          <button class="btn-sec" style="font-size:12px;height:34px;" onclick="loadAllSiteInfo()"><i class="ti ti-refresh"></i> Refresh</button>
+        </div>
+        <div id="si-all-table" style="overflow-x:auto;"></div>
+      </div>
+    </div>
+
     <div id="pane-setup" style="display:none;">
       <div class="setup-banner">
         <strong><i class="ti ti-database" style="font-size:15px;"></i> Firebase Database — Connected</strong>
@@ -712,10 +749,27 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 
 <script>
 // ═══════════════════════════
+//  SAFE STORAGE WRAPPER
+//  Tracking prevention / private mode can block localStorage.
+//  These wrappers fall back to an in-memory store so the app
+//  keeps working (reading/writing to Firebase) even when blocked.
+// ═══════════════════════════
+const _memStore = {};
+function safeGet(key) {
+  try { return localStorage.getItem(key); }
+  catch(e) { return (key in _memStore) ? _memStore[key] : null; }
+}
+function safeSet(key, value) {
+  try { localStorage.setItem(key, value); }
+  catch(e) { _memStore[key] = value; }
+}
+
+// ═══════════════════════════
 //  TRAINED STAFF BY SITE
 // ═══════════════════════════
 const STAFF = {
   'DEFAULT': ['Site Coordinator','Program Staff','Site Director'],
+  // Add site-specific staff like: '11778': ['Jane Smith','John Doe'],
 };
 function getSiteStaff(siteId) {
   return STAFF[siteId] || STAFF['DEFAULT'];
@@ -723,13 +777,9 @@ function getSiteStaff(siteId) {
 
 // ═══════════════════════════
 //  DEPARTMENT & SITE EMAILS
+//  Replace DEPT_EMAIL with your department's actual email address
 // ═══════════════════════════
-// FIX #2: Runtime-mutable dept email. sendReminderEmail() reads getDeptEmail()
-// so that saveDeptEmail() overrides take effect immediately without a page reload.
-const DEPT_EMAIL_DEFAULT = 'cacfp@yourdepartment.org';
-function getDeptEmail() {
-  return localStorage.getItem('cacfp_dept_email') || DEPT_EMAIL_DEFAULT;
-}
+const DEPT_EMAIL = 'cacfp@yourdepartment.org'; // ← replace this
 
 const SITE_EMAILS = {
   '11778': 'supervisor@3mbafterschool.org',
@@ -827,113 +877,88 @@ const SITE_EMAILS = {
 };
 
 // ═══════════════════════════
-//  SITES CONFIG
+//  SITES CONFIG — Firebase-dynamic
 // ═══════════════════════════
-const SITES = {
-  '11778': { name: '3MB Afterschool', pin: '11778' },
-  '14569': { name: 'A Beautiful Mind', pin: '14569' },
-  '12152': { name: 'ACE Ohio Wellness', pin: '12152' },
-  '11550': { name: 'Applewood Centers - Cleveland', pin: '11550' },
-  '11551': { name: "Bellefaire Jewish Children's Bureau-ASP", pin: '11551' },
-  '12221': { name: 'CCPL - Brook Park Branch', pin: '12221' },
-  '12003': { name: 'CCPL - Brooklyn Branch', pin: '12003' },
-  '11935': { name: 'CCPL - Garfield Heights Branch', pin: '11935' },
-  '11936': { name: 'CCPL - Maple Heights Branch', pin: '11936' },
-  '12004': { name: 'CCPL - North Olmsted Branch', pin: '12004' },
-  '12005': { name: 'CCPL - Parma Branch', pin: '12005' },
-  '12036': { name: 'CCPL - Parma Heights Branch', pin: '12036' },
-  '12006': { name: 'CCPL - Parma Snow Branch', pin: '12006' },
-  '12295': { name: 'CCPL - Richmond Heights', pin: '12295' },
-  '12035': { name: 'CCPL - South Euclid-Lyndhurst Branch', pin: '12035' },
-  '12034': { name: 'CCPL - Southeast Branch', pin: '12034' },
-  '11849': { name: 'CCPL - Warrensville Branch', pin: '11849' },
-  '11655': { name: 'CH-UH Noble Library', pin: '11655' },
-  '11694': { name: 'Chagrin Falls Community Park', pin: '11694' },
-  '11855': { name: 'Clear Fork Christian Preschool & Learning Center', pin: '11855' },
-  '13318': { name: 'Cleveland Institute of Art', pin: '13318' },
-  '12008': { name: 'CMHA - Lakeview Community Center', pin: '12008' },
-  '11926': { name: 'CMHA - Outhwaite Homes Afterschool Enrichment Progr', pin: '11926' },
-  '12102': { name: 'CMHA - Riverside', pin: '12102' },
-  '11686': { name: 'CPL - 131st Street Branch', pin: '11686' },
-  '11698': { name: 'CPL - Addison', pin: '11698' },
-  '11938': { name: 'CPL - Brooklyn Branch', pin: '11938' },
-  '11759': { name: 'CPL - Carnegie West', pin: '11759' },
-  '11644': { name: 'CPL - Collinwood Branch', pin: '11644' },
-  '11760': { name: 'CPL - Eastman', pin: '11760' },
-  '11646': { name: 'CPL - Fleet Branch', pin: '11646' },
-  '11647': { name: 'CPL - Fulton Branch', pin: '11647' },
-  '11699': { name: 'CPL - Garden Valley', pin: '11699' },
-  '11850': { name: 'CPL - Glenville Branch', pin: '11850' },
-  '11648': { name: 'CPL - Harvard Lee Branch', pin: '11648' },
-  '11761': { name: 'CPL - Hough Branch', pin: '11761' },
-  '11939': { name: 'CPL - Jefferson Branch', pin: '11939' },
-  '11649': { name: 'CPL - Langston Hughes Branch', pin: '11649' },
-  '11940': { name: 'CPL - Lorain Branch', pin: '11940' },
-  '11941': { name: 'CPL - Main Branch', pin: '11941' },
-  '11762': { name: 'CPL - Martin Luther King Branch', pin: '11762' },
-  '11942': { name: 'CPL - Memorial Nottingham Branch', pin: '11942' },
-  '11937': { name: "CPL - Mt. Pleasant Branch", pin: '11937' },
-  '11690': { name: 'CPL - Rice Branch', pin: '11690' },
-  '11650': { name: 'CPL - Rockport Branch', pin: '11650' },
-  '11943': { name: 'CPL - South Branch', pin: '11943' },
-  '11763': { name: 'CPL - South Brooklyn', pin: '11763' },
-  '11651': { name: 'CPL - Sterling Branch', pin: '11651' },
-  '11944': { name: 'CPL - Union Branch', pin: '11944' },
-  '11945': { name: 'CPL - West Park Branch', pin: '11945' },
-  '11684': { name: 'CPL - Woodland Branch', pin: '11684' },
-  '11869': { name: 'East Cleveland Public Library', pin: '11869' },
-  '11509': { name: 'Fatima Family Center', pin: '11509' },
-  '12262': { name: 'Horizon - Clara E. Westropp', pin: '12262' },
-  '11930': { name: 'Horizon - Global Ambassadors Language Academy', pin: '11930' },
-  '12266': { name: 'Horizon - Old Brooklyn Community', pin: '12266' },
-  '13319': { name: 'Horizon - Stockyard', pin: '13319' },
-  '12261': { name: 'Horizon - West Park Community', pin: '12261' },
-  '14474': { name: 'Living Faith-DBA Guiding Point', pin: '14474' },
-  '14560': { name: 'New Mercy Outreach', pin: '14560' },
-  '14473': { name: 'Open Doors Academy- Anton Grdina', pin: '14473' },
-  '12223': { name: 'Open Doors Academy - Citizens Academy East', pin: '12223' },
-  '11948': { name: 'Open Doors Academy - Citizens Academy Southeast', pin: '11948' },
-  '11681': { name: 'Open Doors Academy - E-Prep Cliffs', pin: '11681' },
-  '11764': { name: 'Open Doors Academy - E-Prep Woodland Hills', pin: '11764' },
-  '12268': { name: 'Open Doors Academy - Max Hayes', pin: '12268' },
-  '12032': { name: 'Open Doors Academy - Orchard', pin: '12032' },
-  '14581': { name: 'Open Doors Academy- Wade Park School', pin: '14581' },
-  '14563': { name: 'Open Doors Academy - Willard', pin: '14563' },
-  '14579': { name: 'Open Doors Academy- Willson School', pin: '14579' },
-  '12244': { name: 'PHASTAR Corporation', pin: '12244' },
-  '11522': { name: 'Rainey Institute', pin: '11522' },
-  '13322': { name: 'Rainey Institute- Pivot Center', pin: '13322' },
-  '14484': { name: 'Re:Source Cleveland', pin: '14484' },
-  '14477': { name: 'River of Life Ministries', pin: '14477' },
-  '14559': { name: 'Salvation Army - Dewald Community Center', pin: '14559' },
-  '11642': { name: 'Salvation Army - Temple Corps', pin: '11642' },
-  '11552': { name: 'Scranton Road Ministries', pin: '11552' },
-  '11472': { name: 'St. Martin De Porres Center', pin: '11472' },
-  '14483': { name: 'Stepstone Academy', pin: '14483' },
-  '12063': { name: 'Team Couture Youth Center', pin: '12063' },
-  '12031': { name: 'Team DNA', pin: '12031' },
-  '12104': { name: 'The Garden Christian Academy', pin: '12104' },
-  '11868': { name: 'University Settlement', pin: '11868' },
-  '13325': { name: 'University Settlement- Broadway Academy', pin: '13325' },
-  '11434': { name: 'Urban Community School', pin: '11434' },
-  '12288': { name: 'Urban Squash', pin: '12288' },
-  '13334': { name: 'West Park Academy', pin: '13334' },
-  '12009': { name: 'Woodhill Community Center-TCB', pin: '12009' },
-  '14566': { name: 'You Care We Care', pin: '14566' },
-  '14562': { name: 'Young Achievers', pin: '14562' },
-  'MONITOR': { name: 'Monitor Organization', pin: '99999' }
+const SITES_SEED = {
+  'MONITOR': { name: 'Monitor Organization', pin: '99999', active: true }
 };
+let SITES = { ...SITES_SEED };
+
+async function loadSitesFromFirebase() {
+  const sel = document.getElementById('ls');
+  const statusEl = document.getElementById('login-sites-status');
+  try {
+    const snap = await _db.collection('site_info').get();
+    if (snap.empty) {
+      useFallbackSites();
+      if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'No sites in Firebase yet. Use Site Info tab to import.'; }
+      return;
+    }
+    const newSites = { 'MONITOR': { name: 'Monitor Organization', pin: '99999', active: true } };
+    snap.docs.forEach(d => {
+      const data = d.data();
+      if (!data.siteId || data.siteId === 'MONITOR') return;
+      newSites[data.siteId] = {
+        name:   data.siteName || data.agencyName || data.siteId,
+        pin:    data.pin      || data.siteId,
+        active: data.active !== false
+      };
+      if (data.email) SITE_EMAILS[data.siteId] = data.email;
+      if (data.staff && data.staff.length) STAFF[data.siteId] = data.staff;
+    });
+    SITES = newSites;
+    populateLoginDropdown();
+    if (statusEl) statusEl.style.display = 'none';
+    safeSet('cacfp_sites_cache', JSON.stringify(SITES));
+  } catch(e) {
+    console.warn('Could not load sites from Firebase:', e);
+    useFallbackSites();
+    if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Could not reach Firebase — using cached site list.'; }
+  }
+}
+
+function useFallbackSites() {
+  const cached = safeGet('cacfp_sites_cache');
+  if (cached) { try { SITES = JSON.parse(cached); } catch(e) { SITES = { ...SITES_SEED }; } }
+  else { SITES = { ...SITES_SEED }; }
+  populateLoginDropdown();
+}
+
+function populateLoginDropdown() {
+  const sel = document.getElementById('ls');
+  if (!sel) return;
+  const active = Object.entries(SITES)
+    .filter(([k, v]) => k !== 'MONITOR' && v.active !== false)
+    .sort(([,a],[,b]) => a.name.localeCompare(b.name));
+  sel.innerHTML = '<option value="">Select your site…</option>';
+  active.forEach(([k, v]) => {
+    const o = document.createElement('option');
+    o.value = k; o.textContent = v.name; sel.appendChild(o);
+  });
+  const mo = document.createElement('option');
+  mo.value = 'MONITOR'; mo.textContent = 'Monitor Organization (Admin)'; sel.appendChild(mo);
+  sel.disabled = false;
+}
+
+window.addEventListener('load', () => loadSitesFromFirebase());
 
 // ═══════════════════════════
 //  STATE
 // ═══════════════════════════
 let currentSite = null;
-let records = JSON.parse(localStorage.getItem('cacfp_v2') || '[]');
+let records = JSON.parse(safeGet('cacfp_v2') || '[]');
 let editingUid = null;
 let pendingUid = null;
 
-function saveLocal() { localStorage.setItem('cacfp_v2', JSON.stringify(records)); }
+function saveLocal() { safeSet('cacfp_v2', JSON.stringify(records)); }
 function save() { saveLocal(); }
+
+function adjustCount(id, delta) {
+  const el = document.getElementById(id);
+  const val = parseInt(el.value) || 0;
+  el.value = Math.max(0, val + delta);
+  recalc();
+}
 
 // ═══════════════════════════
 //  UID GENERATOR
@@ -950,7 +975,7 @@ function genUID() {
 // ═══════════════════════════
 async function loadFromFirebase(site) {
   setSyncBanner('loading', 'Loading from Firebase…');
-  try {
+    try {
     let ref;
     if (site === 'ALL') {
       ref = _db.collection('meal_records').orderBy('svcDate', 'desc');
@@ -978,6 +1003,7 @@ async function loadFromFirebase(site) {
 }
 
 async function saveToFirebase(rec) {
+  
   try {
     await _db.collection('meal_records').doc(rec.uid).set(rec);
     return true;
@@ -1013,6 +1039,7 @@ function doLogin() {
   err.style.display = 'none';
   currentSite = s;
 
+  // Show app immediately — no async waiting
   document.getElementById('login-page').style.display = 'none';
   document.getElementById('main-app').style.display = 'block';
   document.getElementById('hdr-site').textContent = SITES[s].name;
@@ -1030,7 +1057,7 @@ function doLogin() {
   // Populate summary site filter
   const sumSite = document.getElementById('summary-site');
   sumSite.innerHTML = '<option value="ALL">All sites</option>';
-  Object.entries(SITES).filter(([k]) => k !== 'MONITOR').forEach(([k, v]) => {
+  Object.entries(SITES).filter(([k]) => k !== 'MONITOR').sort(([,a],[,b]) => a.name.localeCompare(b.name)).forEach(([k, v]) => {
     const o = document.createElement('option'); o.value = k; o.textContent = v.name; sumSite.appendChild(o);
   });
 
@@ -1038,7 +1065,7 @@ function doLogin() {
   const auditSite = document.getElementById('audit-site');
   if (auditSite) {
     auditSite.innerHTML = '<option value="">Select site…</option>';
-    Object.entries(SITES).filter(([k]) => k !== 'MONITOR').forEach(([k, v]) => {
+    Object.entries(SITES).filter(([k]) => k !== 'MONITOR').sort(([,a],[,b]) => a.name.localeCompare(b.name)).forEach(([k, v]) => {
       const o = document.createElement('option'); o.value = k; o.textContent = v.name; auditSite.appendChild(o);
     });
   }
@@ -1048,6 +1075,7 @@ function doLogin() {
     document.getElementById('tab-admin').style.display = 'inline-block';
     document.getElementById('tab-tracker').style.display = 'inline-block';
     document.getElementById('tab-summary').style.display = 'inline-block';
+    document.getElementById('tab-siteinfo').style.display = 'inline-block';
     document.getElementById('tab-setup').style.display = 'inline-block';
     document.getElementById('tab-entry').style.display = 'none';
     document.getElementById('tab-records').style.display = 'none';
@@ -1057,15 +1085,11 @@ function doLogin() {
   }
 
   initFormDefaults();
-
-  // FIX #5: Load Firebase first, then auto-fill leftover so the value is
-  // based on the most recent server data rather than a potentially stale
-  // local cache.
-  loadFromFirebase(s === 'MONITOR' ? 'ALL' : s).then(() => {
-    autoFillPrevLeftover();
-  });
-  // Still call autoFillPrevLeftover immediately for instant UX using local cache.
   autoFillPrevLeftover();
+  setTimeout(initSigCanvas, 100);
+
+  // Load Firebase in background — non-blocking
+  loadFromFirebase(s === 'MONITOR' ? 'ALL' : s);
 }
 
 function doLogout() {
@@ -1074,7 +1098,7 @@ function doLogout() {
   document.getElementById('main-app').style.display = 'none';
   document.getElementById('lp').value = '';
   document.getElementById('ls').value = '';
-  ['tab-admin','tab-tracker','tab-summary','tab-setup'].forEach(id => {
+  ['tab-admin','tab-tracker','tab-summary','tab-siteinfo','tab-setup'].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = 'none';
   });
   document.getElementById('tab-entry').style.display = 'inline-block';
@@ -1083,24 +1107,21 @@ function doLogout() {
 
 // ═══════════════════════════
 //  TABS
-// FIX #4: Records tab previously called renderTable() eagerly AND again inside
-// .then(), causing a redundant double render. Now it renders only once after
-// the Firebase load completes (falling back to local data while loading).
 // ═══════════════════════════
 function showTab(t) {
-  ['entry','records','admin','tracker','summary','setup'].forEach(x => {
+  ['entry','records','admin','tracker','summary','siteinfo','setup'].forEach(x => {
     const pane = document.getElementById('pane-' + x);
     const tab  = document.getElementById('tab-' + x);
     if (pane) pane.style.display = x === t ? 'block' : 'none';
     if (tab)  tab.classList.toggle('active', x === t);
   });
   if (t === 'records') {
-    renderTable(false); // immediate render from local cache
-    loadFromFirebase(currentSite).then(() => renderTable(false)); // refresh after sync
+    renderTable(false);
+    loadFromFirebase(currentSite).then(() => renderTable(false));
   }
   if (t === 'admin') {
-    renderTable(true); // immediate render from local cache
-    loadFromFirebase('ALL').then(() => renderTable(true)); // refresh after sync
+    renderTable(true);
+    loadFromFirebase('ALL').then(() => renderTable(true));
   }
   if (t === 'tracker') {
     const tdate = document.getElementById('tracker-date');
@@ -1117,9 +1138,8 @@ function showTab(t) {
     renderSummary();
     loadFromFirebase('ALL').then(() => renderSummary());
   }
-  if (t === 'setup') {
-    renderSiteEmailList();
-  }
+  if (t === 'setup') { renderSiteEmailList(); }
+  if (t === 'siteinfo') { populateSiteInfoSelect(); loadAllSiteInfo(); }
 }
 
 // ═══════════════════════════
@@ -1139,7 +1159,7 @@ function initFormDefaults() {
 
 function autoFillPrevLeftover() {
   if (!currentSite || currentSite === 'MONITOR') return;
-  const siteRecs = records.filter(r => r.site === currentSite && !r.isDraft).sort((a, b) => b.svcDate.localeCompare(a.svcDate));
+  const siteRecs = records.filter(r => r.site === currentSite).sort((a, b) => b.svcDate.localeCompare(a.svcDate));
   if (siteRecs.length) {
     const last = siteRecs[0];
     document.getElementById('f-prev-left').value = last.leftover || 0;
@@ -1217,6 +1237,14 @@ async function saveRecord() {
     alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return;
   }
   // Duplicate check
+  if (editingUid && currentSite !== 'MONITOR') {
+    const lockedRec = records.find(r => r.uid === editingUid);
+    if (lockedRec && lockedRec.locked) {
+      alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
+      alertEl.innerHTML = '<i class="ti ti-lock"></i>&nbsp; This record is locked. Contact your monitor administrator to unlock it.';
+      return;
+    }
+  }
   const dupDate = document.getElementById('f-svc-date').value;
   const dupCheck = records.find(r => r.site === currentSite && r.svcDate === dupDate && r.uid !== editingUid);
   if (dupCheck) {
@@ -1235,6 +1263,7 @@ async function saveRecord() {
   const unsrv  = parseInt(document.getElementById('f-total-unsrv').value) || 0;
 
   if (editingUid) {
+    // Update existing record
     const idx = records.findIndex(r => r.uid === editingUid);
     if (idx !== -1) {
       const orig = records[idx];
@@ -1264,10 +1293,7 @@ async function saveRecord() {
       save();
       alertEl.style.display = 'flex'; alertEl.className = 'alert alert-success';
       alertEl.innerHTML = '<i class="ti ti-circle-check"></i>&nbsp; Record updated (Edit #' + editCount + '). Signed by ' + records[idx].sigName + '.';
-      setSyncBanner('loading','Saving to Firebase…');
-      const ok = await saveToFirebase(records[idx]);
-      setSyncBanner(ok?'ok':'error', ok?'Saved to Firebase ✓':'Saved locally — could not reach Firebase.');
-      setTimeout(() => setSyncBanner('hide'), 3000);
+      setSyncBanner('loading','Saving to Firebase…'); const ok = await saveToFirebase(records[idx]); setSyncBanner(ok?'ok':'error', ok?'Saved to Firebase ✓':'Saved locally — could not reach Firebase.'); setTimeout(() => setSyncBanner('hide'), 3000);
     }
     editingUid = null;
     clearForm();
@@ -1292,16 +1318,13 @@ async function saveRecord() {
       totalUnsrv: unsrv, leftover: n('f-leftover'),
       sigName: document.getElementById('f-sig-name').value, sigCertified: true,
       notes: document.getElementById('f-notes').value,
-      isDraft: false, createdAt: now, lastEditedAt: now, editCount: 0,
+      isDraft: false, locked: true, sigImage: getSigDataURL(), createdAt: now, lastEditedAt: now, editCount: 0,
       auditLog: [{ at: now, by: document.getElementById('f-sig-name').value, action: 'Created' }]
     };
     records.push(rec); save();
     alertEl.style.display = 'flex'; alertEl.className = 'alert alert-success';
     alertEl.innerHTML = '<i class="ti ti-circle-check"></i>&nbsp; Record saved [' + uid + '] for ' + rec.svcDate + '. Signed by ' + rec.sigName + '.';
-    setSyncBanner('loading','Saving to Firebase…');
-    const ok = await saveToFirebase(rec);
-    setSyncBanner(ok?'ok':'error', ok?'Saved to Firebase ✓':'Saved locally — could not reach Firebase.');
-    setTimeout(() => setSyncBanner('hide'), 3000);
+    setSyncBanner('loading','Saving to Firebase…'); const ok = await saveToFirebase(rec); setSyncBanner(ok?'ok':'error', ok?'Saved to Firebase ✓':'Saved locally — could not reach Firebase.'); setTimeout(() => setSyncBanner('hide'), 3000);
   }
   clearForm();
   setTimeout(() => showTab('records'), 800);
@@ -1437,9 +1460,6 @@ function isAnomaly(r) {
 //  RECORDS TABLE
 // ═══════════════════════════
 function renderTable(isAdmin) {
-  // FIX #3: exportCSV(true) already existed in original; here we ensure the
-  // admin table delete/audit buttons are only rendered when actually in MONITOR
-  // role, consistent with the intent of the isAdmin flag.
   const myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
   const ctr = document.getElementById(isAdmin ? 'all-records' : 'my-records');
   if (!myRecs.length) { ctr.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i>No records yet.</div>'; return; }
@@ -1461,18 +1481,17 @@ function renderTable(isAdmin) {
     const anomTip = anom ? anomFlags.join(' | ') : '';
     h += '<td>' + (r.isDraft ? '<span class="pill pill-warn">Draft</span>' : anom ? '<span class="pill pill-danger" title="' + anomTip + '" style="cursor:help;">⚠ ' + anomFlags.length + ' flag' + (anomFlags.length > 1 ? 's' : '') + '</span>' : edited ? '<span class="pill pill-info">Edited</span>' : '<span class="pill pill-ok">Clean</span>') + '</td>';
     h += '<td title="' + r.sigName + '">' + r.sigName + '</td>';
+    const canEdit = !isAdmin || currentSite === 'MONITOR';
     h += '<td><div style="display:flex;gap:3px;flex-wrap:wrap;">';
     if (!isAdmin) h += '<button class="btn-sm blue" title="Edit" onclick="editRecord(\'' + r.uid + '\')"><i class="ti ti-pencil"></i></button>';
     h += '<button class="btn-sm print-btn" title="Print" onclick="printRecord(\'' + r.uid + '\')"><i class="ti ti-printer"></i></button>';
-    if (isAdmin && currentSite === 'MONITOR') {
-      // FIX #3: These admin-only actions (export, audit log, delete) are now
-      // gated on currentSite === 'MONITOR' to prevent a non-monitor user
-      // who somehow reaches the admin pane from accessing cross-site controls.
+    if (isAdmin) {
       h += '<button class="btn-sm" title="Meal Count Sheet" style="border-color:var(--amber);color:var(--amber-dark);" onclick="exportMealCountSheet(\'' + r.uid + '\')"><i class="ti ti-file-spreadsheet"></i></button>';
       h += '<button class="btn-sm" title="Audit log" onclick="showAudit(\'' + r.uid + '\')"><i class="ti ti-history"></i></button>';
       h += '<button class="btn-sm" title="Delete" style="border-color:#c0392b;color:#c0392b;" onclick="deleteRecord(\'' + r.uid + '\')"><i class="ti ti-trash"></i></button>';
     }
     h += '</div></td></tr>';
+    // Audit log row (admin only, hidden by default)
     if (isAdmin) {
       h += '<tr id="audit-' + r.uid + '" style="display:none;"><td colspan="10" style="background:#f8f8f8;padding:8px 12px;">';
       if (r.auditLog && r.auditLog.length) {
@@ -1496,6 +1515,52 @@ async function deleteRecord(uid) {
   renderTable(true);
 }
 
+// ══════════════════════════════
+//  SIGNATURE CANVAS
+// ══════════════════════════════
+let sigPainting = false;
+function initSigCanvas() {
+  const canvas = document.getElementById('f-sig-drawn');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  ctx.strokeStyle = '#111'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+  const getPos = (e) => {
+    const r = canvas.getBoundingClientRect();
+    const src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX - r.left) * (canvas.width / r.width), y: (src.clientY - r.top) * (canvas.height / r.height) };
+  };
+  canvas.onmousedown = canvas.ontouchstart = (e) => { e.preventDefault(); sigPainting = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+  canvas.onmousemove = canvas.ontouchmove = (e) => { e.preventDefault(); if (!sigPainting) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+  canvas.onmouseup = canvas.ontouchend = () => { sigPainting = false; };
+}
+function clearSig() {
+  const canvas = document.getElementById('f-sig-drawn');
+  if (!canvas) return;
+  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+}
+function getSigDataURL() {
+  const canvas = document.getElementById('f-sig-drawn');
+  if (!canvas) return null;
+  const ctx = canvas.getContext('2d');
+  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+  const hasContent = Array.from(data).some((v, i) => i % 4 === 3 && v > 0);
+  return hasContent ? canvas.toDataURL('image/png') : null;
+}
+
+async function unlockRecord(uid) {
+  if (!confirm('Unlock this record for editing?')) return;
+  const idx = records.findIndex(r => r.uid === uid);
+  if (idx === -1) return;
+  records[idx].locked = false;
+  records[idx].unlockedAt = new Date().toISOString();
+  if (records[idx].auditLog) records[idx].auditLog.push({ at: records[idx].unlockedAt, by: 'Monitor', action: 'Unlocked by admin' });
+  saveLocal();
+  await saveToFirebase(records[idx]);
+  renderTable(true);
+  setSyncBanner('ok', 'Record unlocked ✓');
+  setTimeout(() => setSyncBanner('hide'), 2500);
+}
+
 function showAudit(uid) {
   const row = document.getElementById('audit-' + uid);
   if (row) row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
@@ -1503,6 +1568,9 @@ function showAudit(uid) {
 
 // ═══════════════════════════
 //  SITE TRACKER
+// ═══════════════════════════
+// ═══════════════════════════
+//  TRACKER VIEW MANAGEMENT
 // ═══════════════════════════
 let trackerView = 'daily';
 
@@ -1526,10 +1594,6 @@ function setTrackerView(v) {
 }
 
 // ── Daily ─────────────────────────────────────────────────
-// FIX #1: The email button onclick string previously mixed a template-literal
-// opening (\') with string concatenation (+ k +), producing the literal text
-// " + k + " in the HTML instead of the actual site ID value. Fixed to use
-// consistent string concatenation throughout.
 function renderTracker() {
   const date = document.getElementById('tracker-date').value;
   if (!date) return;
@@ -1542,9 +1606,8 @@ function renderTracker() {
   grid.innerHTML = allSites.map(([k, v]) => {
     const done = submitted.has(k);
     const hasEmail = !!SITE_EMAILS[k];
-    // FIX #1 applied here: consistent string concatenation, no mixed template literal.
     const emailBtn = !done && hasEmail
-      ? '<button class="btn-sm" style="margin-top:5px;font-size:10px;border-color:var(--navy);color:var(--navy);" onclick="sendReminderEmail(\'' + k + '\',[\'' + date + '\'])"><i class="ti ti-mail"></i> Email</button>'
+      ? '<button class="btn-sm" style="margin-top:5px;font-size:10px;border-color:var(--navy);color:var(--navy);" onclick="sendReminderEmail(\'" + k + "\',[\'" + date + "\'])"><i class="ti ti-mail"></i> Email</button>'
       : (!done && !hasEmail ? '<span style="font-size:10px;color:var(--text-soft);">No email on file</span>' : '');
     return '<div class="tracker-card ' + (done ? 'submitted' : 'missing') + '" style="display:flex;flex-direction:column;justify-content:space-between;">'
       + '<div><div class="tracker-card-name">' + v.name + '</div>'
@@ -1663,8 +1726,6 @@ function renderTrackerMonthly() {
 
 // ─────────────────────────────────────────────────────────
 //  EMAIL REMINDER
-// FIX #2: Uses getDeptEmail() instead of the hardcoded DEPT_EMAIL constant
-//  so that the value saved via saveDeptEmail() is always reflected.
 // ─────────────────────────────────────────────────────────
 function sendReminderEmail(siteId, missingDates) {
   const siteName = SITES[siteId] ? SITES[siteId].name : siteId;
@@ -1673,7 +1734,6 @@ function sendReminderEmail(siteId, missingDates) {
   const dateList = missingDates
     .map(d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}))
     .join('\n  - ');
-  const deptEmail = getDeptEmail();
   const subject = encodeURIComponent('CACFP Meal Count Submission Reminder — ' + siteName);
   const body = encodeURIComponent(
     'Dear ' + siteName + ' Site Supervisor,\n\n' +
@@ -1684,9 +1744,9 @@ function sendReminderEmail(siteId, missingDates) {
     'If you have any questions or need assistance, please do not hesitate to contact us.\n\n' +
     'Thank you,\n' +
     'Greater Cleveland Food Bank — Kids Cafe Program\n' +
-    deptEmail
+    DEPT_EMAIL
   );
-  window.open('mailto:' + email + '?from=' + encodeURIComponent(deptEmail) + '&subject=' + subject + '&body=' + body);
+  window.open('mailto:' + email + '?from=' + encodeURIComponent(DEPT_EMAIL) + '&subject=' + subject + '&body=' + body);
 }
 
 function sendAllReminders() {
@@ -1717,6 +1777,7 @@ function renderSummary() {
     days: a.days + 1
   }), { received: 0, served: 0, waste: 0, incomplete: 0, leftover: 0, days: 0 });
 
+  // Per-site breakdown
   const bySite = {};
   recs.forEach(r => {
     if (!bySite[r.site]) bySite[r.site] = { name: r.siteName, received: 0, served: 0, waste: 0, leftover: 0, days: 0 };
@@ -1807,7 +1868,7 @@ function printRecord(uid) {
 }
 
 // ═══════════════════════════
-//  FIREBASE STATUS / SYNC
+//  CSV EXPORT
 // ═══════════════════════════
 async function checkFirebaseStatus() {
   const el = document.getElementById('firebase-status');
@@ -1820,6 +1881,7 @@ async function checkFirebaseStatus() {
   }
 }
 
+
 async function syncAllToFirebase() {
   const el = document.getElementById('bulk-sync-status');
   el.style.display = 'block';
@@ -1828,6 +1890,7 @@ async function syncAllToFirebase() {
   for (const rec of records) { (await saveToFirebase(rec)) ? ok++ : fail++; }
   el.innerHTML = '<span style="color:var(--success-text);">Done — ' + ok + ' saved' + (fail ? ', ' + fail + ' failed' : '') + '.</span>';
 }
+
 
 // ═══════════════════════════
 //  MEAL COUNT SHEET EXPORT
@@ -1847,13 +1910,16 @@ function exportMealCountSheet(uid) {
   }
   function mergeRange(r1,c1,r2,c2) { merge.push({s:{r:r1-1,c:c1-1},e:{r:r2-1,c:c2-1}}); }
 
+  // Title
   mergeRange(row,1,row,20);
   setCell(row,1,'DAILY MEAL COUNT FORM', {bold:true});
   row++;
 
+  // Attachment label
   setCell(row,17,'Attachment 18');
   row++;
 
+  // Site info
   setCell(row,1,'Site Name:'); mergeRange(row,2,row,9); setCell(row,2, r.siteName);
   setCell(row,11,'Meal Type:'); setCell(row,14, r.mealType);
   setCell(row,18,'Site Number:'); setCell(row,19, r.site);
@@ -1868,15 +1934,18 @@ function exportMealCountSheet(uid) {
   setCell(row,15,'Date:'); mergeRange(row,16,row,20); setCell(row,16, r.svcDate);
   row++;
 
+  // [1] Available
   mergeRange(row,1,row,16);
   setCell(row,1, 'Meals received/prepared: ' + r.recvQty + '  +  Prev leftover: ' + r.prevLeftover + '  =  Total meals available [1]: ' + r.availQty, {bold:true});
   setCell(row,17, r.availQty);
   row++;
 
+  // First meals grid header
   mergeRange(row,1,row,20);
   setCell(row,1, 'First Meals Served to Children (cross off number as each child receives a meal):');
   row++;
 
+  // Number grid 1-150 (rows of 20, highlight up to firstMeal)
   for (let start = 1; start <= 150; start += 20) {
     for (let col = 0; col < 20 && (start+col) <= 150; col++) {
       const num = start + col;
@@ -1887,11 +1956,13 @@ function exportMealCountSheet(uid) {
     row++;
   }
 
+  // Total first meals [2]
   mergeRange(row,1,row,15); setCell(row,1,'');
   mergeRange(row,16,row,18); setCell(row,16,'Total First Meals + [2]', {bold:true});
   setCell(row,19, r.firstMeal || 0);
   row++;
 
+  // Second meals
   mergeRange(row,1,row,20); setCell(row,1,'Second Meals Served to Children:');
   row++;
   for (let col = 1; col <= 10; col++) setCell(row, col, col <= (r.secondMeal||0) ? '✓'+col : col);
@@ -1899,6 +1970,7 @@ function exportMealCountSheet(uid) {
   setCell(row,19, r.secondMeal || 0);
   row++;
 
+  // Program adults
   mergeRange(row,1,row,20); setCell(row,1,'Meals Served to Program Adults:');
   row++;
   for (let col = 1; col <= 10; col++) setCell(row, col, col <= (r.adultProg||0) ? '✓'+col : col);
@@ -1906,6 +1978,7 @@ function exportMealCountSheet(uid) {
   setCell(row,19, r.adultProg || 0);
   row++;
 
+  // Non-program adults
   mergeRange(row,1,row,20); setCell(row,1,'Meals Served to Non-Program Adults:');
   row++;
   for (let col = 1; col <= 10; col++) setCell(row, col, col <= (r.adultNonProg||0) ? '✓'+col : col);
@@ -1913,28 +1986,34 @@ function exportMealCountSheet(uid) {
   setCell(row,19, r.adultNonProg || 0);
   row++;
 
+  // Total served [6]
   mergeRange(row,1,row,18); setCell(row,1,'TOTAL MEALS SERVED = [6]', {bold:true});
   setCell(row,19, r.totalServed || 0);
   row++;
 
+  // Unservable [7]
   mergeRange(row,1,row,18); setCell(row,1,'Total damaged/incomplete/other non-reimbursable meals + [7]', {bold:true});
   setCell(row,19, r.totalUnsrv || 0);
   row++;
 
+  // Leftover [8]
   mergeRange(row,1,row,18); setCell(row,1,'Total leftover meals + [8]', {bold:true});
   setCell(row,19, r.leftover || 0);
   row++;
 
+  // Balance [9]
   const balance = r.totalServed + r.totalUnsrv + r.leftover;
   mergeRange(row,1,row,20);
   setCell(row,1,'Total of Items [6]+[7]+[8] = [9]: ' + balance + '  (should equal [1]: ' + r.availQty + ')  ' + (balance === r.availQty ? '✓ BALANCED' : '⚠ MISMATCH'), {bold:true});
   row++;
 
+  // Notes
   if (r.notes) {
     mergeRange(row,1,row,20); setCell(row,1,'Notes: ' + r.notes);
     row++;
   }
 
+  // Signature
   mergeRange(row,1,row,10); setCell(row,1,'By signing below, I certify that the above information is true and accurate:');
   row++;
   mergeRange(row,1,row,8); setCell(row,1, r.sigName);
@@ -1943,6 +2022,7 @@ function exportMealCountSheet(uid) {
   setCell(row,19,'Date');
   row++;
 
+  // Footer
   mergeRange(row,1,row,20);
   setCell(row,1,'Record ID: ' + r.uid + '  |  Generated from CACFP Meal Receipt & Service Information Tracker');
 
@@ -1956,6 +2036,7 @@ function exportMealCountSheet(uid) {
 
 // ═══════════════════════════
 //  MONTHLY AUDIT REPORT EXPORT
+//  Matches: Sponsor Monthly Meal Count Summary by Site
 // ═══════════════════════════
 function exportMonthlyReport(month, siteFilter) {
   let recs = records.filter(r => r.svcDate && r.svcDate.startsWith(month) && !r.isDraft);
@@ -1965,10 +2046,11 @@ function exportMonthlyReport(month, siteFilter) {
   const wb = XLSX.utils.book_new();
   const monthLabel = new Date(month + '-02').toLocaleString('en-US', { month: 'long', year: 'numeric' });
 
+  // ── Build per-site aggregates ─────────────────────────────
   const bySite = {};
   recs.forEach(r => {
     if (!bySite[r.site]) bySite[r.site] = {
-      name: r.siteName, id: r.site, days: 0,
+      name: r.siteName, id: r.site, mealType: r.mealType, days: 0,
       received: 0, available: 0,
       firstMeal: 0, secondMeal: 0, adultProg: 0, adultNonProg: 0,
       totalServed: 0, incomplete: 0, waste: 0, leftover: 0,
@@ -1993,11 +2075,15 @@ function exportMonthlyReport(month, siteFilter) {
 
   const sites = Object.values(bySite).sort((a,b) => a.name.localeCompare(b.name));
 
+  // ── Sheet 1: Sponsor Monthly Meal Count Summary ───────────
+  // Row 1: Title
   const summaryRows = [
     ['Sponsor Monthly Meal Count Summary by Site'],
     [monthLabel],
     [],
+    // Group headers row
     ['Program','','Meal','','','Site','','','Days','','Meal Counts'],
+    // Column headers — exactly matching the real file
     [
       'Program Abbreviation','Program Description',
       'Meal Abbreviation','Meal Description','Sort Order',
@@ -2012,8 +2098,10 @@ function exportMonthlyReport(month, siteFilter) {
   sites.forEach(s => {
     const adp = s.days > 0 ? Math.round((s.firstMeal / s.days) * 100) / 100 : 0;
     summaryRows.push([
-      'CACFP', 'Child and Adult Care Food Program',
-      'SUP', 'Supper', 5,
+      (s.mealType||'').startsWith('SFSP') ? 'SFSP' : 'CACFP',
+      (s.mealType||'').startsWith('SFSP') ? 'Summer Food Service Program' : 'Child and Adult Care Food Program',
+      s.mealType ? (s.mealType.split('_')[1]||'SUP') : 'SUP',
+      s.mealType ? s.mealType.replace('_',' ') : 'Supper', 5,
       s.name, s.id, 'FALSE',
       s.days, 0,
       s.received, s.received, s.available,
@@ -2023,6 +2111,7 @@ function exportMonthlyReport(month, siteFilter) {
     ]);
   });
 
+  // Totals row
   const T = sites.reduce((a,s) => ({
     days: a.days+s.days, received: a.received+s.received, available: a.available+s.available,
     firstMeal: a.firstMeal+s.firstMeal, secondMeal: a.secondMeal+s.secondMeal,
@@ -2055,6 +2144,7 @@ function exportMonthlyReport(month, siteFilter) {
   ];
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Sponsor Monthly Meal Count Summ');
 
+  // ── Sheet 2: Anomaly / Review Flags ──────────────────────
   const flagRows = [
     ['CACFP Meal Count — Anomaly & Review Flags'],
     [monthLabel],
@@ -2071,6 +2161,7 @@ function exportMonthlyReport(month, siteFilter) {
   wsFlags['!cols'] = [{wch:38},{wch:10},{wch:10},{wch:8},{wch:8},{wch:8},{wch:8},{wch:60}];
   XLSX.utils.book_append_sheet(wb, wsFlags, 'Review Flags');
 
+  // ── Sheet 3: Raw Daily Data ───────────────────────────────
   const rawRows = [[
     'Record ID','Site Name','Site ID','Serve Date','Meal','Day of Week',
     'Delivery Date','Delivery Temp','Received','Previous Leftover','Available',
@@ -2102,6 +2193,8 @@ function exportMonthlyReport(month, siteFilter) {
 
 // ═══════════════════════════
 //  SITE AUDIT REPORT EXPORT
+//  Matches: AUDIT_{Site}_{DateRange} format
+//  Sheets: Daily Meal Details, Monthly Averages, Monthly Totals, Site Information
 // ═══════════════════════════
 function exportSiteAudit() {
   const siteId  = document.getElementById('audit-site').value;
@@ -2134,6 +2227,7 @@ function exportSiteAudit() {
 
   const wb = XLSX.utils.book_new();
 
+  // ── Sheet 1: Daily Meal Details ───────────────────────────
   const dailyRows = [[
     'Date','Meal','Day of the Week','ServingLines','Stranded',
     'Delivery Date','Delivery Temp','Received','Previous Leftover','Available',
@@ -2151,9 +2245,7 @@ function exportSiteAudit() {
       r.firstMeal || 0, r.secondMeal || 0, r.adultProg || 0, r.adultNonProg || 0, r.totalServed || 0,
       0,
       r.waste || 0, r.incomplete || 0, r.totalUnsrv || 0, r.leftover || 0,
-      // FIX #7: Use r.editCount || 0 (not || 1) so unedited records
-      // correctly show 0 revisions instead of inflating the count.
-      r.editCount || 0,
+      r.editCount || 1,
       (r.lastEditedAt||r.createdAt||'').slice(0,16).replace('T',' ') + ' UTC',
       r.sigName || ''
     ]);
@@ -2164,9 +2256,10 @@ function exportSiteAudit() {
     {wch:8},{wch:8},{wch:10},{wch:12},{wch:8},{wch:8},{wch:22},{wch:20}];
   XLSX.utils.book_append_sheet(wb, wsDaily, 'Daily Meal Details');
 
+  // ── Build monthly buckets for averages & totals ───────────
   const byMonth = {};
   recs.forEach(r => {
-    const mo = r.svcDate.slice(0,7);
+    const mo = r.svcDate.slice(0,7); // YYYY-MM
     if (!byMonth[mo]) byMonth[mo] = {
       days:0, firstMeal:0, secondMeal:0, adultProg:0, adultNonProg:0,
       totalServed:0, waste:0, incomplete:0, totalUnsrv:0, leftover:0,
@@ -2182,8 +2275,7 @@ function exportSiteAudit() {
     m.totalServed += r.totalServed||0;
     m.waste       += r.waste||0; m.incomplete += r.incomplete||0;
     m.totalUnsrv  += r.totalUnsrv||0; m.leftover += r.leftover||0;
-    // FIX #7: Use r.editCount || 0 here too — consistent with daily rows above.
-    m.revisions   += r.editCount || 0;
+    m.revisions   += r.editCount||1;
     if ((r.firstMeal||0) > m.firstMealMax) m.firstMealMax = r.firstMeal||0;
     if (r.delTemp && parseFloat(r.delTemp) > 0) { m.delTemp += parseFloat(r.delTemp); m.tempCount++; }
   });
@@ -2194,6 +2286,7 @@ function exportSiteAudit() {
   };
   const avg = (v,d) => d > 0 ? Math.round((v/d)*100)/100 : 0;
 
+  // ── Sheet 2: Monthly Averages ─────────────────────────────
   const avgRows = [[
     '','Meal','Days Served','ADP','Delivery Temp AVG','Received AVG',
     'Previous Leftover AVG','Available AVG','First Meal AVG','Second Meal AVG',
@@ -2217,6 +2310,7 @@ function exportSiteAudit() {
   wsAvg['!cols'] = Array(19).fill({wch:12}); wsAvg['!cols'][0]={wch:8};
   XLSX.utils.book_append_sheet(wb, wsAvg, 'Monthly Averages');
 
+  // ── Sheet 3: Monthly Totals ───────────────────────────────
   const totRows = [[
     'Month','Meal','Days Served','First Meal Max','Received Total',
     'Previous Leftover Totals','Available Total','First Meal Totals',
@@ -2236,6 +2330,7 @@ function exportSiteAudit() {
   wsTot['!cols'] = Array(18).fill({wch:12}); wsTot['!cols'][0]={wch:8};
   XLSX.utils.book_append_sheet(wb, wsTot, 'Monthly Totals');
 
+  // ── Sheet 4: Site Information ─────────────────────────────
   const siteRows = [
     ['State','Sponsor Name','Sponsor Number','Site Name','Site Number','Program','Program Year'],
     ['OH','Greater Cleveland Food Bank','SAS-OH-100', siteName, siteId, 'CACFP',
@@ -2245,6 +2340,7 @@ function exportSiteAudit() {
   wsSite['!cols'] = [{wch:6},{wch:28},{wch:14},{wch:40},{wch:12},{wch:8},{wch:10}];
   XLSX.utils.book_append_sheet(wb, wsSite, 'Site Information');
 
+  // ── Write file ────────────────────────────────────────────
   const safeName = siteName.replace(/[^a-z0-9]/gi,'_').slice(0,30);
   XLSX.writeFile(wb, 'AUDIT_' + safeName + '_' + siteId + '_' + startDt + '_to_' + endDt + '.xlsx');
 
@@ -2253,12 +2349,272 @@ function exportSiteAudit() {
 }
 
 // ═══════════════════════════
+//  SITE INFO (Firebase-backed)
+// ═══════════════════════════
+function populateSiteInfoSelect() {
+  const sel = document.getElementById('si-site-select');
+  if (!sel || sel.options.length > 1) return;
+  Object.entries(SITES).filter(([k]) => k !== 'MONITOR')
+    .sort(([,a],[,b]) => a.name.localeCompare(b.name))
+    .forEach(([k, v]) => {
+      const o = document.createElement('option');
+      o.value = k; o.textContent = v.name + ' (' + k + ')';
+      sel.appendChild(o);
+    });
+}
+
+async function loadSiteInfo() {
+  const siteId = document.getElementById('si-site-select').value;
+  const form = document.getElementById('si-form');
+  if (!siteId) { form.style.display = 'none'; return; }
+  form.style.display = 'block';
+  // Clear form first
+  ['si-agency-name','si-agency-number','si-pin','si-email','si-phone','si-staff','si-notes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  // Pre-fill email from SITE_EMAILS if available
+  document.getElementById('si-email').value = SITE_EMAILS[siteId] || '';
+  // Load from Firebase
+  try {
+    const doc = await _db.collection('site_info').doc(siteId).get();
+    if (doc.exists) {
+      const d = doc.data();
+      document.getElementById('si-agency-name').value   = d.agencyName   || '';
+      document.getElementById('si-agency-number').value = d.agencyNumber || '';
+      document.getElementById('si-pin').value           = d.pin          || siteId;
+      document.getElementById('si-email').value         = d.email        || SITE_EMAILS[siteId] || '';
+      document.getElementById('si-phone').value         = d.phone        || '';
+      document.getElementById('si-staff').value         = (d.staff || []).join('\n');
+      document.getElementById('si-notes').value         = d.notes        || '';
+    }
+  } catch(e) { console.warn('Could not load site info:', e); }
+}
+
+async function saveSiteInfo() {
+  const siteId = document.getElementById('si-site-select').value;
+  const statusEl = document.getElementById('si-status');
+  if (!siteId) return;
+  const staffRaw = document.getElementById('si-staff').value;
+  const staff = staffRaw.split('\n').map(s => s.trim()).filter(Boolean);
+  const pinVal = document.getElementById('si-pin').value.trim() || siteId;
+  const nameVal = document.getElementById('si-agency-name').value.trim() || (SITES[siteId] ? SITES[siteId].name : siteId);
+  const data = {
+    siteId,
+    siteName:     nameVal,
+    agencyName:   nameVal,
+    agencyNumber: document.getElementById('si-agency-number').value.trim(),
+    pin:          pinVal,
+    active:       true,
+    email:        document.getElementById('si-email').value.trim(),
+    phone:        document.getElementById('si-phone').value.trim(),
+    staff,
+    notes:        document.getElementById('si-notes').value.trim(),
+    updatedAt:    new Date().toISOString()
+  };
+  try {
+    await _db.collection('site_info').doc(siteId).set(data);
+    // Update runtime SITE_EMAILS, STAFF, and SITES
+    if (data.email) SITE_EMAILS[siteId] = data.email;
+    if (staff.length) STAFF[siteId] = staff;
+    SITES[siteId] = { name: nameVal, pin: pinVal, active: true };
+    populateLoginDropdown();
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = '<span style="color:var(--success-text);">✓ Saved to Firebase — ' + (SITES[siteId]||{name:siteId}).name + '</span>';
+    loadAllSiteInfo();
+  } catch(e) {
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = '<span style="color:var(--danger-text);">✗ Save failed: ' + e.message + '</span>';
+  }
+}
+
+function clearSiteInfoForm() {
+  document.getElementById('si-site-select').value = '';
+  document.getElementById('si-form').style.display = 'none';
+  ['si-agency-name','si-agency-number','si-pin','si-email','si-phone','si-staff','si-notes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+async function loadAllSiteInfo() {
+  const ctr = document.getElementById('si-all-table');
+  if (!ctr) return;
+  ctr.innerHTML = '<p style="font-size:13px;color:var(--text-soft);">Loading…</p>';
+  try {
+    const snap = await _db.collection('site_info').get();
+    const data = {};
+    snap.docs.forEach(d => { data[d.id] = d.data(); });
+    const allSites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR')
+      .sort(([,a],[,b]) => a.name.localeCompare(b.name));
+    let h = '<table class="rec-table"><thead><tr>'
+      + '<th style="width:200px;">Site name</th>'
+      + '<th>Agency name</th>'
+      + '<th>Agency #</th>'
+      + '<th>Email</th>'
+      + '<th>Phone</th>'
+      + '<th>Staff count</th>'
+      + '<th style="width:50px;"></th>'
+      + '</tr></thead><tbody>';
+    allSites.forEach(([k, v]) => {
+      const d = data[k] || {};
+      const hasData = d.agencyName || d.email || (d.staff && d.staff.length);
+      h += '<tr style="' + (hasData ? '' : 'opacity:0.5;') + '">';
+      h += '<td title="' + v.name + '">' + v.name.slice(0,22) + (v.name.length>22?'…':'') + '</td>';
+      h += '<td>' + (d.agencyName||'—') + '</td>';
+      h += '<td>' + (d.agencyNumber||'—') + '</td>';
+      h += '<td style="font-size:11px;">' + (d.email||'—') + '</td>';
+      h += '<td>' + (d.phone||'—') + '</td>';
+      h += '<td style="text-align:center;">' + ((d.staff||[]).length||'—') + '</td>';
+      h += '<td><button class="btn-sm blue" data-siteid="' + k + '" onclick="editSiteInfoRow(this)"><i class="ti ti-pencil"></i></button></td>';
+        + '<i class="ti ti-pencil"></i></button></td>';
+      h += '</tr>';
+    });
+    h += '</tbody></table>';
+    h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">'
+      + Object.keys(data).length + ' of ' + allSites.length + ' sites have information on file.</p>';
+    ctr.innerHTML = h;
+  } catch(e) {
+    ctr.innerHTML = '<p style="font-size:13px;color:var(--danger-text);">Could not load: ' + e.message + '</p>';
+  }
+}
+
+// Also load site_info from Firebase on login to populate STAFF and SITE_EMAILS
+// ═══════════════════════════
+//  EXCEL IMPORT FOR SITE INFO
+// ═══════════════════════════
+let importPreviewData = [];
+
+function previewImport(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+      if (rows.length < 2) { showImportStatus('error','File appears empty.'); return; }
+      const headers = rows[0].map(h => String(h).trim());
+      const col = (name) => headers.findIndex(h => h.toLowerCase().includes(name.toLowerCase()));
+      const colT1   = col('Training Attendee 1');
+      const colT2   = col('Training Attendee 2');
+      const colNo   = col('AGENCY NO');
+      const colOrg  = col('Organization Name');
+      const colAdm  = col('Administrator Contact');
+      const colEm1  = col('Admin Email');
+      const colSup  = col('On-Site Supervisor');
+      const colEm2  = col('Email2');
+      if (colNo === -1 || colEm1 === -1) {
+        showImportStatus('error','Could not find "AGENCY NO" and "Admin Email" columns. Check the file matches the template.');
+        return;
+      }
+      importPreviewData = [];
+      rows.slice(1).forEach(row => {
+        const agencyNo = String(row[colNo]||'').trim();
+        if (!agencyNo || !SITES[agencyNo]) return;
+        const staff = [];
+        if (colT1>=0 && row[colT1]) staff.push(String(row[colT1]).trim());
+        if (colT2>=0 && row[colT2]) staff.push(String(row[colT2]).trim());
+        if (colSup>=0 && row[colSup]) staff.push(String(row[colSup]).trim());
+        const colPin2 = col('PIN') >= 0 ? col('PIN') : col('Password') >= 0 ? col('Password') : -1;
+        const sitePin = colPin2 >= 0 && row[colPin2] ? String(row[colPin2]).trim() : agencyNo;
+        const siteNameVal = colOrg>=0 ? String(row[colOrg]||'').trim() : agencyNo;
+        importPreviewData.push({
+          siteId:       agencyNo,
+          siteName:     siteNameVal,
+          agencyName:   siteNameVal,
+          agencyNumber: agencyNo,
+          pin:          sitePin,
+          active:       true,
+          email:        colEm1>=0 ? String(row[colEm1]||'').trim() : '',
+          email2:       colEm2>=0 ? String(row[colEm2]||'').trim() : '',
+          adminContact: colAdm>=0 ? String(row[colAdm]||'').trim() : '',
+          staff:        [...new Set(staff.filter(Boolean))],
+          updatedAt:    new Date().toISOString()
+        });
+      });
+      if (!importPreviewData.length) {
+        showImportStatus('error','No matching site IDs found. Ensure AGENCY NO values match site numbers in the app.');
+        return;
+      }
+      let h = '<p style="font-size:13px;color:var(--text-mid);margin-bottom:8px;"><strong>'
+        + importPreviewData.length + ' sites</strong> ready to import — review before confirming:</p>';
+      h += '<div style="overflow-x:auto;max-height:220px;overflow-y:auto;">'
+        + '<table class="rec-table"><thead><tr>'
+        + '<th>Site</th><th>Agency #</th><th>PIN</th><th>Admin email</th><th>Staff</th>'
+        + '</tr></thead><tbody>';
+      importPreviewData.forEach(r => {
+        h += '<tr><td>' + r.siteName.slice(0,22) + '</td><td>' + r.agencyNumber + '</td>'
+          + '<td style="font-family:monospace;">' + (r.pin||r.agencyNumber) + '</td>'
+          + '<td style="font-size:11px;">' + (r.email||'—') + '</td>'
+          + '<td style="font-size:11px;">' + r.staff.join(', ') + '</td></tr>';
+      });
+      h += '</tbody></table></div>';
+      document.getElementById('si-import-preview').innerHTML = h;
+      document.getElementById('si-import-preview').style.display = 'block';
+      document.getElementById('si-import-btn').style.display = 'inline-flex';
+      document.getElementById('si-import-status').style.display = 'none';
+    } catch(err) { showImportStatus('error','Could not read file: ' + err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function runImport() {
+  if (!importPreviewData.length) return;
+  const btn = document.getElementById('si-import-btn');
+  btn.innerHTML = '<i class="ti ti-loader-2"></i> Importing…'; btn.disabled = true;
+  let ok = 0, fail = 0;
+  for (const site of importPreviewData) {
+    try {
+      await _db.collection('site_info').doc(site.siteId).set(site);
+      SITE_EMAILS[site.siteId] = site.email;
+      if (site.staff.length) STAFF[site.siteId] = site.staff;
+      ok++;
+    } catch(e) { console.warn('Import failed for ' + site.siteId, e); fail++; }
+  }
+  btn.innerHTML = '<i class="ti ti-cloud-upload"></i> Import to Firebase'; btn.disabled = false;
+  importPreviewData = [];
+  document.getElementById('si-import-preview').style.display = 'none';
+  document.getElementById('si-import-file').value = '';
+  btn.style.display = 'none';
+  showImportStatus(fail===0?'ok':'warn',
+    fail===0 ? '✓ Imported ' + ok + ' sites. Site list, emails, staff, and PINs are now live.' : ok + ' imported, ' + fail + ' failed.');
+  await loadSitesFromFirebase();
+  loadAllSiteInfo();
+}
+
+function showImportStatus(type, msg) {
+  const el = document.getElementById('si-import-status');
+  if (!el) return;
+  el.style.display = 'block';
+  const col = {ok:'var(--success-text)',error:'var(--danger-text)',warn:'var(--warning-text)'};
+  el.innerHTML = '<span style="color:' + (col[type]||'inherit') + ';">' + msg + '</span>';
+}
+
+function editSiteInfoRow(btn) {
+  const siteId = btn.getAttribute('data-siteid');
+  const sel = document.getElementById('si-site-select');
+  if (sel) { sel.value = siteId; loadSiteInfo(); sel.scrollIntoView({behavior:'smooth'}); }
+}
+
+async function loadSiteInfoIntoRuntime() {
+  try {
+    const snap = await _db.collection('site_info').get();
+    snap.docs.forEach(d => {
+      const data = d.data();
+      if (data.email && data.siteId) SITE_EMAILS[data.siteId] = data.email;
+      if (data.staff && data.staff.length && data.siteId) STAFF[data.siteId] = data.staff;
+    });
+  } catch(e) { console.warn('Could not load site info into runtime:', e); }
+}
+
+// ═══════════════════════════
 //  EMAIL MANAGEMENT (Setup tab)
 // ═══════════════════════════
 function renderSiteEmailList() {
   const ctr = document.getElementById('site-email-list');
   if (!ctr) return;
-  const saved = JSON.parse(localStorage.getItem('cacfp_site_emails') || '{}');
+  const saved = JSON.parse(safeGet('cacfp_site_emails') || '{}');
+  // Merge saved into SITE_EMAILS
   Object.keys(saved).forEach(k => { if (SITE_EMAILS.hasOwnProperty(k)) SITE_EMAILS[k] = saved[k]; });
   let h = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
   h += '<thead><tr><th style="text-align:left;padding:6px 8px;font-size:11px;color:var(--text-soft);border-bottom:2px solid var(--border);">Site</th><th style="text-align:left;padding:6px 8px;font-size:11px;color:var(--text-soft);border-bottom:2px solid var(--border);">Supervisor Email</th></tr></thead><tbody>';
@@ -2268,19 +2624,18 @@ function renderSiteEmailList() {
   });
   h += '</tbody></table>';
   ctr.innerHTML = h;
-  // Pre-fill dept email from localStorage (FIX #2: reads the saved value)
-  const saved_dept = localStorage.getItem('cacfp_dept_email');
+  // Pre-fill dept email
+  const saved_dept = safeGet('cacfp_dept_email');
   if (saved_dept) document.getElementById('dept-email-input').value = saved_dept;
 }
 
-// FIX #2: saveDeptEmail now only writes to localStorage. getDeptEmail() reads
-// from localStorage, so sendReminderEmail() will always use the latest saved
-// value without needing a separate runtime override variable.
 function saveDeptEmail() {
   const val = document.getElementById('dept-email-input').value.trim();
   const el = document.getElementById('dept-email-status');
   if (!val) return;
-  localStorage.setItem('cacfp_dept_email', val);
+  safeSet('cacfp_dept_email', val);
+  // Update the runtime constant
+  window._DEPT_EMAIL_OVERRIDE = val;
   el.style.display = 'block';
   el.innerHTML = '<span style="color:var(--success-text);">✓ Department email saved.</span>';
 }
@@ -2293,18 +2648,13 @@ function saveSiteEmails() {
     SITE_EMAILS[k] = inp.value.trim();
     if (inp.value.trim()) saved[k] = inp.value.trim();
   });
-  localStorage.setItem('cacfp_site_emails', JSON.stringify(saved));
+  safeSet('cacfp_site_emails', JSON.stringify(saved));
   const el = document.getElementById('site-email-status');
   el.style.display = 'block';
   el.innerHTML = '<span style="color:var(--success-text);">✓ Site emails saved — ' + Object.keys(saved).length + ' address(es) on file.</span>';
 }
 
 function exportCSV(isAdmin) {
-  // FIX #3: Guard the all-records export behind the MONITOR role check.
-  if (isAdmin && currentSite !== 'MONITOR') {
-    console.warn('exportCSV(true) blocked: not a MONITOR session.');
-    return;
-  }
   const myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
   if (!myRecs.length) return;
   const hdr = ['Record ID','Site ID','Site Name','Receiver','Del Date','Del Time','Del Temp (F)','Recv Qty','Svc Date','Svc Time','Meal Type','Prev Leftover','Available Qty','First Meal','Second Meal','Adult Program','Adult Non-Program','Total Served','Waste','Incomplete','Total Unservable','Leftover','Sig Name','Certified','Notes','Created At','Last Edited At','Edit Count'];
@@ -2323,6 +2673,8 @@ function exportCSV(isAdmin) {
   a.click();
 }
 function q(s) { return '"' + (s || '').replace(/"/g, '""') + '"'; }
+
+
 
 </script>
 </body>
