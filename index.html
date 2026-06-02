@@ -2492,8 +2492,8 @@ function previewImport(event) {
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
       if (rows.length < 2) { showImportStatus('error','File appears empty.'); return; }
-      const headers = rows[0].map(h => String(h).trim());
-      const col = (name) => headers.findIndex(h => h.toLowerCase().includes(name.toLowerCase()));
+      const headers = rows[0].map(v => String(v).trim());
+      const col = (name) => headers.findIndex(v => v.toLowerCase().includes(name.toLowerCase()));
       const colT1   = col('Training Attendee 1');
       const colT2   = col('Training Attendee 2');
       const colNo   = col('AGENCY NO');
@@ -2535,16 +2535,15 @@ function previewImport(event) {
         showImportStatus('error','No matching site IDs found. Ensure AGENCY NO values match site numbers in the app.');
         return;
       }
-      const newCount = importPreviewData.filter(r => !SITES[r.siteId]).length;
-      const updateCount = importPreviewData.length - newCount;
-      h += '<p style="font-size:13px;color:var(--text-mid);margin-bottom:8px;"><strong>'
-        + importPreviewData.length + ' sites</strong> ready to import — <span style="color:var(--success-text);">' + updateCount + ' updates</span>, <span style="color:var(--warning-text);">' + newCount + ' new</span>. Review before confirming:</p>';
+      let h = '<p style="font-size:13px;color:var(--text-mid);margin-bottom:8px;"><strong>'
+        + importPreviewData.length + ' sites</strong> ready to import — review before confirming:</p>';
       h += '<div style="overflow-x:auto;max-height:220px;overflow-y:auto;">'
         + '<table class="rec-table"><thead><tr>'
         + '<th>Status</th><th>Site</th><th>Agency #</th><th>PIN</th><th>Admin email</th><th>Staff</th>'
         + '</tr></thead><tbody>';
       importPreviewData.forEach(r => {
-const isNew = !SITES[r.siteId] || r.siteId === 'MONITOR';         h += '<tr><td><span class="pill ' + (isNew ? 'pill-warn' : 'pill-ok') + '">' + (isNew ? 'New' : 'Update') + '</span></td><td>' + r.siteName.slice(0,22) + '</td><td>' + r.agencyNumber + '</td>'
+        const isNew = !SITES[r.siteId];
+        h += '<tr><td><span class="pill ' + (isNew ? 'pill-warn' : 'pill-ok') + '">' + (isNew ? 'New' : 'Update') + '</span></td><td>' + r.siteName.slice(0,22) + '</td><td>' + r.agencyNumber + '</td>'
           + '<td style="font-family:monospace;">' + (r.pin||r.agencyNumber) + '</td>'
           + '<td style="font-size:11px;">' + (r.email||'—') + '</td>'
           + '<td style="font-size:11px;">' + r.staff.join(', ') + '</td></tr>';
@@ -2595,17 +2594,6 @@ function editSiteInfoRow(btn) {
   const siteId = btn.getAttribute('data-siteid');
   const sel = document.getElementById('si-site-select');
   if (sel) { sel.value = siteId; loadSiteInfo(); sel.scrollIntoView({behavior:'smooth'}); }
-}
-
-async function loadSiteInfoIntoRuntime() {
-  try {
-    const snap = await _db.collection('site_info').get();
-    snap.docs.forEach(d => {
-      const data = d.data();
-      if (data.email && data.siteId) SITE_EMAILS[data.siteId] = data.email;
-      if (data.staff && data.staff.length && data.siteId) STAFF[data.siteId] = data.staff;
-    });
-  } catch(e) { console.warn('Could not load site info into runtime:', e); }
 }
 
 // ═══════════════════════════
