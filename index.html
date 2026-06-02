@@ -2509,7 +2509,7 @@ function previewImport(event) {
       importPreviewData = [];
       rows.slice(1).forEach(row => {
         const agencyNo = String(row[colNo]||'').trim();
-        if (!agencyNo || !SITES[agencyNo]) return;
+        if (!agencyNo) return;
         const staff = [];
         if (colT1>=0 && row[colT1]) staff.push(String(row[colT1]).trim());
         if (colT2>=0 && row[colT2]) staff.push(String(row[colT2]).trim());
@@ -2535,14 +2535,16 @@ function previewImport(event) {
         showImportStatus('error','No matching site IDs found. Ensure AGENCY NO values match site numbers in the app.');
         return;
       }
-      let h = '<p style="font-size:13px;color:var(--text-mid);margin-bottom:8px;"><strong>'
-        + importPreviewData.length + ' sites</strong> ready to import — review before confirming:</p>';
+      const newCount = importPreviewData.filter(r => !SITES[r.siteId]).length;
+      const updateCount = importPreviewData.length - newCount;
+      h += '<p style="font-size:13px;color:var(--text-mid);margin-bottom:8px;"><strong>'
+        + importPreviewData.length + ' sites</strong> ready to import — <span style="color:var(--success-text);">' + updateCount + ' updates</span>, <span style="color:var(--warning-text);">' + newCount + ' new</span>. Review before confirming:</p>';
       h += '<div style="overflow-x:auto;max-height:220px;overflow-y:auto;">'
         + '<table class="rec-table"><thead><tr>'
-        + '<th>Site</th><th>Agency #</th><th>PIN</th><th>Admin email</th><th>Staff</th>'
+        + '<th>Status</th><th>Site</th><th>Agency #</th><th>PIN</th><th>Admin email</th><th>Staff</th>'
         + '</tr></thead><tbody>';
       importPreviewData.forEach(r => {
-        h += '<tr><td>' + r.siteName.slice(0,22) + '</td><td>' + r.agencyNumber + '</td>'
+const isNew = !SITES[r.siteId] || r.siteId === 'MONITOR';         h += '<tr><td><span class="pill ' + (isNew ? 'pill-warn' : 'pill-ok') + '">' + (isNew ? 'New' : 'Update') + '</span></td><td>' + r.siteName.slice(0,22) + '</td><td>' + r.agencyNumber + '</td>'
           + '<td style="font-family:monospace;">' + (r.pin||r.agencyNumber) + '</td>'
           + '<td style="font-size:11px;">' + (r.email||'—') + '</td>'
           + '<td style="font-size:11px;">' + r.staff.join(', ') + '</td></tr>';
