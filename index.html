@@ -205,6 +205,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
   color: var(--text-soft);
   line-height: 1.6;
   margin: 0;
+  font-weight: 700;
 }
 .cress-tagline b { color: #6b9e34; font-weight: 700; }
 
@@ -245,7 +246,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 }
 
 .counter-btn {
-  width: 100%; max-width: 200px; height: 52px; border-radius: 12px;
+  width: 100%; height: 52px; border-radius: 12px;
   border: 2.5px solid #111; background: white;
   color: #111; font-size: 28px; font-weight: 700;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
@@ -287,7 +288,6 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 <div id="login-page" class="login-page">
   <div class="login-card">
 <div class="login-logo">
-  <i class="ti ti-plant-2 cress-sprig" aria-hidden="true"></i>
   <div class="cress-mark">CRESS</div>
   <div class="cress-rule"></div>
   <p class="cress-tagline">
@@ -421,7 +421,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
         <div class="grid2" style="margin-bottom:0.75rem;">
           <div class="fg">
             <label for="f-first">First meal qty</label>
-            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;max-width:200px;margin:0 auto;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
               <input type="number" id="f-first" min="0" placeholder="0" oninput="recalc()"
                 style="text-align:center;font-size:32px;font-weight:700;height:80px;border-radius:16px;width:100%;border:2.5px solid var(--border);">
               <button type="button" class="counter-btn counter-plus" onclick="adjustCount('f-first',1)">+</button>
@@ -430,7 +430,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
           </div>
           <div class="fg">
             <label for="f-second">Second meal qty</label>
-            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;max-width:200px;margin:0 auto;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
               <input type="number" id="f-second" min="0" placeholder="0" oninput="recalc()"
                 style="text-align:center;font-size:32px;font-weight:700;height:80px;border-radius:16px;width:100%;border:2.5px solid var(--border);">
               <button type="button" class="counter-btn counter-plus" onclick="adjustCount('f-second',1)">+</button>
@@ -1465,6 +1465,8 @@ function clearForm() {
 // ═══════════════════════════
 //  ANOMALY DETECTION
 // ═══════════════════════════
+const ANOM = { wastePct: 0.30, leftoverPct: 0.40, servedPctMin: 0.30 };
+
 function isAnomaly(r) {
   if (!r.availQty) return null;
   const flags = [];
@@ -1473,11 +1475,11 @@ function isAnomaly(r) {
   const servedRatio = r.totalServed / r.availQty;
   const sum = r.totalServed + r.totalUnsrv + r.leftover;
   const bal = r.availQty - sum;
-  if (wasteRatio > 0.3)
+  if (wasteRatio > ANOM.wastePct)
     flags.push('Waste is ' + Math.round(wasteRatio * 100) + '% of available (' + r.waste + '/' + r.availQty + ')');
-  if (leftoverRatio > 0.4)
+  if (leftoverRatio > ANOM.leftoverPct)
     flags.push('Leftover is ' + Math.round(leftoverRatio * 100) + '% of available (' + r.leftover + '/' + r.availQty + ')');
-  if (servedRatio < 0.3 && r.totalServed > 0)
+  if (servedRatio < ANOM.servedPctMin && r.totalServed > 0)
     flags.push('Only ' + Math.round(servedRatio * 100) + '% of available meals were served (' + r.totalServed + '/' + r.availQty + ')');
   if (bal !== 0)
     flags.push('Balance off by ' + Math.abs(bal) + ' meal' + (Math.abs(bal) > 1 ? 's' : '') + ' (served+unsrv+left=' + sum + ', available=' + r.availQty + ')');
