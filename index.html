@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CRESS Forms for GCFB</title>
+<title>SESSION Forms for GCFB</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -185,8 +185,8 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 .login-demo { margin-top: 1.25rem; background: var(--cream); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; color: var(--text-soft); text-align: center; }
 .login-demo strong { color: var(--text-mid); }
 .login-logo { text-align: center; margin-bottom: 1.5rem; }
-.cress-sprig { font-size: 26px; color: #6b9e34; }
-.cress-mark {
+.session-sprig { font-size: 26px; color: #6b9e34; }
+.session-mark {
   font-size: 44px;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -195,19 +195,19 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
   line-height: 1;
   margin-top: 4px;
 }
-.cress-rule {
+.session-rule {
   width: 40px; height: 2px;
   background: #6b9e34; opacity: 0.5;
   margin: 14px auto;
 }
-.cress-tagline {
+.session-tagline {
   font-size: 14px;
   color: var(--text-soft);
   line-height: 1.6;
   margin: 0;
   font-weight: 700;
 }
-.cress-tagline b { color: #6b9e34; font-weight: 700; }
+.session-tagline b { color: #6b9e34; font-weight: 700; }
 
 /* SPINNER */
 .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
@@ -288,11 +288,11 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 <div id="login-page" class="login-page">
   <div class="login-card">
 <div class="login-logo">
-  <div class="cress-mark">CRESS</div>
-  <div class="cress-rule"></div>
-  <p class="cress-tagline">
-    <b>C</b>ollect &amp; <b>R</b>ecord <b>E</b>ntries<br>
-    of <b>S</b>hipments &amp; <b>S</b>ervices
+<div class="session-mark">SESSION</div>
+  <div class="session-rule"></div>
+  <p class="session-tagline">
+    <b>Save Electronic Shipment<br>
+    & Service Information ONline</b>
   </p>
 </div>
     <div id="login-err" class="alert alert-danger" style="display:none;margin-bottom:1rem;">
@@ -319,7 +319,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 <!-- MAIN APP -->
 <div id="main-app" style="display:none;">
   <div class="topbar">
-    <div class="topbar-brand">CRESS Forms for GCFB</div>
+    <div class="topbar-brand">SESSION Forms for GCFB</div>
     <div class="topbar-right">
       <span class="site-badge" id="hdr-site"></span>
       <button class="btn-signout" onclick="doLogout()"><i class="ti ti-logout" style="font-size:13px;"></i> Sign out</button>
@@ -1863,8 +1863,8 @@ function sendReminderEmail(siteId, missingDates) {
     'Dear ' + siteName + ' Site Supervisor,\n\n' +
     'This is a reminder that meal count records have not yet been submitted for the following date(s):\n\n' +
     '  - ' + dateList + '\n\n' +
-    'Please log in to the CACFP Meal Receipt & Service Information Tracker and submit your meal count records at your earliest convenience:\n\n' +
-    '  https://gcfb-kids.github.io/cacfp/\n\n' +
+'Please log in to SESSION and submit your meal count records at your earliest convenience:\n\n' +
+    '  https://bit.ly/session-gcfb\n\n' +
     'If you have any questions or need assistance, please do not hesitate to contact us.\n\n' +
     'Thank you,\n' +
     'Greater Cleveland Food Bank — Kids Cafe Program\n' +
@@ -1962,7 +1962,7 @@ function stat(label, val) {
   //  Both editable in the card and persisted; update each July.
   // ═══════════════════════════
 const DEFAULT_SUPPER_RATE = 4.76;
-const DEFAULT_CIL_RATE    = 0.3050;
+const DEFAULT_CIL_RATE    = 0.32;
 
 function getReimbRates() {
   const rate = parseFloat(safeGet('cacfp_supper_rate'));
@@ -2271,7 +2271,7 @@ function exportMealCountSheet(uid) {
 
   // Footer
   mergeRange(row,1,row,20);
-  setCell(row,1,'Record ID: ' + r.uid + '  |  Generated from CACFP Meal Receipt & Service Information Tracker');
+  setCell(row,1,'Record ID: ' + r.uid + '  |  Generated from SESSION for GCFB');
 
   ws['!ref'] = XLSX.utils.encode_range({s:{r:0,c:0}, e:{r:row, c:19}});
   ws['!merges'] = merge;
@@ -2378,7 +2378,7 @@ function exportMonthlyReport(month, siteFilter) {
     T.incomplete, T.waste, T.leftover, tadp, ''
   ]);
   summaryRows.push([]);
-  summaryRows.push(['Generated from CACFP Meal Receipt & Service Information Tracker — ' + new Date().toLocaleDateString()]);
+  summaryRows.push(['Generated from SESSION for GCFB — ' + new Date().toLocaleDateString()]);
 
   const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
   wsSummary['!cols'] = [
