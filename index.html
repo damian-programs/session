@@ -51,7 +51,7 @@
   --shadow-card: 0 2px 8px rgba(63,114,184,0.10), 0 1px 2px rgba(63,114,184,0.06);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text-main); min-height: 100vh; font-size: 17px; line-height: 1.65; }
+body { font-family: 'DM Sans', sans-serif; background-color: var(--cream); background-image: radial-gradient(rgba(63,114,184,0.09) 1px, transparent 1.5px); background-size: 20px 20px; color: var(--text-main); min-height: 100vh; font-size: 17px; line-height: 1.65; }
 
 /* TOPBAR */
 .topbar { background: var(--navy); color: white; padding: 0 1.5rem; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
@@ -177,7 +177,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 .audit-ts { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-soft); flex-shrink: 0; }
 
 /* LOGIN */
-.login-page { min-height: 100vh; background: #2a4f85; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+.login-page { min-height: 100vh; background-color: #2a4f85; background-image: radial-gradient(at 25% 20%, rgba(255,255,255,0.12), transparent 45%), radial-gradient(at 80% 85%, rgba(0,0,0,0.28), transparent 55%); display: flex; align-items: center; justify-content: center; padding: 2rem; }
 .login-card { background: white; border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(63,114,184,0.25); }
 .login-logo { text-align: center; margin-bottom: 2rem; }
 .login-logo h1 { font-size: 22px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
@@ -784,7 +784,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
       <div class="card">
         <div class="card-title"><i class="ti ti-mail-cog"></i>Email configuration</div>
         <div class="fg" style="margin-bottom:1rem;">
-          <label for="dept-email-input">Department email (sender / reply-to)</label>
+          <label for="dept-email-input">Department email (shown in reminder signature)</label>
           <div style="display:flex;gap:8px;">
             <input type="text" id="dept-email-input" placeholder="cacfp@yourdepartment.org" style="flex:1;">
             <button class="btn-primary green" style="height:38px;flex-shrink:0;" onclick="saveDeptEmail()"><i class="ti ti-check"></i> Save</button>
@@ -804,7 +804,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Made by Damian Feliciano &nbsp;·&nbsp; v2026.08.01</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;·&nbsp; v2026.08.04</div>
 
 <script>
 // ═══════════════════════════
@@ -838,7 +838,7 @@ function getSiteStaff(siteId) {
 //  DEPARTMENT & SITE EMAILS
 //  Replace DEPT_EMAIL with your department's actual email address
 // ═══════════════════════════
-const DEPT_EMAIL = 'cacfp@yourdepartment.org'; // ← replace this
+const DEPT_EMAIL = 'kids@clevelandfoodbank.org'; // ← replace this
 
 const SITE_EMAILS = {
   '11778': 'supervisor@3mbafterschool.org',
@@ -1610,7 +1610,7 @@ function renderTable(isAdmin) {
     if (isAdmin) {
       h += '<button class="btn-sm" title="Meal Count Sheet" style="border-color:var(--amber);color:var(--amber-dark);" onclick="exportMealCountSheet(\'' + r.uid + '\')"><i class="ti ti-file-spreadsheet"></i></button>';
       h += '<button class="btn-sm" title="Audit log" onclick="showAudit(\'' + r.uid + '\')"><i class="ti ti-history"></i></button>';
-      h += '<button class="btn-sm" title="Delete" style="border-color:#c0392b;color:#c0392b;" onclick="deleteRecord(\'' + r.uid + '\')"><i class="ti ti-trash"></i></button>';
+      if (r.locked) h += '<button class="btn-sm" title="Unlock for editing" style="border-color:var(--warning-text);color:var(--warning-text);" onclick="unlockRecord(\'' + r.uid + '\')"><i class="ti ti-lock-open"></i></button>';       h += '<button class="btn-sm" title="Delete" style="border-color:#c0392b;color:#c0392b;" onclick="deleteRecord(\'' + r.uid + '\')"><i class="ti ti-trash"></i></button>';
     }
     h += '</div></td></tr>';
     if (isAdmin) {
@@ -1851,10 +1851,16 @@ function renderTrackerMonthly() {
 // ─────────────────────────────────────────────────────────
 //  EMAIL REMINDER
 // ─────────────────────────────────────────────────────────
+function getDeptEmail() {
+  const saved = safeGet('cacfp_dept_email');
+  return (saved && saved.trim()) ? saved.trim() : DEPT_EMAIL;
+}
+
 function sendReminderEmail(siteId, missingDates) {
   const siteName = SITES[siteId] ? SITES[siteId].name : siteId;
   const email = SITE_EMAILS[siteId];
   if (!email) { alert('No email address on file for ' + siteName + '.'); return; }
+  const dept = getDeptEmail();
   const dateList = missingDates
     .map(d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}))
     .join('\n  - ');
@@ -1863,14 +1869,14 @@ function sendReminderEmail(siteId, missingDates) {
     'Dear ' + siteName + ' Site Supervisor,\n\n' +
     'This is a reminder that meal count records have not yet been submitted for the following date(s):\n\n' +
     '  - ' + dateList + '\n\n' +
-'Please log in to SESSION and submit your meal count records at your earliest convenience:\n\n' +
+    'Please log in to SESSION and submit your meal count records at your earliest convenience:\n\n' +
     '  https://bit.ly/session-gcfb\n\n' +
-    'If you have any questions or need assistance, please do not hesitate to contact us.\n\n' +
+    'If you have any questions or need assistance, please reply to this email or contact us at ' + dept + '.\n\n' +
     'Thank you,\n' +
     'Greater Cleveland Food Bank — Kids Cafe Program\n' +
-    DEPT_EMAIL
+    dept
   );
-  window.open('mailto:' + email + '?from=' + encodeURIComponent(DEPT_EMAIL) + '&subject=' + subject + '&body=' + body);
+  window.open('mailto:' + email + '?subject=' + subject + '&body=' + body);
 }
 
 function updateSelCount() {
