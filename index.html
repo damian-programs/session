@@ -555,6 +555,24 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
         <div id="audit-export-status" style="margin-top:8px;font-size:13px;display:none;"></div>
       </div>
 
+<!-- Reimbursement Estimate -->
+      <div class="card" style="border-left:3px solid var(--amber);">
+        <div class="card-title"><i class="ti ti-cash"></i>Reimbursement estimate</div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
+          Only <strong>first meals served to children</strong> are reimbursable under CACFP At-Risk Afterschool — one supper per child, per day.
+          Second meals and adult meals are <strong>not</strong> reimbursed.
+        </p>
+        <div class="filter-row" style="margin-bottom:1rem;">
+          <div class="fg"><label for="reimb-month">Month</label><input type="month" id="reimb-month" oninput="renderReimbursement()" style="width:160px;"></div>
+          <div class="fg"><label for="reimb-site">Site</label>
+            <select id="reimb-site" oninput="renderReimbursement()" style="width:220px;"><option value="ALL">All sites</option></select>
+          </div>
+          <div class="fg"><label for="reimb-rate">Supper rate ($)</label><input type="number" id="reimb-rate" step="0.01" oninput="saveReimbRates();renderReimbursement()" style="width:110px;"></div>
+          <div class="fg"><label for="reimb-cil">Cash-in-lieu ($)</label><input type="number" id="reimb-cil" step="0.0001" oninput="saveReimbRates();renderReimbursement()" style="width:120px;"></div>
+        </div>
+        <div id="reimb-content"></div>
+      </div>
+      
       <!-- All Sites Combined View -->
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
@@ -562,6 +580,15 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn-sec" onclick="showTab('admin')" style="font-size:12px;height:34px;"><i class="ti ti-refresh"></i> Refresh</button>
             <button class="btn-sec" onclick="exportCSV(true)" style="font-size:12px;height:34px;"><i class="ti ti-download"></i> Export CSV</button>
+          </div>
+        </div>
+        <div class="alert alert-info" style="margin-bottom:1rem;flex-direction:column;align-items:flex-start;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px;font-weight:600;"><i class="ti ti-flag"></i> How records are flagged</div>
+          <div style="font-size:12px;line-height:1.7;">
+            <strong>Waste %</strong> = Waste ÷ Available — <span style="color:var(--danger-text);font-weight:600;">red when over 30%</span><br>
+            <strong>Leftover %</strong> = Leftover ÷ Available — <span style="color:var(--danger-text);font-weight:600;">red when over 40%</span><br>
+            <strong>Served %</strong> = Total Served ÷ Available — flagged when under 30%<br>
+            <strong>Balance</strong> — flagged when Served + Unservable + Leftover ≠ Available
           </div>
         </div>
         <div id="all-records"></div>
@@ -601,17 +628,16 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 
         <div id="tracker-summary" style="margin-bottom:1rem;font-size:13px;color:var(--text-mid);"></div>
 
-        <!-- Send all reminders button (shown for weekly/monthly) -->
-        <div id="tracker-send-all-row" style="display:none;margin-bottom:1rem;">
-          <button class="btn-primary" onclick="sendAllReminders()">
-            <i class="ti ti-mail-forward"></i> Open all reminder emails
+<!-- Selected reminders row -->
+        <div id="tracker-send-all-row" style="display:none;align-items:center;gap:12px;margin-bottom:1rem;flex-wrap:wrap;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;">
+            <input type="checkbox" id="tracker-select-all" onchange="toggleSelectAll(this)" style="width:16px;height:16px;accent-color:var(--navy);"> Select all
+          </label>
+          <button class="btn-primary" onclick="sendSelectedReminders()">
+            <i class="ti ti-mail-forward"></i> Email selected (<span id="tracker-sel-count">0</span>)
           </button>
-          <span style="font-size:12px;color:var(--text-soft);margin-left:10px;">Opens one Outlook draft per missing site with an email address on file.</span>
+          <span style="font-size:12px;color:var(--text-soft);">Opens one Outlook draft per checked site.</span>
         </div>
-
-        <div class="tracker-grid" id="tracker-grid"></div>
-      </div>
-    </div>
 
     <!-- MONTHLY SUMMARY TAB -->
     <div id="pane-summary" style="display:none;">
@@ -773,7 +799,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Made by Damian Feliciano &nbsp;·&nbsp; v2026.06.02.2122</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Made by Damian Feliciano &nbsp;·&nbsp; v2026.08.01</div>
 
 <script>
 // ═══════════════════════════
@@ -1149,7 +1175,8 @@ function showTab(t) {
   }
   if (t === 'admin') {
     renderTable(true);
-    loadFromFirebase('ALL').then(() => renderTable(true));
+    renderReimbursement();
+    loadFromFirebase('ALL').then(() => { renderTable(true); renderReimbursement(); });
   }
   if (t === 'tracker') {
     const tdate = document.getElementById('tracker-date');
@@ -1489,14 +1516,68 @@ function isAnomaly(r) {
 // ═══════════════════════════
 //  RECORDS TABLE
 // ═══════════════════════════
+let adminSort = { col: 'svcDate', dir: 'desc' };
+function setAdminSort(col) {
+  if (adminSort.col === col) adminSort.dir = adminSort.dir === 'asc' ? 'desc' : 'asc';
+  else { adminSort.col = col; adminSort.dir = col === 'svcDate' ? 'desc' : 'asc'; }
+  renderTable(true);
+}
+function sortArrow(col) {
+  if (adminSort.col !== col) return '<span style="opacity:0.3;">&#8597;</span>';
+  return adminSort.dir === 'asc' ? '&#9650;' : '&#9660;';
+}
+
 function renderTable(isAdmin) {
   const myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
   const ctr = document.getElementById(isAdmin ? 'all-records' : 'my-records');
   if (!myRecs.length) { ctr.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i>No records yet.</div>'; return; }
-  const sorted = [...myRecs].sort((a, b) => b.svcDate.localeCompare(a.svcDate));
+
+  let sorted;
+  if (isAdmin) {
+    const dir = adminSort.dir === 'asc' ? 1 : -1;
+    const val = (r, c) => {
+      switch (c) {
+        case 'site':     return (r.siteName || '').toLowerCase();
+        case 'svcDate':  return r.svcDate || '';
+        case 'avail':    return r.availQty || 0;
+        case 'served':   return r.totalServed || 0;
+        case 'unsrv':    return r.totalUnsrv || 0;
+        case 'left':     return r.leftover || 0;
+        case 'wastePct': return r.availQty > 0 ? r.waste / r.availQty : -1;
+        case 'leftPct':  return r.availQty > 0 ? r.leftover / r.availQty : -1;
+        case 'balance':  return Math.abs((r.availQty||0) - ((r.totalServed||0)+(r.totalUnsrv||0)+(r.leftover||0)));
+        case 'sig':      return (r.sigName || '').toLowerCase();
+        default:         return r.svcDate || '';
+      }
+    };
+    sorted = [...myRecs].sort((a, b) => {
+      const va = val(a, adminSort.col), vb = val(b, adminSort.col);
+      if (va < vb) return -1 * dir;
+      if (va > vb) return 1 * dir;
+      return (b.svcDate || '').localeCompare(a.svcDate || '');
+    });
+  } else {
+    sorted = [...myRecs].sort((a, b) => b.svcDate.localeCompare(a.svcDate));
+  }
+
   let h = '<div style="overflow-x:auto;"><table class="rec-table"><thead><tr>';
-  if (isAdmin) h += '<th style="width:120px;">Site</th>';
-  h += '<th style="width:90px;">Date</th><th style="width:60px;">Avail</th><th style="width:60px;">Served</th><th style="width:60px;">Unsrv</th><th style="width:60px;">Left</th><th style="width:80px;">Balance</th><th style="width:90px;">Status</th><th>Signed by</th><th style="width:120px;"></th></tr></thead><tbody>';
+  if (isAdmin) {
+    h += '<th style="width:120px;cursor:pointer;" onclick="setAdminSort(\'site\')">Site ' + sortArrow('site') + '</th>';
+    h += '<th style="width:90px;cursor:pointer;" onclick="setAdminSort(\'svcDate\')">Date ' + sortArrow('svcDate') + '</th>';
+    h += '<th style="width:55px;cursor:pointer;" onclick="setAdminSort(\'avail\')">Avail ' + sortArrow('avail') + '</th>';
+    h += '<th style="width:55px;cursor:pointer;" onclick="setAdminSort(\'served\')">Served ' + sortArrow('served') + '</th>';
+    h += '<th style="width:55px;cursor:pointer;" onclick="setAdminSort(\'unsrv\')">Unsrv ' + sortArrow('unsrv') + '</th>';
+    h += '<th style="width:50px;cursor:pointer;" onclick="setAdminSort(\'left\')">Left ' + sortArrow('left') + '</th>';
+    h += '<th style="width:70px;cursor:pointer;" onclick="setAdminSort(\'wastePct\')">Waste % ' + sortArrow('wastePct') + '</th>';
+    h += '<th style="width:70px;cursor:pointer;" onclick="setAdminSort(\'leftPct\')">Left % ' + sortArrow('leftPct') + '</th>';
+    h += '<th style="width:75px;cursor:pointer;" onclick="setAdminSort(\'balance\')">Balance ' + sortArrow('balance') + '</th>';
+    h += '<th style="width:85px;">Status</th>';
+    h += '<th style="cursor:pointer;" onclick="setAdminSort(\'sig\')">Signed by ' + sortArrow('sig') + '</th>';
+    h += '<th style="width:120px;"></th></tr></thead><tbody>';
+  } else {
+    h += '<th style="width:90px;">Date</th><th style="width:60px;">Avail</th><th style="width:60px;">Served</th><th style="width:60px;">Unsrv</th><th style="width:60px;">Left</th><th style="width:80px;">Balance</th><th style="width:90px;">Status</th><th>Signed by</th><th style="width:120px;"></th></tr></thead><tbody>';
+  }
+
   sorted.forEach(r => {
     const sum = r.totalServed + r.totalUnsrv + r.leftover;
     const bal = r.availQty - sum;
@@ -1507,11 +1588,17 @@ function renderTable(isAdmin) {
     h += '<tr class="' + (anom ? 'anomaly' : '') + '" style="' + (r.isDraft ? 'opacity:0.65;font-style:italic;' : '') + '">';
     if (isAdmin) h += '<td title="' + r.siteName + '">' + r.siteName.substring(0,16) + (r.siteName.length > 16 ? '…':'') + '</td>';
     h += '<td>' + r.svcDate + '</td><td>' + r.availQty + '</td><td>' + r.totalServed + '</td><td>' + r.totalUnsrv + '</td><td>' + r.leftover + '</td>';
+    if (isAdmin) {
+      const wp = r.availQty > 0 ? r.waste / r.availQty : 0;
+      const lp = r.availQty > 0 ? r.leftover / r.availQty : 0;
+      const wpOver = wp > ANOM.wastePct, lpOver = lp > ANOM.leftoverPct;
+      h += '<td style="' + (wpOver ? 'color:var(--danger-text);font-weight:700;' : '') + '">' + (r.availQty > 0 ? Math.round(wp*100) + '%' : '—') + '</td>';
+      h += '<td style="' + (lpOver ? 'color:var(--danger-text);font-weight:700;' : '') + '">' + (r.availQty > 0 ? Math.round(lp*100) + '%' : '—') + '</td>';
+    }
     h += '<td><span class="pill ' + (ok ? 'pill-ok' : 'pill-warn') + '">' + (ok ? 'OK' : 'Off ' + Math.abs(bal)) + '</span></td>';
     const anomTip = anom ? anomFlags.join(' | ') : '';
     h += '<td>' + (r.isDraft ? '<span class="pill pill-warn">Draft</span>' : anom ? '<span class="pill pill-danger" title="' + anomTip + '" style="cursor:help;">⚠ ' + anomFlags.length + ' flag' + (anomFlags.length > 1 ? 's' : '') + '</span>' : edited ? '<span class="pill pill-info">Edited</span>' : '<span class="pill pill-ok">Clean</span>') + '</td>';
     h += '<td title="' + r.sigName + '">' + r.sigName + '</td>';
-    const canEdit = !isAdmin || currentSite === 'MONITOR';
     h += '<td><div style="display:flex;gap:3px;flex-wrap:wrap;">';
     if (!isAdmin) h += '<button class="btn-sm blue" title="Edit" onclick="editRecord(\'' + r.uid + '\')"><i class="ti ti-pencil"></i></button>';
     h += '<button class="btn-sm print-btn" title="Print" onclick="printRecord(\'' + r.uid + '\')"><i class="ti ti-printer"></i></button>';
@@ -1521,9 +1608,8 @@ function renderTable(isAdmin) {
       h += '<button class="btn-sm" title="Delete" style="border-color:#c0392b;color:#c0392b;" onclick="deleteRecord(\'' + r.uid + '\')"><i class="ti ti-trash"></i></button>';
     }
     h += '</div></td></tr>';
-    // Audit log row (admin only, hidden by default)
     if (isAdmin) {
-      h += '<tr id="audit-' + r.uid + '" style="display:none;"><td colspan="10" style="background:#f8f8f8;padding:8px 12px;">';
+      h += '<tr id="audit-' + r.uid + '" style="display:none;"><td colspan="12" style="background:#f8f8f8;padding:8px 12px;">';
       if (r.auditLog && r.auditLog.length) {
         r.auditLog.forEach(e => {
           h += '<div class="audit-entry"><span class="audit-ts">' + e.at.replace('T',' ').slice(0,16) + '</span><span>' + e.action + ' by ' + e.by + '</span></div>';
@@ -1533,7 +1619,7 @@ function renderTable(isAdmin) {
     }
   });
   h += '</tbody></table></div>';
-  if (isAdmin) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">⚠ Anomaly flags: waste &gt;30% of available, leftover &gt;40% of available, served &lt;30% of available, or balance mismatch. Hover flag count for details.</p>';
+  if (isAdmin) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">⚠ Waste % = waste ÷ available (red &gt; 30%) · Left % = leftover ÷ available (red &gt; 40%). Flags also cover served &lt; 30% of available and balance mismatches. Hover a flag count for details. Click any column header to sort.</p>';
   ctr.innerHTML = h;
 }
 
@@ -1613,7 +1699,7 @@ function setTrackerView(v) {
     if (btn) { btn.style.background = x === v ? 'var(--navy)' : ''; btn.style.color = x === v ? 'white' : ''; btn.style.borderColor = x === v ? 'var(--navy)' : ''; }
   });
   const sar = document.getElementById('tracker-send-all-row');
-  if (sar) sar.style.display = v !== 'daily' ? 'flex' : 'none';
+  if (sar) sar.style.display = 'none'; // shown by refreshSendRow() after each render
   const sum = document.getElementById('tracker-summary');
   const grid = document.getElementById('tracker-grid');
   if (sum) sum.innerHTML = '';
@@ -1634,17 +1720,18 @@ function renderTracker() {
   const missing = allSites.filter(([k]) => !submitted.has(k));
   summary.innerHTML = '<strong>' + submitted.size + '</strong> of <strong>' + allSites.length + '</strong> sites submitted for ' + date + '. <span style="color:var(--danger-text);">' + missing.length + ' missing.</span>';
   grid.innerHTML = allSites.map(([k, v]) => {
-    const done = submitted.has(k);
+  const done = submitted.has(k);
     const hasEmail = !!SITE_EMAILS[k];
-    const emailBtn = !done && hasEmail
-      ? '<button class="btn-sm" style="margin-top:5px;font-size:10px;border-color:var(--navy);color:var(--navy);" onclick="sendReminderEmail(\'" + k + "\',[\'" + date + "\'])"><i class="ti ti-mail"></i> Email</button>'
+    const selBox = (!done && hasEmail)
+      ? '<label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;cursor:pointer;"><input type="checkbox" class="tracker-sel" data-site="' + k + '" data-dates=\'["' + date + '"]\' onchange="updateSelCount()" style="width:15px;height:15px;accent-color:var(--navy);"> Select to email</label>'
       : (!done && !hasEmail ? '<span style="font-size:10px;color:var(--text-soft);">No email on file</span>' : '');
     return '<div class="tracker-card ' + (done ? 'submitted' : 'missing') + '" style="display:flex;flex-direction:column;justify-content:space-between;">'
       + '<div><div class="tracker-card-name">' + v.name + '</div>'
       + '<div class="tracker-card-sub">' + (done ? '✓ Submitted' : '✗ Not submitted') + '</div></div>'
-      + (emailBtn ? '<div style="margin-top:4px;">' + emailBtn + '</div>' : '')
+      + (selBox ? '<div style="margin-top:4px;">' + selBox + '</div>' : '')
       + '</div>';
   }).join('');
+  refreshSendRow();
 }
 
 // ── Weekly ────────────────────────────────────────────────
@@ -1671,7 +1758,7 @@ function renderTrackerWeekly() {
   let totalMissing = 0;
   let h = '<div style="overflow-x:auto;"><table class="tracker-table"><thead><tr><th class="site-col">Site</th>';
   dayLabels.forEach(d => { h += '<th>' + d + '</th>'; });
-  h += '<th>Status</th><th>Action</th></tr></thead><tbody>';
+  h += '<th>Status</th><th>Email</th></tr></thead><tbody>';
   allSites.forEach(([k, v]) => {
     const missingDays  = weekDays.filter(d => !submittedByDate[d].has(k));
     const submittedDays = weekDays.filter(d => submittedByDate[d].has(k));
@@ -1685,8 +1772,8 @@ function renderTrackerWeekly() {
       h += '<td><span class="' + (ok ? 'day-cell-ok' : 'day-cell-miss') + '">' + (ok ? '✓' : '✗') + '</span></td>';
     });
     h += '<td><span class="pill ' + (allOk ? 'pill-ok' : 'pill-danger') + '">' + submittedDays.length + '/5</span></td>';
-    if (!allOk && hasEmail) {
-      h += '<td><button class="btn-sm" style="font-size:10px;border-color:var(--navy);color:var(--navy);" onclick="sendReminderEmail(\'' + k + '\',' + JSON.stringify(missingDays) + ')"><i class="ti ti-mail"></i> Email</button></td>';
+  if (!allOk && hasEmail) {
+      h += '<td><input type="checkbox" class="tracker-sel" data-site="' + k + '" data-dates=\'' + JSON.stringify(missingDays) + '\' onchange="updateSelCount()" style="width:16px;height:16px;accent-color:var(--navy);cursor:pointer;" title="Select to email"></td>';
     } else if (!allOk) {
       h += '<td><span style="font-size:10px;color:var(--text-soft);">No email</span></td>';
     } else {
@@ -1697,6 +1784,7 @@ function renderTrackerWeekly() {
   h += '</tbody></table></div>';
   trackerGrid.innerHTML = h;
   trackerSum.innerHTML = 'Week of ' + dayLabels[0] + ' — <strong>' + totalMissing + '</strong> site(s) with missing submissions.';
+  refreshSendRow();
 }
 
 // ── Monthly ───────────────────────────────────────────────
@@ -1721,7 +1809,7 @@ function renderTrackerMonthly() {
   });
   let totalMissing = 0;
   let h = '<div style="overflow-x:auto;"><table class="tracker-table"><thead><tr>'
-    + '<th class="site-col">Site</th><th>Expected</th><th>Submitted</th><th>Missing</th><th>Rate</th><th>Missing Dates</th><th>Action</th>'
+    + '<th class="site-col">Site</th><th>Expected</th><th>Submitted</th><th>Missing</th><th>Rate</th><th>Missing Dates</th><th>Email</th>'
     + '</tr></thead><tbody>';
   allSites.forEach(([k, v]) => {
     const submitted = weekdays.filter(d => submittedByDate[d].has(k));
@@ -1739,8 +1827,8 @@ function renderTrackerMonthly() {
     h += '<td style="text-align:center;color:' + (missing.length ? 'var(--danger-text)' : 'var(--success-text)') + ';">' + missing.length + '</td>';
     h += '<td style="text-align:center;font-weight:600;color:' + rateColor + ';">' + rate + '%</td>';
     h += '<td style="font-size:11px;color:var(--text-mid);max-width:220px;white-space:normal;">' + (missing.length ? missingFmt : '<span style="color:var(--success-text);">All submitted ✓</span>') + '</td>';
-    if (!allOk && hasEmail) {
-      h += '<td><button class="btn-sm" style="font-size:10px;border-color:var(--navy);color:var(--navy);" onclick="sendReminderEmail(\'' + k + '\',' + JSON.stringify(missing) + ')"><i class="ti ti-mail"></i> Email</button></td>';
+  if (!allOk && hasEmail) {
+      h += '<td><input type="checkbox" class="tracker-sel" data-site="' + k + '" data-dates=\'' + JSON.stringify(missing) + '\' onchange="updateSelCount()" style="width:16px;height:16px;accent-color:var(--navy);cursor:pointer;" title="Select to email"></td>';
     } else if (!allOk) {
       h += '<td><span style="font-size:10px;color:var(--text-soft);">No email</span></td>';
     } else {
@@ -1752,6 +1840,7 @@ function renderTrackerMonthly() {
   trackerGrid.innerHTML = h;
   const monthLabel = new Date(yr, mo-1, 1).toLocaleString('en-US',{month:'long',year:'numeric'});
   trackerSum.innerHTML = monthLabel + ' — <strong>' + totalMissing + '</strong> site(s) with missing submissions out of ' + weekdays.length + ' expected service days.';
+  refreshSendRow();
 }
 
 // ─────────────────────────────────────────────────────────
@@ -1779,12 +1868,33 @@ function sendReminderEmail(siteId, missingDates) {
   window.open('mailto:' + email + '?from=' + encodeURIComponent(DEPT_EMAIL) + '&subject=' + subject + '&body=' + body);
 }
 
-function sendAllReminders() {
-  const grid = document.getElementById('tracker-grid');
-  const btns = grid.querySelectorAll('button[onclick^="sendReminderEmail"]');
-  if (!btns.length) { alert('No missing sites with email addresses on file.'); return; }
-  if (!confirm('This will open ' + btns.length + ' Outlook email draft(s). Continue?')) return;
-  btns.forEach((btn, i) => setTimeout(() => btn.click(), i * 600));
+function updateSelCount() {
+  const n = document.querySelectorAll('.tracker-sel:checked').length;
+  const el = document.getElementById('tracker-sel-count');
+  if (el) el.textContent = n;
+}
+function toggleSelectAll(master) {
+  document.querySelectorAll('.tracker-sel').forEach(cb => cb.checked = master.checked);
+  updateSelCount();
+}
+function refreshSendRow() {
+  const row = document.getElementById('tracker-send-all-row');
+  const any = document.querySelectorAll('.tracker-sel').length > 0;
+  if (row) row.style.display = any ? 'flex' : 'none';
+  const m = document.getElementById('tracker-select-all');
+  if (m) m.checked = false;
+  updateSelCount();
+}
+function sendSelectedReminders() {
+  const checked = [...document.querySelectorAll('.tracker-sel:checked')];
+  if (!checked.length) { alert('No sites selected. Check one or more sites to email.'); return; }
+  if (!confirm('This will open ' + checked.length + ' Outlook email draft(s). Continue?')) return;
+  checked.forEach((cb, i) => {
+    const site = cb.getAttribute('data-site');
+    let dates = [];
+    try { dates = JSON.parse(cb.getAttribute('data-dates')); } catch(e) {}
+    setTimeout(() => sendReminderEmail(site, dates), i * 600);
+  });
 }
 
 // ═══════════════════════════
@@ -1839,6 +1949,102 @@ function renderSummary() {
 }
 function stat(label, val) {
   return '<div class="calc-card"><div class="calc-label">' + label + '</div><div class="calc-val">' + val + '</div></div>';
+}
+
+  // ═══════════════════════════
+  //  REIMBURSEMENT ESTIMATE
+  //  Free supper rate $4.76 + cash-in-lieu $0.3050 — contiguous states, eff. 7/1/2026.
+  //  Both editable in the card and persisted; update each July.
+  // ═══════════════════════════
+const DEFAULT_SUPPER_RATE = 4.76;
+const DEFAULT_CIL_RATE    = 0.3050;
+
+function getReimbRates() {
+  const rate = parseFloat(safeGet('cacfp_supper_rate'));
+  const cil  = parseFloat(safeGet('cacfp_cil_rate'));
+  return { rate: !isNaN(rate) ? rate : DEFAULT_SUPPER_RATE, cil: !isNaN(cil) ? cil : DEFAULT_CIL_RATE };
+}
+function saveReimbRates() {
+  const rate = document.getElementById('reimb-rate').value;
+  const cil  = document.getElementById('reimb-cil').value;
+  if (rate !== '') safeSet('cacfp_supper_rate', rate);
+  if (cil  !== '') safeSet('cacfp_cil_rate', cil);
+}
+function money(v) { return '$' + v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+function renderReimbursement() {
+  const siteSel = document.getElementById('reimb-site');
+  if (siteSel && siteSel.options.length <= 1) {
+    Object.entries(SITES).filter(([k]) => k !== 'MONITOR').sort(([,a],[,b]) => a.name.localeCompare(b.name)).forEach(([k, v]) => {
+      const o = document.createElement('option'); o.value = k; o.textContent = v.name; siteSel.appendChild(o);
+    });
+  }
+  const monthEl = document.getElementById('reimb-month');
+  const rateEl  = document.getElementById('reimb-rate');
+  const cilEl   = document.getElementById('reimb-cil');
+  if (monthEl && !monthEl.value) monthEl.value = today().slice(0,7);
+  const rates = getReimbRates();
+  if (rateEl && rateEl.value === '') rateEl.value = rates.rate;
+  if (cilEl  && cilEl.value  === '') cilEl.value  = rates.cil;
+
+  const month = monthEl ? monthEl.value : today().slice(0,7);
+  const siteFilter = siteSel ? siteSel.value : 'ALL';
+  const rate = rates.rate, cil = rates.cil;
+
+  let recs = records.filter(r => r.svcDate && r.svcDate.startsWith(month) && !r.isDraft);
+  if (siteFilter !== 'ALL') recs = recs.filter(r => r.site === siteFilter);
+
+  const ctr = document.getElementById('reimb-content');
+  if (!ctr) return;
+  if (!recs.length) { ctr.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i>No submitted records for this period.</div>'; return; }
+
+  const reimbursable = recs.reduce((a, r) => a + (r.firstMeal || 0), 0);
+  const secondMeals  = recs.reduce((a, r) => a + (r.secondMeal || 0), 0);
+  const adultProg    = recs.reduce((a, r) => a + (r.adultProg || 0), 0);
+  const adultNon     = recs.reduce((a, r) => a + (r.adultNonProg || 0), 0);
+  const nonReimb     = secondMeals + adultProg + adultNon;
+
+  const mealReimb = reimbursable * rate;
+  const cilReimb  = reimbursable * cil;
+  const totalReimb = mealReimb + cilReimb;
+
+  let h = '';
+  h += '<div class="calc-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:1rem;">';
+  h += '<div class="calc-card"><div class="calc-label">Reimbursable suppers</div><div class="calc-val ok">' + reimbursable + '</div></div>';
+  h += '<div class="calc-card"><div class="calc-label">Est. reimbursement</div><div class="calc-val ok">' + money(totalReimb) + '</div></div>';
+  h += '<div class="calc-card"><div class="calc-label">Non-reimbursable meals</div><div class="calc-val">' + nonReimb + '</div></div>';
+  h += '</div>';
+
+  h += '<div class="alert alert-info" style="flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:1rem;">';
+  h += '<div style="display:flex;align-items:center;gap:8px;font-weight:600;"><i class="ti ti-calculator"></i> How this is calculated</div>';
+  h += '<div style="font-size:13px;line-height:1.9;font-family:DM Mono,monospace;">';
+  h += 'Reimbursable suppers (first meals to children): <strong>' + reimbursable + '</strong><br>';
+  h += 'Meal reimbursement: ' + reimbursable + ' × ' + money(rate) + ' = <strong>' + money(mealReimb) + '</strong><br>';
+  h += 'Cash-in-lieu: ' + reimbursable + ' × ' + money(cil) + ' = <strong>' + money(cilReimb) + '</strong><br>';
+  h += '<span style="border-top:1px solid var(--info-text);display:inline-block;margin-top:4px;padding-top:4px;">Total estimated reimbursement = <strong>' + money(totalReimb) + '</strong></span>';
+  h += '</div>';
+  h += '<div style="font-size:11px;opacity:0.85;">Excluded as non-reimbursable: ' + secondMeals + ' second meals, ' + adultProg + ' program-adult, ' + adultNon + ' non-program-adult. Rates editable above; defaults are the contiguous-states free supper rate (eff. 7/1/2026) and cash-in-lieu of commodities.</div>';
+  h += '</div>';
+
+  if (siteFilter === 'ALL') {
+    const bySite = {};
+    recs.forEach(r => {
+      if (!bySite[r.site]) bySite[r.site] = { name: r.siteName, days: 0, reimbursable: 0 };
+      bySite[r.site].days++;
+      bySite[r.site].reimbursable += (r.firstMeal || 0);
+    });
+    h += '<div style="overflow-x:auto;"><table class="rec-table"><thead><tr>'
+      + '<th>Site</th><th>Days</th><th>Reimbursable suppers</th><th>Meal reimb.</th><th>Cash-in-lieu</th><th>Total</th>'
+      + '</tr></thead><tbody>';
+    Object.values(bySite).sort((a,b) => b.reimbursable - a.reimbursable).forEach(s => {
+      const m = s.reimbursable * rate, c = s.reimbursable * cil;
+      h += '<tr><td>' + s.name + '</td><td>' + s.days + '</td><td>' + s.reimbursable + '</td><td>' + money(m) + '</td><td>' + money(c) + '</td><td><strong>' + money(m+c) + '</strong></td></tr>';
+    });
+    h += '<tr style="border-top:2px solid var(--border);font-weight:700;"><td>All sites</td><td></td><td>' + reimbursable + '</td><td>' + money(mealReimb) + '</td><td>' + money(cilReimb) + '</td><td>' + money(totalReimb) + '</td></tr>';
+    h += '</tbody></table></div>';
+  }
+
+  ctr.innerHTML = h;
 }
 
 // ═══════════════════════════
@@ -2495,7 +2701,6 @@ async function loadAllSiteInfo() {
       h += '<td>' + (d.phone||'—') + '</td>';
       h += '<td style="text-align:center;">' + ((d.staff||[]).length||'—') + '</td>';
       h += '<td><button class="btn-sm blue" data-siteid="' + k + '" onclick="editSiteInfoRow(this)"><i class="ti ti-pencil"></i></button></td>';
-        + '<i class="ti ti-pencil"></i></button></td>';
       h += '</tr>';
     });
     h += '</tbody></table>';
