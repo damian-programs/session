@@ -2007,15 +2007,18 @@ function renderReimbursement() {
   const secondMeals  = recs.reduce((a, r) => a + (r.secondMeal || 0), 0);
   const adultProg    = recs.reduce((a, r) => a + (r.adultProg || 0), 0);
   const adultNon     = recs.reduce((a, r) => a + (r.adultNonProg || 0), 0);
+  const totalServed  = recs.reduce((a, r) => a + (r.totalServed || 0), 0);
   const nonReimb     = secondMeals + adultProg + adultNon;
+  const reimbPct     = totalServed > 0 ? Math.round((reimbursable / totalServed) * 100) : 0;
 
   const mealReimb = reimbursable * rate;
   const cilReimb  = reimbursable * cil;
   const totalReimb = mealReimb + cilReimb;
 
   let h = '';
-  h += '<div class="calc-row" style="grid-template-columns:repeat(3,1fr);margin-bottom:1rem;">';
+  h += '<div class="calc-row" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:1rem;">';
   h += '<div class="calc-card"><div class="calc-label">Reimbursable suppers</div><div class="calc-val ok">' + reimbursable + '</div></div>';
+  h += '<div class="calc-card"><div class="calc-label">% of meals reimbursed</div><div class="calc-val ok">' + reimbPct + '%</div></div>';
   h += '<div class="calc-card"><div class="calc-label">Est. reimbursement</div><div class="calc-val ok">' + money(totalReimb) + '</div></div>';
   h += '<div class="calc-card"><div class="calc-label">Non-reimbursable meals</div><div class="calc-val">' + nonReimb + '</div></div>';
   h += '</div>';
@@ -2024,6 +2027,7 @@ function renderReimbursement() {
   h += '<div style="display:flex;align-items:center;gap:8px;font-weight:600;"><i class="ti ti-calculator"></i> How this is calculated</div>';
   h += '<div style="font-size:13px;line-height:1.9;font-family:DM Mono,monospace;">';
   h += 'Reimbursable suppers (first meals to children): <strong>' + reimbursable + '</strong><br>';
+  h += '% of meals reimbursed: ' + reimbursable + ' ÷ ' + totalServed + ' served = <strong>' + reimbPct + '%</strong><br>';
   h += 'Meal reimbursement: ' + reimbursable + ' × ' + money(rate) + ' = <strong>' + money(mealReimb) + '</strong><br>';
   h += 'Cash-in-lieu: ' + reimbursable + ' × ' + money(cil) + ' = <strong>' + money(cilReimb) + '</strong><br>';
   h += '<span style="border-top:1px solid var(--info-text);display:inline-block;margin-top:4px;padding-top:4px;">Total estimated reimbursement = <strong>' + money(totalReimb) + '</strong></span>';
@@ -2034,18 +2038,20 @@ function renderReimbursement() {
   if (siteFilter === 'ALL') {
     const bySite = {};
     recs.forEach(r => {
-      if (!bySite[r.site]) bySite[r.site] = { name: r.siteName, days: 0, reimbursable: 0 };
+      if (!bySite[r.site]) bySite[r.site] = { name: r.siteName, days: 0, reimbursable: 0, served: 0 };
       bySite[r.site].days++;
       bySite[r.site].reimbursable += (r.firstMeal || 0);
+      bySite[r.site].served += (r.totalServed || 0);
     });
     h += '<div style="overflow-x:auto;"><table class="rec-table"><thead><tr>'
-      + '<th>Site</th><th>Days</th><th>Reimbursable suppers</th><th>Meal reimb.</th><th>Cash-in-lieu</th><th>Total</th>'
+      + '<th>Site</th><th>Days</th><th>Reimbursable suppers</th><th>% Reimb.</th><th>Meal reimb.</th><th>Cash-in-lieu</th><th>Total</th>'
       + '</tr></thead><tbody>';
     Object.values(bySite).sort((a,b) => b.reimbursable - a.reimbursable).forEach(s => {
       const m = s.reimbursable * rate, c = s.reimbursable * cil;
-      h += '<tr><td>' + s.name + '</td><td>' + s.days + '</td><td>' + s.reimbursable + '</td><td>' + money(m) + '</td><td>' + money(c) + '</td><td><strong>' + money(m+c) + '</strong></td></tr>';
+      const pct = s.served > 0 ? Math.round((s.reimbursable / s.served) * 100) : 0;
+      h += '<tr><td>' + s.name + '</td><td>' + s.days + '</td><td>' + s.reimbursable + '</td><td>' + pct + '%</td><td>' + money(m) + '</td><td>' + money(c) + '</td><td><strong>' + money(m+c) + '</strong></td></tr>';
     });
-    h += '<tr style="border-top:2px solid var(--border);font-weight:700;"><td>All sites</td><td></td><td>' + reimbursable + '</td><td>' + money(mealReimb) + '</td><td>' + money(cilReimb) + '</td><td>' + money(totalReimb) + '</td></tr>';
+    h += '<tr style="border-top:2px solid var(--border);font-weight:700;"><td>All sites</td><td></td><td>' + reimbursable + '</td><td>' + reimbPct + '%</td><td>' + money(mealReimb) + '</td><td>' + money(cilReimb) + '</td><td>' + money(totalReimb) + '</td></tr>';
     h += '</tbody></table></div>';
   }
 
