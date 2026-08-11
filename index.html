@@ -1484,10 +1484,11 @@ function saveDraft() {
     document.getElementById('f-record-id').textContent = uid;
     records.push(draft);
   }
-  save();
+save();
   saveToFirebase(draft);
   statusEl.textContent = 'Draft saved at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   setTimeout(() => { statusEl.textContent = ''; }, 5000);
+  setTimeout(() => showTab('records'), 800);
 }
 
 // ═══════════════════════════
