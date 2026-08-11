@@ -2030,15 +2030,20 @@ function renderReimbursement() {
   const nonReimb     = secondMeals + adultProg + adultNon;
   const reimbPct     = totalServed > 0 ? Math.round((reimbursable / totalServed) * 100) : 0;
 
-  const mealReimb = reimbursable * rate;
-  const cilReimb  = reimbursable * cil;
-  const totalReimb = mealReimb + cilReimb;
+  // "2% of Second Meals" — standalone figure. Calculated and displayed, NOT added to the reimbursement total.
+  const twoPctSecond = secondMeals * 0.02;
+
+  // Cash-in-lieu still calculated and displayed, but NOT included in the Estimated reimbursement total.
+  const mealReimb  = reimbursable * rate;
+  const cilReimb   = reimbursable * cil;
+  const totalReimb = mealReimb; // meal reimbursement only
 
   let h = '';
   h += '<div class="calc-row" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:1rem;">';
   h += '<div class="calc-card"><div class="calc-label">Reimbursable suppers</div><div class="calc-val ok">' + reimbursable + '</div></div>';
-  h += '<div class="calc-card"><div class="calc-label">% of meals reimbursed</div><div class="calc-val ok">' + reimbPct + '%</div></div>';
-  h += '<div class="calc-card"><div class="calc-label">Est. reimbursement</div><div class="calc-val ok">' + money(totalReimb) + '</div></div>';
+  h += '<div class="calc-card"><div class="calc-label">Est. reimbursement <span style="font-weight:400;">(meals only)</span></div><div class="calc-val ok">' + money(totalReimb) + '</div></div>';
+  h += '<div class="calc-card"><div class="calc-label">Cash-in-lieu <span style="font-weight:400;">(not in total)</span></div><div class="calc-val">' + money(cilReimb) + '</div></div>';
+  h += '<div class="calc-card"><div class="calc-label">2% of Second Meals <span style="font-weight:400;">(not in total)</span></div><div class="calc-val">' + twoPctSecond.toFixed(2) + '</div></div>';
   h += '<div class="calc-card"><div class="calc-label">Non-reimbursable meals</div><div class="calc-val">' + nonReimb + '</div></div>';
   h += '</div>';
 
@@ -2046,31 +2051,32 @@ function renderReimbursement() {
   h += '<div style="display:flex;align-items:center;gap:8px;font-weight:600;"><i class="ti ti-calculator"></i> How this is calculated</div>';
   h += '<div style="font-size:13px;line-height:1.9;font-family:DM Mono,monospace;">';
   h += 'Reimbursable suppers (first meals to children): <strong>' + reimbursable + '</strong><br>';
-  h += '% of meals reimbursed: ' + reimbursable + ' ÷ ' + totalServed + ' served = <strong>' + reimbPct + '%</strong><br>';
-  h += 'Meal reimbursement: ' + reimbursable + ' × ' + money(rate) + ' = <strong>' + money(mealReimb) + '</strong><br>';
-  h += 'Cash-in-lieu: ' + reimbursable + ' × ' + money(cil) + ' = <strong>' + money(cilReimb) + '</strong><br>';
-  h += '<span style="border-top:1px solid var(--info-text);display:inline-block;margin-top:4px;padding-top:4px;">Total estimated reimbursement = <strong>' + money(totalReimb) + '</strong></span>';
+  h += 'Estimated reimbursement: ' + reimbursable + ' × ' + money(rate) + ' = <strong>' + money(mealReimb) + '</strong> (meals only)<br>';
+  h += 'Cash-in-lieu (separate, not in total): ' + reimbursable + ' × ' + money(cil) + ' = <strong>' + money(cilReimb) + '</strong><br>';
+  h += '2% of Second Meals (separate, not in total): ' + secondMeals + ' × 0.02 = <strong>' + twoPctSecond.toFixed(2) + '</strong><br>';
+  h += '<span style="border-top:1px solid var(--info-text);display:inline-block;margin-top:4px;padding-top:4px;">Estimated reimbursement total = <strong>' + money(totalReimb) + '</strong> (meal reimbursement only)</span>';
   h += '</div>';
-  h += '<div style="font-size:11px;opacity:0.85;">Excluded as non-reimbursable: ' + secondMeals + ' second meals, ' + adultProg + ' program-adult, ' + adultNon + ' non-program-adult. Rates editable above; defaults are the contiguous-states free supper rate (eff. 7/1/2026) and cash-in-lieu of commodities.</div>';
+  h += '<div style="font-size:11px;opacity:0.85;">The Estimated reimbursement total reflects first-meal reimbursement only. Cash-in-lieu and the 2% of Second Meals figure are calculated and shown separately and are not rolled into that total. Non-reimbursable served meals excluded: ' + secondMeals + ' second, ' + adultProg + ' program-adult, ' + adultNon + ' non-program-adult.</div>';
   h += '</div>';
 
   if (siteFilter === 'ALL') {
     const bySite = {};
     recs.forEach(r => {
-      if (!bySite[r.site]) bySite[r.site] = { name: r.siteName, days: 0, reimbursable: 0, served: 0 };
+      if (!bySite[r.site]) bySite[r.site] = { name: r.siteName, days: 0, reimbursable: 0, second: 0, served: 0 };
       bySite[r.site].days++;
       bySite[r.site].reimbursable += (r.firstMeal || 0);
-      bySite[r.site].served += (r.totalServed || 0);
+      bySite[r.site].second       += (r.secondMeal || 0);
+      bySite[r.site].served       += (r.totalServed || 0);
     });
     h += '<div style="overflow-x:auto;"><table class="rec-table"><thead><tr>'
-      + '<th>Site</th><th>Days</th><th>Reimbursable suppers</th><th>% Reimb.</th><th>Meal reimb.</th><th>Cash-in-lieu</th><th>Total</th>'
+      + '<th>Site</th><th>Days</th><th>Reimbursable suppers</th><th>% Reimb.</th><th>Est. reimb. (meals)</th><th>Cash-in-lieu</th><th>2% of 2nds</th>'
       + '</tr></thead><tbody>';
     Object.values(bySite).sort((a,b) => b.reimbursable - a.reimbursable).forEach(s => {
-      const m = s.reimbursable * rate, c = s.reimbursable * cil;
+      const m = s.reimbursable * rate, c = s.reimbursable * cil, t2 = s.second * 0.02;
       const pct = s.served > 0 ? Math.round((s.reimbursable / s.served) * 100) : 0;
-      h += '<tr><td>' + s.name + '</td><td>' + s.days + '</td><td>' + s.reimbursable + '</td><td>' + pct + '%</td><td>' + money(m) + '</td><td>' + money(c) + '</td><td><strong>' + money(m+c) + '</strong></td></tr>';
+      h += '<tr><td>' + s.name + '</td><td>' + s.days + '</td><td>' + s.reimbursable + '</td><td>' + pct + '%</td><td><strong>' + money(m) + '</strong></td><td>' + money(c) + '</td><td>' + t2.toFixed(2) + '</td></tr>';
     });
-    h += '<tr style="border-top:2px solid var(--border);font-weight:700;"><td>All sites</td><td></td><td>' + reimbursable + '</td><td>' + reimbPct + '%</td><td>' + money(mealReimb) + '</td><td>' + money(cilReimb) + '</td><td>' + money(totalReimb) + '</td></tr>';
+    h += '<tr style="border-top:2px solid var(--border);font-weight:700;"><td>All sites</td><td></td><td>' + reimbursable + '</td><td>' + reimbPct + '%</td><td>' + money(mealReimb) + '</td><td>' + money(cilReimb) + '</td><td>' + twoPctSecond.toFixed(2) + '</td></tr>';
     h += '</tbody></table></div>';
   }
 
