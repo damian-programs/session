@@ -583,6 +583,11 @@ background-image:
           <div class="fg"><label for="reimb-rate">Supper rate ($)</label><input type="number" id="reimb-rate" step="0.01" oninput="saveReimbRates();renderReimbursement()" style="width:110px;"></div>
           <div class="fg"><label for="reimb-cil">Cash-in-lieu ($)</label><input type="number" id="reimb-cil" step="0.0001" oninput="saveReimbRates();renderReimbursement()" style="width:120px;"></div>
         </div>
+        <div class="btn-row" style="margin-top:0;margin-bottom:1rem;">
+  <button class="btn-primary green" onclick="exportInitialReimbursement()">
+    <i class="ti ti-file-spreadsheet"></i> Export Initial Estimated Reimbursement (Excel)
+  </button>
+</div>
         <div id="reimb-content"></div>
       </div>
       
@@ -2081,6 +2086,70 @@ function renderReimbursement() {
   }
 
   ctr.innerHTML = h;
+}
+
+  function monthNameUpper(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  return new Date(y, m - 1, 1).toLocaleString('en-US', { month: 'long' }).toUpperCase();
+}
+
+function exportInitialReimbursement() {
+  const monthEl = document.getElementById('reimb-month');
+  const month = (monthEl && monthEl.value) ? monthEl.value : today().slice(0, 7);
+
+  let recs = records.filter(r => r.svcDate && r.svcDate.startsWith(month) && !r.isDraft);
+  if (!recs.length) { alert('No submitted records for ' + month + '.'); return; }
+
+  // Aggregate per site for the month
+  const bySite = {};
+  recs.forEach(r => {
+    const k = r.site;
+    if (!bySite[k]) bySite[k] = { name: r.siteName || (SITES[k] && SITES[k].name) || k,
+      received: 0, available: 0, attendance: 0, first: 0, second: 0 };
+    const s = bySite[k];
+    s.received   += (r.recvQty || 0);
+    s.available  += (r.availQty || 0);
+    s.first      += (r.firstMeal || 0);
+    s.second     += (r.secondMeal || 0);
+    s.attendance += (r.firstMeal || 0); // app has no separate attendance headcount — first-meal count used as proxy
+  });
+  const sites = Object.values(bySite).sort((a, b) => a.name.localeCompare(b.name));
+
+  const RATE = 4.9; // rate from the compliance workbook (=C*4.9). To use the app's editable rate instead: getReimbRates().rate
+
+  // Header + site rows (A–F values; G set as formula below)
+  const aoa = [['Site', 'Received', 'Available', 'Attendance', '1st Meal ', '2nd Meal', 'Real 2nds']];
+  sites.forEach(s => aoa.push([s.name, s.received, s.available, s.attendance, s.first, s.second, null]));
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+
+  const firstRow   = 2;
+  const lastRow    = sites.length + 1;
+  const totalRow   = lastRow + 1;
+  const comboRow   = totalRow + 2;
+  const reimbRow   = comboRow + 2;
+
+  // Real 2nds = MIN(2nd meal, 1st meal × 2%) — capped at actual seconds served
+  for (let r = firstRow; r <= lastRow; r++) {
+    ws['G' + r] = { t: 'n', f: 'MIN(F' + r + ',E' + r + '*0.02)', z: '0' };
+  }
+  // Column totals
+  ['B', 'C', 'D', 'E', 'F', 'G'].forEach(col => {
+    ws[col + totalRow] = { t: 'n', f: 'SUM(' + col + firstRow + ':' + col + lastRow + ')' };
+  });
+  ws['G' + totalRow].z = '0';
+  // Combined Total = total 1st meals + total real 2nds
+  ws['B' + comboRow] = { t: 's', v: 'Total' };
+  ws['C' + comboRow] = { t: 'n', f: 'E' + totalRow + '+G' + totalRow, z: '0' };
+  // Estimated reimbursement = combined total × rate
+  ws['A' + reimbRow] = { t: 's', v: 'Total Estimated Reimbursement-' + monthNameUpper(month) };
+  ws['B' + reimbRow] = { t: 'n', f: 'C' + comboRow + '*' + RATE, z: '"$"#,##0.00' };
+
+  ws['!ref']  = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: reimbRow - 1, c: 6 } });
+  ws['!cols'] = [{ wch: 44 }, { wch: 10 }, { wch: 10 }, { wch: 11 }, { wch: 10 }, { wch: 10 }, { wch: 10 }];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+  XLSX.writeFile(wb, 'CACFP_Initial_Estimated_Reimbursement_' + month + '.xlsx');
 }
 
 // ═══════════════════════════
