@@ -90,7 +90,7 @@ body { font-family: 'DM Sans', sans-serif;
 /* FORM */
 .fg { display: flex; flex-direction: column; gap: 5px; }
 label { font-size: 14px; font-weight: 600; color: var(--text-mid); }
-input[type=text], input[type=number], input[type=date], input[type=time], input[type=password], select, textarea {
+input[type=text], input[type=number], input[type=date], input[type=time], input[type=password], input[type=email], input[type=month], select, textarea {
   width: 100%; height: 38px; padding: 0 11px; border: 1px solid var(--border); border-radius: var(--radius-sm);
   font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text-main); background: var(--white);
   transition: border-color 0.15s, box-shadow 0.15s; outline: none; appearance: none; -webkit-appearance: none;
@@ -166,12 +166,14 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 .rec-table tr.anomaly:hover td { background: #fff5d6; }
 
 /* TRACKER GRID */
-.tracker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.tracker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 8px; }
 .tracker-card { border-radius: var(--radius-sm); padding: 10px 12px; font-size: 12px; border: 1px solid; }
 .tracker-card.submitted { background: var(--success-bg); border-color: #b8e8c8; color: var(--success-text); }
 .tracker-card.missing   { background: var(--danger-bg);  border-color: #f5c6c2; color: var(--danger-text); }
 .tracker-card-name { font-weight: 600; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tracker-card-sub { font-size: 10px; opacity: 0.8; }
+/* Tracker tables always fit their card; scroll internally if wider */
+.table-scroll { overflow-x: auto; max-width: 100%; -webkit-overflow-scrolling: touch; }
 
 /* MONTH FILTER */
 .filter-row { display: flex; gap: 10px; align-items: flex-end; margin-bottom: 1rem; flex-wrap: wrap; }
@@ -182,6 +184,9 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 .audit-entry { font-size: 12px; color: var(--text-mid); padding: 5px 0; border-bottom: 1px solid var(--border-soft); display: flex; gap: 8px; align-items: baseline; }
 .audit-entry:last-child { border-bottom: none; }
 .audit-ts { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-soft); flex-shrink: 0; }
+
+/* REPORT CARD (Export Reports tab) */
+.report-desc { font-size: 13px; color: var(--text-mid); line-height: 1.6; margin-bottom: 1rem; }
 
 /* LOGIN */
 .login-page { min-height: 100vh; 
@@ -294,6 +299,13 @@ background-image:
 </head>
 <body>
 
+<!-- OFFLINE / DISCONNECTED BANNER -->
+<div id="offline-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:3000;background:#c0392b;color:#fff;padding:11px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.25);align-items:center;justify-content:center;gap:10px;">
+  <i class="ti ti-wifi-off" style="font-size:16px;"></i>
+  <span class="offline-msg">Disconnected from the internet &mdash; data can't be loaded or saved. Please reconnect.</span>
+  <button onclick="retryConnection()" style="background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.5);color:#fff;border-radius:5px;padding:3px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;">Retry</button>
+</div>
+
 <!-- PRINT AREA (hidden until print) -->
 <div id="print-area" style="display:none;"></div>
 
@@ -314,7 +326,7 @@ background-image:
     <div class="fg" style="margin-bottom:12px;">
       <label for="ls">Site</label>
       <select id="ls" disabled>
-        <option value="">Loading sites…</option>
+        <option value="">Loading sites&hellip;</option>
       </select>
       <div id="login-sites-status" style="font-size:11px;color:var(--text-soft);margin-top:4px;display:none;"></div>
     </div>
@@ -344,11 +356,11 @@ background-image:
     <div class="tabs">
       <button class="tab active" id="tab-entry"   onclick="showTab('entry')">Log meal record</button>
       <button class="tab"        id="tab-records" onclick="showTab('records')">My records</button>
-      <button class="tab"        id="tab-admin"   onclick="showTab('admin')"   style="display:none;">All sites</button>
-      <button class="tab"        id="tab-tracker" onclick="showTab('tracker')" style="display:none;">Site tracker</button>
-      <button class="tab"        id="tab-summary" onclick="showTab('summary')" style="display:none;">Monthly summary</button>
-      <button class="tab"        id="tab-siteinfo" onclick="showTab('siteinfo')" style="display:none;">Site info</button>
-      <button class="tab"        id="tab-setup"   onclick="showTab('setup')"   style="display:none;">Settings</button>
+      <button class="tab" id="tab-lookup"      onclick="showTab('lookup')"      style="display:none;">Site Lookup</button>
+      <button class="tab" id="tab-tracker"     onclick="showTab('tracker')"     style="display:none;">Site Tracker</button>
+      <button class="tab" id="tab-updatesites" onclick="showTab('updatesites')" style="display:none;">Update Sites</button>
+      <button class="tab" id="tab-exports"     onclick="showTab('exports')"     style="display:none;">Export Reports</button>
+      <button class="tab" id="tab-settings"    onclick="showTab('settings')"    style="display:none;">Settings</button>
     </div>
 
     <!-- ENTRY TAB -->
@@ -359,7 +371,7 @@ background-image:
       <!-- Record ID -->
       <div style="margin-bottom:0.75rem;display:flex;align-items:center;gap:8px;">
         <span style="font-size:11px;color:var(--text-soft);">Record ID:</span>
-        <span class="id-display" id="f-record-id">—</span>
+        <span class="id-display" id="f-record-id">&mdash;</span>
       </div>
 
       <!-- Delivery -->
@@ -372,7 +384,7 @@ background-image:
           </div>
           <div class="fg">
             <label for="f-receiver">Receiver name</label>
-            <select id="f-receiver"><option value="">Select receiver…</option></select>
+            <select id="f-receiver"><option value="">Select receiver&hellip;</option></select>
           </div>
           <div class="fg">
             <label for="f-del-date">Delivery date</label>
@@ -383,7 +395,7 @@ background-image:
             <input type="time" id="f-del-time">
           </div>
           <div class="fg">
-            <label for="f-del-temp">Delivery temp (°F)</label>
+            <label for="f-del-temp">Delivery temp (&deg;F)</label>
             <input type="number" id="f-del-temp" step="0.1" placeholder="e.g. 165.0" oninput="checkTemp()">
           </div>
           <div class="fg">
@@ -418,7 +430,7 @@ background-image:
           </div>
           <div class="fg">
             <label for="f-meal-type">Meal type</label>
-<select id="f-meal-type"><option value="KidsCafe_Supper">Kids Cafe — Supper</option></select>
+<select id="f-meal-type"><option value="KidsCafe_Supper">Kids Cafe &mdash; Supper</option></select>
           </div>
           <div class="fg">
             <label for="f-prev-left">Previous leftover qty</label>
@@ -428,7 +440,7 @@ background-image:
         <div class="divider"></div>
         <div class="fg" style="margin-bottom:1rem;">
           <label>Available qty <span style="font-size:11px;color:var(--text-soft);">(received + prev leftover)</span></label>
-          <div class="ro-field big" id="f-avail-display">—</div>
+          <div class="ro-field big" id="f-avail-display">&mdash;</div>
           <input type="hidden" id="f-avail">
         </div>
         <div class="grid2" style="margin-bottom:0.75rem;">
@@ -438,7 +450,7 @@ background-image:
               <input type="number" id="f-first" min="0" placeholder="0" oninput="recalc()"
                 style="text-align:center;font-size:32px;font-weight:700;height:80px;border-radius:16px;width:100%;border:2.5px solid var(--border);">
               <button type="button" class="counter-btn counter-plus" onclick="adjustCount('f-first',1)">+</button>
-              <button type="button" class="counter-btn counter-minus" onclick="adjustCount('f-first',-1)">−</button>
+              <button type="button" class="counter-btn counter-minus" onclick="adjustCount('f-first',-1)">&minus;</button>
             </div>
           </div>
           <div class="fg">
@@ -447,7 +459,7 @@ background-image:
               <input type="number" id="f-second" min="0" placeholder="0" oninput="recalc()"
                 style="text-align:center;font-size:32px;font-weight:700;height:80px;border-radius:16px;width:100%;border:2.5px solid var(--border);">
               <button type="button" class="counter-btn counter-plus" onclick="adjustCount('f-second',1)">+</button>
-              <button type="button" class="counter-btn counter-minus" onclick="adjustCount('f-second',-1)">−</button>
+              <button type="button" class="counter-btn counter-minus" onclick="adjustCount('f-second',-1)">&minus;</button>
             </div>
           </div>
           <div class="fg"><label for="f-adult-prog">Adult program qty</label><input type="number" id="f-adult-prog" min="0" placeholder="Program staff" oninput="recalc()"></div>
@@ -455,7 +467,7 @@ background-image:
         </div>
         <div class="fg" style="margin-bottom:1rem;">
           <label>Total served qty <span style="font-size:11px;color:var(--text-soft);">(auto-calculated)</span></label>
-          <div class="ro-field" id="f-total-served-display" style="color:var(--success-text);">—</div>
+          <div class="ro-field" id="f-total-served-display" style="color:var(--success-text);">&mdash;</div>
           <input type="hidden" id="f-total-served">
         </div>
         <div class="divider"></div>
@@ -465,7 +477,7 @@ background-image:
         </div>
         <div class="fg" style="margin-bottom:1rem;">
           <label>Total unservable qty <span style="font-size:11px;color:var(--text-soft);">(waste + incomplete)</span></label>
-          <div class="ro-field" id="f-total-unsrv-display" style="color:var(--warning-text);">—</div>
+          <div class="ro-field" id="f-total-unsrv-display" style="color:var(--warning-text);">&mdash;</div>
           <input type="hidden" id="f-total-unsrv">
         </div>
         <div class="divider"></div>
@@ -474,9 +486,9 @@ background-image:
           <input type="number" id="f-leftover" min="0" placeholder="Remaining usable meals" oninput="recalc()">
         </div>
         <div class="calc-row">
-          <div class="calc-card"><div class="calc-label">Available</div><div class="calc-val" id="s-avail">—</div></div>
-          <div class="calc-card"><div class="calc-label">Served + Unsrv + Left</div><div class="calc-val" id="s-sum">—</div></div>
-          <div class="calc-card"><div class="calc-label">Balance</div><div class="calc-val" id="s-balance">—</div></div>
+          <div class="calc-card"><div class="calc-label">Available</div><div class="calc-val" id="s-avail">&mdash;</div></div>
+          <div class="calc-card"><div class="calc-label">Served + Unsrv + Left</div><div class="calc-val" id="s-sum">&mdash;</div></div>
+          <div class="calc-card"><div class="calc-label">Balance</div><div class="calc-val" id="s-balance">&mdash;</div></div>
         </div>
         <div id="balance-alert" style="display:none;margin-top:0.75rem;"></div>
       </div>
@@ -486,7 +498,7 @@ background-image:
         <div class="card-title"><i class="ti ti-notes"></i>Notes</div>
         <div class="fg">
           <label for="f-notes">Notes (optional)</label>
-          <textarea id="f-notes" placeholder="Issues, substitutions, temperature concerns, or other observations…"></textarea>
+          <textarea id="f-notes" placeholder="Issues, substitutions, temperature concerns, or other observations&hellip;"></textarea>
         </div>
       </div>
 
@@ -499,7 +511,7 @@ background-image:
         <div class="esig-box">
           <div class="fg">
             <label for="f-sig-name">Person completing this record</label>
-            <select id="f-sig-name"><option value="">Select name…</option></select>
+            <select id="f-sig-name"><option value="">Select name&hellip;</option></select>
           </div>
           <div class="fg" style="margin-top:0.75rem;">
             <label for="f-sig-drawn">Signature</label>
@@ -537,42 +549,19 @@ background-image:
       </div>
     </div>
 
-    <!-- ADMIN TAB -->
-    <div id="pane-admin" style="display:none;">
+    <!-- SITE LOOKUP TAB (real-time summary: reimbursement + monthly summary + all-site records) -->
+    <div id="pane-lookup" style="display:none;">
 
-      <!-- Site Audit Export -->
-      <div class="card" style="border-left:3px solid var(--navy);">
-        <div class="card-title"><i class="ti ti-report-analytics"></i>Site audit export</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Generate a detailed audit report for a single site across a date range — matching the CACFP audit format with daily detail, monthly averages, and monthly totals.</p>
-        <div class="grid2" style="margin-bottom:1rem;">
-          <div class="fg">
-            <label for="audit-site">Site</label>
-            <select id="audit-site">
-              <option value="">Select site…</option>
-            </select>
-          </div>
-          <div class="fg">
-            <label>Date range</label>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <input type="date" id="audit-start" style="flex:1;">
-              <span style="color:var(--text-soft);font-size:13px;">to</span>
-              <input type="date" id="audit-end" style="flex:1;">
-            </div>
-          </div>
-        </div>
-        <div class="btn-row">
-          <button class="btn-primary" onclick="exportSiteAudit()">
-            <i class="ti ti-file-spreadsheet"></i> Export Site Audit Report
-          </button>
-        </div>
-        <div id="audit-export-status" style="margin-top:8px;font-size:13px;display:none;"></div>
+      <div class="card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:13px;color:var(--text-mid);"><i class="ti ti-activity" style="color:var(--amber);"></i> Live figures pulled from Firebase. Use the filters in each section to focus on a site or month.</div>
+        <button class="btn-sec" style="font-size:12px;height:34px;" onclick="refreshLookup()"><i class="ti ti-refresh"></i> Refresh all</button>
       </div>
 
-<!-- Reimbursement Estimate -->
+      <!-- Reimbursement Estimate (live) -->
       <div class="card" style="border-left:3px solid var(--amber);">
-        <div class="card-title"><i class="ti ti-cash"></i>Reimbursement estimate</div>
+        <div class="card-title"><i class="ti ti-cash"></i>Reimbursement tracker</div>
         <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
-          Only <strong>first meals served to children</strong> are reimbursable under CACFP At-Risk Afterschool — one supper per child, per day.
+          Only <strong>first meals served to children</strong> are reimbursable under CACFP At-Risk Afterschool &mdash; one supper per child, per day.
           Second meals and adult meals are <strong>not</strong> reimbursed.
         </p>
         <div class="filter-row" style="margin-bottom:1rem;">
@@ -583,37 +572,50 @@ background-image:
           <div class="fg"><label for="reimb-rate">Supper rate ($)</label><input type="number" id="reimb-rate" step="0.01" oninput="saveReimbRates();renderReimbursement()" style="width:110px;"></div>
           <div class="fg"><label for="reimb-cil">Cash-in-lieu ($)</label><input type="number" id="reimb-cil" step="0.0001" oninput="saveReimbRates();renderReimbursement()" style="width:120px;"></div>
         </div>
-        <div class="btn-row" style="margin-top:0;margin-bottom:1rem;">
-  <button class="btn-primary green" onclick="exportInitialReimbursement()">
-    <i class="ti ti-file-spreadsheet"></i> Export Initial Estimated Reimbursement (Excel)
-  </button>
-</div>
         <div id="reimb-content"></div>
       </div>
-      
-      <!-- All Sites Combined View -->
+
+      <!-- Monthly Summary (live) -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-chart-bar"></i>Monthly summary</div>
+        <div class="filter-row">
+          <div class="fg"><label for="summary-month">Month</label><input type="month" id="summary-month" oninput="renderSummary()" style="width:160px;"></div>
+          <div class="fg"><label for="summary-site">Site</label>
+            <select id="summary-site" oninput="renderSummary()" style="width:220px;">
+              <option value="ALL">All sites</option>
+            </select>
+          </div>
+        </div>
+        <div id="summary-content"></div>
+      </div>
+
+      <!-- All Sites Combined View (with per-site filter) -->
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
-          <div class="card-title" style="margin-bottom:0;"><i class="ti ti-building-community"></i>All sites — combined view</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn-sec" onclick="showTab('admin')" style="font-size:12px;height:34px;"><i class="ti ti-refresh"></i> Refresh</button>
-            <button class="btn-sec" onclick="exportCSV(true)" style="font-size:12px;height:34px;"><i class="ti ti-download"></i> Export CSV</button>
+          <div class="card-title" style="margin-bottom:0;"><i class="ti ti-building-community"></i>All sites &mdash; combined records</div>
+          <button class="btn-sec" onclick="loadFromFirebase('ALL').then(function(){renderTable(true);})" style="font-size:12px;height:34px;"><i class="ti ti-refresh"></i> Refresh</button>
+        </div>
+        <div class="filter-row" style="margin-bottom:1rem;">
+          <div class="fg"><label for="lookup-site-filter">Filter by site</label>
+            <select id="lookup-site-filter" onchange="renderTable(true)" style="width:260px;">
+              <option value="ALL">All sites</option>
+            </select>
           </div>
         </div>
         <div class="alert alert-info" style="margin-bottom:1rem;flex-direction:column;align-items:flex-start;gap:6px;">
           <div style="display:flex;align-items:center;gap:8px;font-weight:600;"><i class="ti ti-flag"></i> How records are flagged</div>
           <div style="font-size:12px;line-height:1.7;">
-            <strong>Waste %</strong> = Waste ÷ Available — <span style="color:var(--danger-text);font-weight:600;">red when over 30%</span><br>
-            <strong>Leftover %</strong> = Leftover ÷ Available — <span style="color:var(--danger-text);font-weight:600;">red when over 40%</span><br>
-            <strong>Served %</strong> = Total Served ÷ Available — flagged when under 30%<br>
-            <strong>Balance</strong> — flagged when Served + Unservable + Leftover ≠ Available
+            <strong>Waste %</strong> = Waste &divide; Available &mdash; <span style="color:var(--danger-text);font-weight:600;">red when over 30%</span><br>
+            <strong>Leftover %</strong> = Leftover &divide; Available &mdash; <span style="color:var(--danger-text);font-weight:600;">red when over 40%</span><br>
+            <strong>Served %</strong> = Total Served &divide; Available &mdash; flagged when under 30%<br>
+            <strong>Balance</strong> &mdash; flagged when Served + Unservable + Leftover &ne; Available
           </div>
         </div>
         <div id="all-records"></div>
       </div>
     </div>
 
-    <!-- TRACKER TAB -->
+    <!-- SITE TRACKER TAB -->
     <div id="pane-tracker" style="display:none;">
       <div class="card">
         <div class="card-title"><i class="ti ti-checklist"></i>Submission tracker</div>
@@ -646,7 +648,7 @@ background-image:
 
         <div id="tracker-summary" style="margin-bottom:1rem;font-size:13px;color:var(--text-mid);"></div>
 
-<!-- Selected reminders row -->
+        <!-- Selected reminders row -->
         <div id="tracker-send-all-row" style="display:none;align-items:center;gap:12px;margin-bottom:1rem;flex-wrap:wrap;">
           <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;">
             <input type="checkbox" id="tracker-select-all" onchange="toggleSelectAll(this)" style="width:16px;height:16px;accent-color:var(--navy);"> Select all
@@ -660,40 +662,17 @@ background-image:
       </div>
     </div>
 
-    <!-- MONTHLY SUMMARY TAB -->
+    <!-- UPDATE SITES TAB (import + add new + manual entry) -->
+    <div id="pane-updatesites" style="display:none;">
 
-    <!-- MONTHLY SUMMARY TAB -->
-    <div id="pane-summary" style="display:none;">
-      <div class="card">
-        <div class="card-title"><i class="ti ti-chart-bar"></i>Monthly summary report</div>
-        <div class="filter-row">
-          <div class="fg"><label for="summary-month">Month</label><input type="month" id="summary-month" oninput="renderSummary()" style="width:160px;"></div>
-          <div class="fg"><label for="summary-site">Site</label>
-            <select id="summary-site" oninput="renderSummary()" style="width:220px;">
-              <option value="ALL">All sites</option>
-            </select>
-          </div>
-        </div>
-        <div class="btn-row" style="margin-bottom:1rem;">
-          <button class="btn-primary green" onclick="exportMonthlyReport(document.getElementById('summary-month').value, document.getElementById('summary-site').value)">
-            <i class="ti ti-file-spreadsheet"></i> Export Monthly Report (Excel)
-          </button>
-        </div>
-        <div id="summary-content"></div>
-      </div>
-    </div>
-
-    <!-- SETUP TAB -->
-    <!-- SITE INFO TAB -->
-    <div id="pane-siteinfo" style="display:none;">
       <!-- Excel Import -->
       <div class="card" style="border-left:3px solid var(--amber);">
         <div class="card-title"><i class="ti ti-file-import"></i>Import from Excel</div>
         <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
           Upload your <strong>site_info_import_template.xlsx</strong> to bulk-import all site information.
-          Columns mapped: <strong>Training Attendee 1/2</strong> + <strong>On-Site Supervisor</strong> → Staff &nbsp;·&nbsp;
-          <strong>AGENCY NO</strong> → Site ID &nbsp;·&nbsp; <strong>Admin Email</strong> → Primary email (used for reminders) &nbsp;·&nbsp;
-          <strong>Administrator Contact</strong> → Admin contact.
+          Columns mapped: <strong>Training Attendee 1/2</strong> + <strong>On-Site Supervisor</strong> &rarr; Staff &nbsp;&middot;&nbsp;
+          <strong>AGENCY NO</strong> &rarr; Site ID &nbsp;&middot;&nbsp; <strong>Admin Email</strong> &rarr; Primary email (used for reminders) &nbsp;&middot;&nbsp;
+          <strong>Administrator Contact</strong> &rarr; Admin contact.
         </p>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
           <label style="cursor:pointer;">
@@ -710,17 +689,38 @@ background-image:
         <div id="si-import-status" style="margin-top:8px;font-size:13px;display:none;"></div>
       </div>
 
+      <!-- Add New Site -->
+      <div class="card" style="border-left:3px solid var(--navy);">
+        <div class="card-title"><i class="ti ti-circle-plus"></i>Add a new site</div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
+          Create a brand-new site that isn't in the list yet. The agency number becomes the site ID, and its default PIN is the agency number until you change it below. After adding, the new site opens in the manager so you can fill in staff, email, and PIN.
+        </p>
+        <div class="filter-row" style="margin-bottom:0.75rem;">
+          <div class="fg">
+            <label for="si-new-id">New site ID / Agency number</label>
+            <input type="text" id="si-new-id" placeholder="e.g. 14999" style="width:220px;">
+          </div>
+          <div class="fg">
+            <label for="si-new-name">Site / Agency name</label>
+            <input type="text" id="si-new-name" placeholder="e.g. Example Afterschool" style="width:320px;">
+          </div>
+          <button class="btn-primary" style="height:38px;" onclick="addNewSite()"><i class="ti ti-plus"></i> Add site</button>
+        </div>
+        <div id="si-new-status" style="font-size:13px;display:none;"></div>
+      </div>
+
+      <!-- Site Information manager -->
       <div class="card">
         <div class="card-title"><i class="ti ti-building-skyscraper"></i>Site information manager</div>
         <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
           Select a site to view and edit its trained personnel, supervisor email, agency name, and agency number.
-          All changes save directly to Firebase — not to local storage or GitHub.
+          All changes save directly to Firebase &mdash; not to local storage or GitHub.
         </p>
         <div class="filter-row" style="margin-bottom:1rem;">
           <div class="fg">
             <label for="si-site-select">Select site</label>
             <select id="si-site-select" onchange="loadSiteInfo()" style="width:320px;">
-              <option value="">Choose a site…</option>
+              <option value="">Choose a site&hellip;</option>
             </select>
           </div>
         </div>
@@ -748,12 +748,12 @@ background-image:
             </div>
           </div>
           <div class="fg" style="margin-bottom:1rem;">
-            <label>Trained personnel <span style="font-size:12px;color:var(--text-soft);">— one name per line</span></label>
-            <textarea id="si-staff" rows="5" placeholder="Jane Smith&#10;John Doe&#10;Maria Lopez" style="height:130px;"></textarea>
+            <label>Trained personnel <span style="font-size:12px;color:var(--text-soft);">&mdash; one name per line</span></label>
+            <textarea id="si-staff" rows="5" placeholder="Name One&#10;Name Two&#10;Name Three" style="height:130px;"></textarea>
           </div>
           <div class="fg" style="margin-bottom:1rem;">
             <label for="si-notes">Site notes (optional)</label>
-            <textarea id="si-notes" placeholder="Any additional information about this site…" style="height:80px;"></textarea>
+            <textarea id="si-notes" placeholder="Any additional information about this site&hellip;" style="height:80px;"></textarea>
           </div>
           <div class="btn-row">
             <button class="btn-primary" onclick="saveSiteInfo()"><i class="ti ti-device-floppy"></i> Save to Firebase</button>
@@ -765,18 +765,95 @@ background-image:
 
       <!-- Bulk view -->
       <div class="card">
-        <div class="card-title"><i class="ti ti-table"></i>All sites — info overview</div>
+        <div class="card-title"><i class="ti ti-table"></i>All sites &mdash; info overview</div>
         <div style="display:flex;gap:8px;margin-bottom:1rem;">
           <button class="btn-sec" style="font-size:12px;height:34px;" onclick="loadAllSiteInfo()"><i class="ti ti-refresh"></i> Refresh</button>
         </div>
-        <div id="si-all-table" style="overflow-x:auto;"></div>
+        <div id="si-all-table" class="table-scroll"></div>
       </div>
     </div>
 
-    <div id="pane-setup" style="display:none;">
+    <!-- EXPORT REPORTS TAB -->
+    <div id="pane-exports" style="display:none;">
+      <div class="card">
+        <div class="card-title"><i class="ti ti-files"></i>Export reports</div>
+        <p class="report-desc" style="margin-bottom:0;">Scroll down and generate whichever report you need. Each one pulls from the same live Firebase records. Individual <strong>Meal Count Sheets</strong> (Attachment 18) are exported per record from the print/export buttons in <strong>Site Lookup &rarr; All sites</strong>.</p>
+      </div>
+
+      <!-- Site Audit Report -->
+      <div class="card" style="border-left:3px solid var(--navy);">
+        <div class="card-title"><i class="ti ti-report-analytics"></i>Site Audit Report</div>
+        <p class="report-desc">A detailed audit workbook for a <strong>single site across a date range</strong>, matching the CACFP audit format: daily meal details, monthly averages, monthly totals, and a site information sheet. Use this when a monitor or state reviewer requests one site's full history.</p>
+        <div class="grid2" style="margin-bottom:1rem;">
+          <div class="fg">
+            <label for="audit-site">Site</label>
+            <select id="audit-site">
+              <option value="">Select site&hellip;</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Date range</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="date" id="audit-start" style="flex:1;">
+              <span style="color:var(--text-soft);font-size:13px;">to</span>
+              <input type="date" id="audit-end" style="flex:1;">
+            </div>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn-primary" onclick="exportSiteAudit()">
+            <i class="ti ti-file-spreadsheet"></i> Export Site Audit Report
+          </button>
+        </div>
+        <div id="audit-export-status" style="margin-top:8px;font-size:13px;display:none;"></div>
+      </div>
+
+      <!-- Monthly Audit Report -->
+      <div class="card" style="border-left:3px solid var(--navy);">
+        <div class="card-title"><i class="ti ti-calendar-stats"></i>Monthly Audit Report</div>
+        <p class="report-desc">A month-wide workbook across <strong>all sites (or one site)</strong>: the Sponsor Monthly Meal Count Summary by site, a review-flags sheet listing every anomaly, and a raw daily-detail sheet. Use this for the monthly claim review and the compliance department's summary.</p>
+        <div class="filter-row" style="margin-bottom:1rem;">
+          <div class="fg"><label for="export-mo-report">Month</label><input type="month" id="export-mo-report" style="width:160px;"></div>
+          <div class="fg"><label for="export-site-report">Site</label>
+            <select id="export-site-report" style="width:220px;"><option value="ALL">All sites</option></select>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn-primary green" onclick="exportMonthlyReport(document.getElementById('export-mo-report').value, document.getElementById('export-site-report').value)">
+            <i class="ti ti-file-spreadsheet"></i> Export Monthly Audit Report
+          </button>
+        </div>
+      </div>
+
+      <!-- Initial Estimated Reimbursement -->
+      <div class="card" style="border-left:3px solid var(--amber);">
+        <div class="card-title"><i class="ti ti-cash"></i>Initial Estimated Reimbursement</div>
+        <p class="report-desc">A single-sheet workbook matching the compliance department's format: per-site Received / Available / Attendance / 1st &amp; 2nd meals, with <strong>Real 2nds capped at MIN(2nd, 1st&times;2%)</strong>, a combined total, and an estimated reimbursement at the $4.90 multiplier. This is the initial estimate handed off for the monthly claim.</p>
+        <div class="filter-row" style="margin-bottom:1rem;">
+          <div class="fg"><label for="export-mo-reimb">Month</label><input type="month" id="export-mo-reimb" style="width:160px;"></div>
+        </div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn-primary green" onclick="exportInitialReimbursement(document.getElementById('export-mo-reimb').value)">
+            <i class="ti ti-file-spreadsheet"></i> Export Initial Estimated Reimbursement
+          </button>
+        </div>
+      </div>
+
+      <!-- All Records CSV -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-download"></i>All Records (CSV)</div>
+        <p class="report-desc">Every record across every site as a flat CSV &mdash; one row per meal record with all fields. Use this for spreadsheets, pivot tables, or importing into another system.</p>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn-sec" onclick="exportCSV(true)"><i class="ti ti-file-spreadsheet"></i> Export all records as CSV</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div id="pane-settings" style="display:none;">
       <div class="setup-banner">
-        <strong><i class="ti ti-database" style="font-size:15px;"></i> Firebase Database — Connected</strong>
-        <p style="margin-top:6px;">This app is connected to Firebase Firestore (project: <strong>meal-tracker-ba544</strong>). Records save and load automatically — no configuration needed.</p>
+        <strong><i class="ti ti-database" style="font-size:15px;"></i> Firebase Database &mdash; Connected</strong>
+        <p style="margin-top:6px;">This app is connected to Firebase Firestore (project: <strong>meal-tracker-ba544</strong>). Records save and load automatically &mdash; no configuration needed.</p>
       </div>
       <div class="card">
         <div class="card-title"><i class="ti ti-database"></i>Firebase status</div>
@@ -794,12 +871,6 @@ background-image:
         <div id="bulk-sync-status" style="margin-top:8px;font-size:13px;display:none;"></div>
       </div>
       <div class="card">
-        <div class="card-title"><i class="ti ti-download"></i>Export</div>
-        <div class="btn-row">
-          <button class="btn-sec" onclick="exportCSV(true)"><i class="ti ti-file-spreadsheet"></i> Export all records as CSV</button>
-        </div>
-      </div>
-      <div class="card">
         <div class="card-title"><i class="ti ti-mail-cog"></i>Email configuration</div>
         <div class="fg" style="margin-bottom:1rem;">
           <label for="dept-email-input">Department email (shown in reminder signature)</label>
@@ -810,7 +881,7 @@ background-image:
           <div id="dept-email-status" style="font-size:12px;margin-top:6px;display:none;"></div>
         </div>
         <div class="divider"></div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:0.75rem;">Site supervisor emails — enter one per site to enable reminder emails from the Site Tracker.</p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:0.75rem;">Site supervisor emails &mdash; enter one per site to enable reminder emails from the Site Tracker.</p>
         <div id="site-email-list" style="max-height:400px;overflow-y:auto;"></div>
         <div class="btn-row" style="margin-top:1rem;">
           <button class="btn-primary" onclick="saveSiteEmails()"><i class="ti ti-device-floppy"></i> Save site emails</button>
@@ -822,14 +893,11 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;·&nbsp; v2026.08.04</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.08.13</div>
 
 <script>
 // ═══════════════════════════
 //  SAFE STORAGE WRAPPER
-//  Tracking prevention / private mode can block localStorage.
-//  These wrappers fall back to an in-memory store so the app
-//  keeps working (reading/writing to Firebase) even when blocked.
 // ═══════════════════════════
 const _memStore = {};
 function safeGet(key) {
@@ -842,11 +910,33 @@ function safeSet(key, value) {
 }
 
 // ═══════════════════════════
+//  OFFLINE / CONNECTION BANNER
+// ═══════════════════════════
+function showOfflineBanner(msg) {
+  const b = document.getElementById('offline-banner');
+  if (!b) return;
+  if (msg) { const m = b.querySelector('.offline-msg'); if (m) m.textContent = msg; }
+  b.style.display = 'flex';
+}
+function hideOfflineBanner() {
+  const b = document.getElementById('offline-banner');
+  if (b) b.style.display = 'none';
+}
+function retryConnection() {
+  hideOfflineBanner();
+  loadSitesFromFirebase();
+  if (currentSite) loadFromFirebase(currentSite === 'MONITOR' ? 'ALL' : currentSite);
+}
+window.addEventListener('offline', () => showOfflineBanner("You're offline — data can't be loaded or saved. Please reconnect."));
+window.addEventListener('online',  () => { hideOfflineBanner(); retryConnection(); });
+
+// ═══════════════════════════
 //  TRAINED STAFF BY SITE
 // ═══════════════════════════
+// Real staff names load from Firebase (site_info.staff) at login.
+// DEFAULT is a generic, non-PII fallback used only when a site has none on file.
 const STAFF = {
   'DEFAULT': ['Site Coordinator','Program Staff','Site Director'],
-  // Add site-specific staff like: '11778': ['Jane Smith','John Doe'],
 };
 function getSiteStaff(siteId) {
   return STAFF[siteId] || STAFF['DEFAULT'];
@@ -854,104 +944,11 @@ function getSiteStaff(siteId) {
 
 // ═══════════════════════════
 //  DEPARTMENT & SITE EMAILS
-//  Replace DEPT_EMAIL with your department's actual email address
 // ═══════════════════════════
-const DEPT_EMAIL = 'kids@clevelandfoodbank.org'; // ← replace this
-
-const SITE_EMAILS = {
-  '11778': 'supervisor@3mbafterschool.org',
-  '14569': '',
-  '12152': '',
-  '11550': '',
-  '11551': '',
-  '12221': '',
-  '12003': '',
-  '11935': '',
-  '11936': '',
-  '12004': '',
-  '12005': '',
-  '12036': '',
-  '12006': '',
-  '12295': '',
-  '12035': '',
-  '12034': '',
-  '11849': '',
-  '11655': '',
-  '11694': '',
-  '11855': '',
-  '13318': '',
-  '12008': '',
-  '11926': '',
-  '12102': '',
-  '11686': '',
-  '11698': '',
-  '11938': '',
-  '11759': '',
-  '11644': '',
-  '11760': '',
-  '11646': '',
-  '11647': '',
-  '11699': '',
-  '11850': '',
-  '11648': '',
-  '11761': '',
-  '11939': '',
-  '11649': '',
-  '11940': '',
-  '11941': '',
-  '11762': '',
-  '11942': '',
-  '11937': '',
-  '11690': '',
-  '11650': '',
-  '11943': '',
-  '11763': '',
-  '11651': '',
-  '11944': '',
-  '11945': '',
-  '11684': '',
-  '11869': '',
-  '11509': '',
-  '12262': '',
-  '11930': '',
-  '12266': '',
-  '13319': '',
-  '12261': '',
-  '14474': '',
-  '14560': '',
-  '14473': '',
-  '12223': '',
-  '11948': '',
-  '11681': '',
-  '11764': '',
-  '12268': '',
-  '12032': '',
-  '14581': '',
-  '14563': '',
-  '14579': '',
-  '12244': '',
-  '11522': '',
-  '13322': '',
-  '14484': '',
-  '14477': '',
-  '14559': '',
-  '11642': '',
-  '11552': '',
-  '11472': '',
-  '14483': '',
-  '12063': '',
-  '12031': '',
-  '12104': '',
-  '11868': '',
-  '13325': '',
-  '11434': '',
-  '12288': '',
-  '13334': '',
-  '12009': '',
-  '14566': '',
-  '14562': '',
-  '55555': 'test@testsite.org',
-};
+// Department email is set by the monitor in Settings (not stored in this file).
+const DEPT_EMAIL = '';
+// Site emails load from Firebase (site_info.email) at login — nothing hardcoded here.
+const SITE_EMAILS = {};
 
 // ═══════════════════════════
 //  SITES CONFIG — Firebase-dynamic
@@ -966,9 +963,11 @@ async function loadSitesFromFirebase() {
   const statusEl = document.getElementById('login-sites-status');
   try {
     const snap = await _db.collection('site_info').get();
+    hideOfflineBanner();
     if (snap.empty) {
-      useFallbackSites();
-      if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'No sites in Firebase yet. Use Site Info tab to import.'; }
+      SITES = { 'MONITOR': { name: 'Monitor Organization', pin: '99999', active: true } };
+      populateLoginDropdown();
+      if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'No sites in Firebase yet. Sign in as Monitor and use the Update Sites tab to import.'; }
       return;
     }
     const newSites = { 'MONITOR': { name: 'Monitor Organization', pin: '99999', active: true } };
@@ -986,19 +985,17 @@ async function loadSitesFromFirebase() {
     SITES = newSites;
     populateLoginDropdown();
     if (statusEl) statusEl.style.display = 'none';
-    safeSet('cacfp_sites_cache', JSON.stringify(SITES));
   } catch(e) {
     console.warn('Could not load sites from Firebase:', e);
-    useFallbackSites();
-    if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Could not reach Firebase — using cached site list.'; }
+    // Rely entirely on Firestore — no hardcoded/cached fallback list.
+    SITES = { 'MONITOR': { name: 'Monitor Organization', pin: '99999', active: true } };
+    if (sel) {
+      sel.innerHTML = '<option value="">Disconnected — reconnect and retry</option>';
+      sel.disabled = true;
+    }
+    if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Could not reach the database. Check your connection and press Retry.'; }
+    showOfflineBanner("Disconnected from the internet — the site list can't load. Please reconnect.");
   }
-}
-
-function useFallbackSites() {
-  const cached = safeGet('cacfp_sites_cache');
-  if (cached) { try { SITES = JSON.parse(cached); } catch(e) { SITES = { ...SITES_SEED }; } }
-  else { SITES = { ...SITES_SEED }; }
-  populateLoginDropdown();
 }
 
 function populateLoginDropdown() {
@@ -1018,6 +1015,17 @@ function populateLoginDropdown() {
 }
 
 window.addEventListener('load', () => loadSitesFromFirebase());
+
+// Shared helper: fill a <select> with the site list.
+function fillSiteOptions(sel, includeAll, allLabel) {
+  if (!sel) return;
+  sel.innerHTML = includeAll ? '<option value="ALL">' + (allLabel || 'All sites') + '</option>' : '<option value="">Select site…</option>';
+  Object.entries(SITES).filter(([k]) => k !== 'MONITOR')
+    .sort(([,a],[,b]) => a.name.localeCompare(b.name))
+    .forEach(([k, v]) => {
+      const o = document.createElement('option'); o.value = k; o.textContent = v.name; sel.appendChild(o);
+    });
+}
 
 // ═══════════════════════════
 //  STATE
@@ -1070,21 +1078,27 @@ async function loadFromFirebase(site) {
       records = [...otherSites, ...fresh, ...localOnly];
     }
     saveLocal();
+    hideOfflineBanner();
     setSyncBanner('ok', 'Synced with Firebase ✓');
     setTimeout(() => setSyncBanner('hide'), 2500);
   } catch (e) {
     console.warn('Firebase load failed:', e);
-    setSyncBanner('warn', 'Using local cache — could not reach Firebase');
+    setSyncBanner('warn', 'Could not reach the database');
     setTimeout(() => setSyncBanner('hide'), 4000);
+    showOfflineBanner("Disconnected from the internet — records can't be loaded. Please reconnect.");
   }
 }
 
 async function saveToFirebase(rec) {
-  
   try {
     await _db.collection('meal_records').doc(rec.uid).set(rec);
+    hideOfflineBanner();
     return true;
-  } catch (e) { console.warn('Firebase save failed:', e); return false; }
+  } catch (e) {
+    console.warn('Firebase save failed:', e);
+    showOfflineBanner('Disconnected — your entry was saved on this device but not yet uploaded. Reconnect to sync.');
+    return false;
+  }
 }
 
 function setSyncBanner(state, msg) {
@@ -1116,14 +1130,13 @@ function doLogin() {
   err.style.display = 'none';
   currentSite = s;
 
-  // Show app immediately — no async waiting
   document.getElementById('login-page').style.display = 'none';
   document.getElementById('main-app').style.display = 'block';
   document.getElementById('hdr-site').textContent = SITES[s].name;
   document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   document.getElementById('f-site').value = SITES[s].name;
 
-  // Populate staff dropdowns
+  // Populate staff dropdowns (coordinator entry form)
   const staff = getSiteStaff(s);
   ['f-receiver','f-sig-name'].forEach(id => {
     const sel = document.getElementById(id);
@@ -1131,32 +1144,21 @@ function doLogin() {
     staff.forEach(name => { const o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o); });
   });
 
-  // Populate summary site filter
-  const sumSite = document.getElementById('summary-site');
-  sumSite.innerHTML = '<option value="ALL">All sites</option>';
-  Object.entries(SITES).filter(([k]) => k !== 'MONITOR').sort(([,a],[,b]) => a.name.localeCompare(b.name)).forEach(([k, v]) => {
-    const o = document.createElement('option'); o.value = k; o.textContent = v.name; sumSite.appendChild(o);
-  });
-
-  // Populate audit site dropdown
-  const auditSite = document.getElementById('audit-site');
-  if (auditSite) {
-    auditSite.innerHTML = '<option value="">Select site…</option>';
-    Object.entries(SITES).filter(([k]) => k !== 'MONITOR').sort(([,a],[,b]) => a.name.localeCompare(b.name)).forEach(([k, v]) => {
-      const o = document.createElement('option'); o.value = k; o.textContent = v.name; auditSite.appendChild(o);
-    });
-  }
-
   // Show tabs
   if (s === 'MONITOR') {
-    document.getElementById('tab-admin').style.display = 'inline-block';
-    document.getElementById('tab-tracker').style.display = 'inline-block';
-    document.getElementById('tab-summary').style.display = 'inline-block';
-    document.getElementById('tab-siteinfo').style.display = 'inline-block';
-    document.getElementById('tab-setup').style.display = 'inline-block';
+    // Populate monitor site dropdowns
+    fillSiteOptions(document.getElementById('summary-site'), true, 'All sites');
+    fillSiteOptions(document.getElementById('lookup-site-filter'), true, 'All sites');
+    fillSiteOptions(document.getElementById('reimb-site'), true, 'All sites');
+    fillSiteOptions(document.getElementById('export-site-report'), true, 'All sites');
+    fillSiteOptions(document.getElementById('audit-site'), false);
+
+    ['tab-lookup','tab-tracker','tab-updatesites','tab-exports','tab-settings'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.style.display = 'inline-block';
+    });
     document.getElementById('tab-entry').style.display = 'none';
     document.getElementById('tab-records').style.display = 'none';
-    showTab('admin');
+    showTab('lookup');
   } else {
     showTab('entry');
   }
@@ -1175,7 +1177,7 @@ function doLogout() {
   document.getElementById('main-app').style.display = 'none';
   document.getElementById('lp').value = '';
   document.getElementById('ls').value = '';
-  ['tab-admin','tab-tracker','tab-summary','tab-siteinfo','tab-setup'].forEach(id => {
+  ['tab-lookup','tab-tracker','tab-updatesites','tab-exports','tab-settings'].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = 'none';
   });
   document.getElementById('tab-entry').style.display = 'inline-block';
@@ -1186,7 +1188,7 @@ function doLogout() {
 //  TABS
 // ═══════════════════════════
 function showTab(t) {
-  ['entry','records','admin','tracker','summary','siteinfo','setup'].forEach(x => {
+  ['entry','records','lookup','tracker','updatesites','exports','settings'].forEach(x => {
     const pane = document.getElementById('pane-' + x);
     const tab  = document.getElementById('tab-' + x);
     if (pane) pane.style.display = x === t ? 'block' : 'none';
@@ -1196,10 +1198,11 @@ function showTab(t) {
     renderTable(false);
     loadFromFirebase(currentSite).then(() => renderTable(false));
   }
-  if (t === 'admin') {
-    renderTable(true);
-    renderReimbursement();
-    loadFromFirebase('ALL').then(() => { renderTable(true); renderReimbursement(); });
+  if (t === 'lookup') {
+    const sm = document.getElementById('summary-month');
+    if (sm && !sm.value) sm.value = today().slice(0,7);
+    renderReimbursement(); renderSummary(); renderTable(true);
+    loadFromFirebase('ALL').then(() => { renderReimbursement(); renderSummary(); renderTable(true); });
   }
   if (t === 'tracker') {
     const tdate = document.getElementById('tracker-date');
@@ -1211,13 +1214,24 @@ function showTab(t) {
       else renderTrackerMonthly();
     });
   }
-  if (t === 'summary') {
-    document.getElementById('summary-month').value = today().slice(0,7);
-    renderSummary();
-    loadFromFirebase('ALL').then(() => renderSummary());
-  }
-  if (t === 'setup') { renderSiteEmailList(); }
-  if (t === 'siteinfo') { populateSiteInfoSelect(); loadAllSiteInfo(); }
+  if (t === 'exports') { populateExportSelects(); }
+  if (t === 'updatesites') { populateSiteInfoSelect(); loadAllSiteInfo(); }
+  if (t === 'settings') { renderSiteEmailList(); }
+}
+
+function refreshLookup() {
+  loadFromFirebase('ALL').then(() => { renderReimbursement(); renderSummary(); renderTable(true); });
+}
+
+function populateExportSelects() {
+  const em = document.getElementById('export-mo-report');
+  const er = document.getElementById('export-mo-reimb');
+  if (em && !em.value) em.value = today().slice(0,7);
+  if (er && !er.value) er.value = today().slice(0,7);
+  const es = document.getElementById('export-site-report');
+  if (es && es.options.length <= 1) fillSiteOptions(es, true, 'All sites');
+  const as = document.getElementById('audit-site');
+  if (as && as.options.length <= 1) fillSiteOptions(as, false);
 }
 
 // ═══════════════════════════
@@ -1302,6 +1316,7 @@ function recalc() {
 // ═══════════════════════════
 async function saveRecord() {
   const alertEl = document.getElementById('entry-alert');
+  recalc(); // ensure hidden totals reflect current inputs before validating
   const required = [
     ['f-receiver','Receiver name'],['f-del-date','Delivery date'],['f-del-time','Delivery time'],
     ['f-del-temp','Delivery temperature'],['f-recv-qty','Received quantity'],
@@ -1312,36 +1327,49 @@ async function saveRecord() {
   if (missing.length) {
     alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
     alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; Please complete: ' + missing.map(f => f[1]).join(', ') + '.';
-    alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return;
+    window.scrollTo({ top: 0, behavior: 'smooth' }); return;
   }
-  // Duplicate check
+  // Locked check
   if (editingUid && currentSite !== 'MONITOR') {
     const lockedRec = records.find(r => r.uid === editingUid);
     if (lockedRec && lockedRec.locked) {
       alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
       alertEl.innerHTML = '<i class="ti ti-lock"></i>&nbsp; This record is locked. Contact your monitor administrator to unlock it.';
-      return;
+      window.scrollTo({ top: 0, behavior: 'smooth' }); return;
     }
   }
+  // Duplicate check
   const dupDate = document.getElementById('f-svc-date').value;
   const dupCheck = records.find(r => r.site === currentSite && r.svcDate === dupDate && r.uid !== editingUid);
   if (dupCheck) {
     alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
     alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; A meal record for <strong>' + dupDate + '</strong> already exists for your site. Use the <strong>Edit</strong> button in My Records to update it.';
-    alertEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return;
+    window.scrollTo({ top: 0, behavior: 'smooth' }); return;
+  }
+  // Require balanced counts before accepting the submission
+  const availChk  = parseInt(document.getElementById('f-avail').value) || 0;
+  const servedChk = parseInt(document.getElementById('f-total-served').value) || 0;
+  const unsrvChk  = parseInt(document.getElementById('f-total-unsrv').value) || 0;
+  const leftChk   = n('f-leftover');
+  const sumChk    = servedChk + unsrvChk + leftChk;
+  if (availChk !== sumChk) {
+    const diff = availChk - sumChk;
+    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
+    alertEl.innerHTML = '<i class="ti ti-alert-triangle"></i>&nbsp; <strong>Counts must balance before saving.</strong> Served + Unservable + Leftover (' + sumChk + ') must equal Available (' + availChk + '). Off by ' + Math.abs(diff) + '. Adjust the counts so they balance, then save.';
+    window.scrollTo({ top: 0, behavior: 'smooth' }); return;
   }
   if (!document.getElementById('f-sig-confirm').checked) {
     alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
-    alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; Please check the certification box to complete your e-signature.'; return;
+    alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; Please check the certification box to complete your e-signature.';
+    window.scrollTo({ top: 0, behavior: 'smooth' }); return;
   }
 
   const now = new Date().toISOString();
-  const avail  = parseInt(document.getElementById('f-avail').value) || 0;
-  const served = parseInt(document.getElementById('f-total-served').value) || 0;
-  const unsrv  = parseInt(document.getElementById('f-total-unsrv').value) || 0;
+  const avail  = availChk;
+  const served = servedChk;
+  const unsrv  = unsrvChk;
 
   if (editingUid) {
-    // Update existing record
     const idx = records.findIndex(r => r.uid === editingUid);
     if (idx !== -1) {
       const orig = records[idx];
@@ -1552,7 +1580,12 @@ function sortArrow(col) {
 }
 
 function renderTable(isAdmin) {
-  const myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
+  let myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
+  if (isAdmin) {
+    const f = document.getElementById('lookup-site-filter');
+    const fv = f ? f.value : 'ALL';
+    if (fv && fv !== 'ALL') myRecs = myRecs.filter(r => r.site === fv);
+  }
   const ctr = document.getElementById(isAdmin ? 'all-records' : 'my-records');
   if (!myRecs.length) { ctr.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i>No records yet.</div>'; return; }
 
@@ -1584,7 +1617,7 @@ function renderTable(isAdmin) {
     sorted = [...myRecs].sort((a, b) => b.svcDate.localeCompare(a.svcDate));
   }
 
-  let h = '<div style="overflow-x:auto;"><table class="rec-table"><thead><tr>';
+  let h = '<div class="table-scroll"><table class="rec-table"><thead><tr>';
   if (isAdmin) {
     h += '<th style="width:120px;cursor:pointer;" onclick="setAdminSort(\'site\')">Site ' + sortArrow('site') + '</th>';
     h += '<th style="width:90px;cursor:pointer;" onclick="setAdminSort(\'svcDate\')">Date ' + sortArrow('svcDate') + '</th>';
@@ -1707,9 +1740,6 @@ function showAudit(uid) {
 }
 
 // ═══════════════════════════
-//  SITE TRACKER
-// ═══════════════════════════
-// ═══════════════════════════
 //  TRACKER VIEW MANAGEMENT
 // ═══════════════════════════
 let trackerView = 'daily';
@@ -1723,7 +1753,7 @@ function setTrackerView(v) {
     if (btn) { btn.style.background = x === v ? 'var(--navy)' : ''; btn.style.color = x === v ? 'white' : ''; btn.style.borderColor = x === v ? 'var(--navy)' : ''; }
   });
   const sar = document.getElementById('tracker-send-all-row');
-  if (sar) sar.style.display = 'none'; // shown by refreshSendRow() after each render
+  if (sar) sar.style.display = 'none';
   const sum = document.getElementById('tracker-summary');
   const grid = document.getElementById('tracker-grid');
   if (sum) sum.innerHTML = '';
@@ -1758,7 +1788,7 @@ function renderTracker() {
   refreshSendRow();
 }
 
-// ── Weekly ────────────────────────────────────────────────
+// ── Weekly (Monday–Saturday) ──────────────────────────────
 function renderTrackerWeekly() {
   const startVal = document.getElementById('tracker-week-start').value;
   if (!startVal) return;
@@ -1769,7 +1799,7 @@ function renderTrackerWeekly() {
   const dow = monday.getDay();
   if (dow !== 1) { monday.setDate(monday.getDate() - (dow === 0 ? 6 : dow - 1)); }
   const weekDays = [];
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 6; i++) {   // Mon–Sat (6 days)
     const d = new Date(monday); d.setDate(d.getDate() + i);
     weekDays.push(d.toISOString().slice(0,10));
   }
@@ -1780,7 +1810,7 @@ function renderTrackerWeekly() {
   });
   const dayLabels = weekDays.map(d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'numeric',day:'numeric'}));
   let totalMissing = 0;
-  let h = '<div style="overflow-x:auto;"><table class="tracker-table"><thead><tr><th class="site-col">Site</th>';
+  let h = '<div class="table-scroll"><table class="tracker-table"><thead><tr><th class="site-col">Site</th>';
   dayLabels.forEach(d => { h += '<th>' + d + '</th>'; });
   h += '<th>Status</th><th>Email</th></tr></thead><tbody>';
   allSites.forEach(([k, v]) => {
@@ -1795,7 +1825,7 @@ function renderTrackerWeekly() {
       const ok = submittedByDate[d].has(k);
       h += '<td><span class="' + (ok ? 'day-cell-ok' : 'day-cell-miss') + '">' + (ok ? '✓' : '✗') + '</span></td>';
     });
-    h += '<td><span class="pill ' + (allOk ? 'pill-ok' : 'pill-danger') + '">' + submittedDays.length + '/5</span></td>';
+    h += '<td><span class="pill ' + (allOk ? 'pill-ok' : 'pill-danger') + '">' + submittedDays.length + '/' + weekDays.length + '</span></td>';
   if (!allOk && hasEmail) {
       h += '<td><input type="checkbox" class="tracker-sel" data-site="' + k + '" data-dates=\'' + JSON.stringify(missingDays) + '\' onchange="updateSelCount()" style="width:16px;height:16px;accent-color:var(--navy);cursor:pointer;" title="Select to email"></td>';
     } else if (!allOk) {
@@ -1811,7 +1841,7 @@ function renderTrackerWeekly() {
   refreshSendRow();
 }
 
-// ── Monthly ───────────────────────────────────────────────
+// ── Monthly (Monday–Saturday) ─────────────────────────────
 function renderTrackerMonthly() {
   const month = document.getElementById('tracker-month').value;
   if (!month) return;
@@ -1824,7 +1854,7 @@ function renderTrackerMonthly() {
   for (let d = 1; d <= daysInMonth; d++) {
     const dt = new Date(yr, mo-1, d);
     const dow = dt.getDay();
-    if (dow >= 1 && dow <= 5) weekdays.push(dt.toISOString().slice(0,10));
+    if (dow >= 1 && dow <= 6) weekdays.push(dt.toISOString().slice(0,10));  // Mon–Sat
   }
   const allSites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR');
   const submittedByDate = {};
@@ -1832,7 +1862,7 @@ function renderTrackerMonthly() {
     submittedByDate[d] = new Set(records.filter(r => r.svcDate === d && !r.isDraft).map(r => r.site));
   });
   let totalMissing = 0;
-  let h = '<div style="overflow-x:auto;"><table class="tracker-table"><thead><tr>'
+  let h = '<div class="table-scroll"><table class="tracker-table"><thead><tr>'
     + '<th class="site-col">Site</th><th>Expected</th><th>Submitted</th><th>Missing</th><th>Rate</th><th>Missing Dates</th><th>Email</th>'
     + '</tr></thead><tbody>';
   allSites.forEach(([k, v]) => {
@@ -1947,7 +1977,6 @@ function renderSummary() {
     days: a.days + 1
   }), { received: 0, served: 0, waste: 0, incomplete: 0, leftover: 0, days: 0 });
 
-  // Per-site breakdown
   const bySite = {};
   recs.forEach(r => {
     if (!bySite[r.site]) bySite[r.site] = { name: r.siteName, received: 0, served: 0, waste: 0, leftover: 0, days: 0 };
@@ -1969,7 +1998,7 @@ function renderSummary() {
 
   if (siteFilter === 'ALL' && Object.keys(bySite).length > 1) {
     h += '<div class="divider"></div><p style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text-soft);margin-bottom:0.75rem;">By site</p>';
-    h += '<div style="overflow-x:auto;"><table class="rec-table"><thead><tr><th>Site</th><th>Days</th><th>Received</th><th>Served</th><th>Waste</th><th>Leftover</th></tr></thead><tbody>';
+    h += '<div class="table-scroll"><table class="rec-table"><thead><tr><th>Site</th><th>Days</th><th>Received</th><th>Served</th><th>Waste</th><th>Leftover</th></tr></thead><tbody>';
     Object.values(bySite).sort((a,b) => a.name.localeCompare(b.name)).forEach(s => {
       h += '<tr><td>' + s.name + '</td><td>' + s.days + '</td><td>' + s.received + '</td><td>' + s.served + '</td><td>' + s.waste + '</td><td>' + s.leftover + '</td></tr>';
     });
@@ -2036,13 +2065,11 @@ function renderReimbursement() {
   const nonReimb     = secondMeals + adultProg + adultNon;
   const reimbPct     = totalServed > 0 ? Math.round((reimbursable / totalServed) * 100) : 0;
 
-  // "2% of Second Meals" — standalone figure. Calculated and displayed, NOT added to the reimbursement total.
   const twoPctSecond = secondMeals * 0.02;
 
-  // Cash-in-lieu still calculated and displayed, but NOT included in the Estimated reimbursement total.
   const mealReimb  = reimbursable * rate;
   const cilReimb   = reimbursable * cil;
-  const totalReimb = mealReimb; // meal reimbursement only
+  const totalReimb = mealReimb;
 
   let h = '';
   h += '<div class="calc-row" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr));margin-bottom:1rem;">';
@@ -2074,7 +2101,7 @@ function renderReimbursement() {
       bySite[r.site].second       += (r.secondMeal || 0);
       bySite[r.site].served       += (r.totalServed || 0);
     });
-    h += '<div style="overflow-x:auto;"><table class="rec-table"><thead><tr>'
+    h += '<div class="table-scroll"><table class="rec-table"><thead><tr>'
       + '<th>Site</th><th>Days</th><th>Reimbursable suppers</th><th>% Reimb.</th><th>Est. reimb. (meals)</th><th>Cash-in-lieu</th><th>2% of 2nds</th>'
       + '</tr></thead><tbody>';
     Object.values(bySite).sort((a,b) => b.reimbursable - a.reimbursable).forEach(s => {
@@ -2094,14 +2121,13 @@ function renderReimbursement() {
   return new Date(y, m - 1, 1).toLocaleString('en-US', { month: 'long' }).toUpperCase();
 }
 
-function exportInitialReimbursement() {
+function exportInitialReimbursement(monthArg) {
   const monthEl = document.getElementById('reimb-month');
-  const month = (monthEl && monthEl.value) ? monthEl.value : today().slice(0, 7);
+  const month = (monthArg && monthArg.length) ? monthArg : ((monthEl && monthEl.value) ? monthEl.value : today().slice(0, 7));
 
   let recs = records.filter(r => r.svcDate && r.svcDate.startsWith(month) && !r.isDraft);
   if (!recs.length) { alert('No submitted records for ' + month + '.'); return; }
 
-  // Aggregate per site for the month
   const bySite = {};
   recs.forEach(r => {
     const k = r.site;
@@ -2112,13 +2138,12 @@ function exportInitialReimbursement() {
     s.available  += (r.availQty || 0);
     s.first      += (r.firstMeal || 0);
     s.second     += (r.secondMeal || 0);
-    s.attendance += (r.firstMeal || 0); // app has no separate attendance headcount — first-meal count used as proxy
+    s.attendance += (r.firstMeal || 0);
   });
   const sites = Object.values(bySite).sort((a, b) => a.name.localeCompare(b.name));
 
-  const RATE = 4.9; // rate from the compliance workbook (=C*4.9). To use the app's editable rate instead: getReimbRates().rate
+  const RATE = 4.9;
 
-  // Header + site rows (A–F values; G set as formula below)
   const aoa = [['Site', 'Received', 'Available', 'Attendance', '1st Meal ', '2nd Meal', 'Real 2nds']];
   sites.forEach(s => aoa.push([s.name, s.received, s.available, s.attendance, s.first, s.second, null]));
   const ws = XLSX.utils.aoa_to_sheet(aoa);
@@ -2129,19 +2154,15 @@ function exportInitialReimbursement() {
   const comboRow   = totalRow + 2;
   const reimbRow   = comboRow + 2;
 
-  // Real 2nds = MIN(2nd meal, 1st meal × 2%) — capped at actual seconds served
   for (let r = firstRow; r <= lastRow; r++) {
     ws['G' + r] = { t: 'n', f: 'MIN(F' + r + ',E' + r + '*0.02)', z: '0' };
   }
-  // Column totals
   ['B', 'C', 'D', 'E', 'F', 'G'].forEach(col => {
     ws[col + totalRow] = { t: 'n', f: 'SUM(' + col + firstRow + ':' + col + lastRow + ')' };
   });
   ws['G' + totalRow].z = '0';
-  // Combined Total = total 1st meals + total real 2nds
   ws['B' + comboRow] = { t: 's', v: 'Total' };
   ws['C' + comboRow] = { t: 'n', f: 'E' + totalRow + '+G' + totalRow, z: '0' };
-  // Estimated reimbursement = combined total × rate
   ws['A' + reimbRow] = { t: 's', v: 'Total Estimated Reimbursement-' + monthNameUpper(month) };
   ws['B' + reimbRow] = { t: 'n', f: 'C' + comboRow + '*' + RATE, z: '"$"#,##0.00' };
 
@@ -2199,7 +2220,7 @@ function printRecord(uid) {
     ${r.notes ? '<div class="print-section"><div class="print-section-title">Notes</div><p style="font-size:12px;">' + r.notes + '</p></div>' : ''}
     <div class="print-sig">
       <div class="print-sig-line">
-        <div><div class="print-sig-block">${r.sigName}</div><div class="print-sig-label">Signature of person completing record</div></div>
+        <div><div class="print-sig-block">${r.sigImage ? '<img src="' + r.sigImage + '" alt="signature" style="max-height:46px;display:block;margin-bottom:2px;">' : ''}${r.sigName}</div><div class="print-sig-label">Signature of person completing record</div></div>
         <div><div class="print-sig-block">${r.svcDate}</div><div class="print-sig-label">Date</div></div>
       </div>
       <p style="font-size:9px;color:#888;margin-top:10px;">I certify that the information recorded above is accurate and was counted at the point of service in accordance with CACFP requirements.</p>
@@ -2210,803 +2231,490 @@ function printRecord(uid) {
 }
 
 // ═══════════════════════════
-//  CSV EXPORT
+//  FIREBASE STATUS / SYNC
 // ═══════════════════════════
 async function checkFirebaseStatus() {
   const el = document.getElementById('firebase-status');
-  el.textContent = 'Connecting…';
+  el.innerHTML = '<span class="spinner" style="border-color:rgba(63,114,184,0.3);border-top-color:var(--navy);"></span> Checking connection…';
   try {
-    const snap = await _db.collection('meal_records').get();
-    el.innerHTML = '<span style="color:var(--success-text);">✓ Connected — ' + snap.size + ' record(s) in database.</span>';
-  } catch(e) {
-    el.innerHTML = '<span style="color:var(--danger-text);">✗ Failed: ' + e.message + '</span>';
+    const t0 = Date.now();
+    const snap = await _db.collection('meal_records').limit(1).get();
+    const ms = Date.now() - t0;
+    const count = (await _db.collection('meal_records').get()).size;
+    const siteCount = (await _db.collection('site_info').get()).size;
+    hideOfflineBanner();
+    el.innerHTML = '<span class="status-dot green"></span> Connected to <strong>meal-tracker-ba544</strong> (' + ms + ' ms). '
+      + '<strong>' + count + '</strong> meal record(s), <strong>' + siteCount + '</strong> site(s) on file.';
+  } catch (e) {
+    el.innerHTML = '<span class="status-dot red"></span> Could not reach Firebase: ' + (e.message || e);
+    showOfflineBanner("Disconnected from the internet — can't reach the database.");
   }
 }
 
-
 async function syncAllToFirebase() {
-  const el = document.getElementById('bulk-sync-status');
-  el.style.display = 'block';
-  el.innerHTML = 'Syncing ' + records.length + ' records…';
+  const statusEl = document.getElementById('bulk-sync-status');
+  statusEl.style.display = 'block';
+  statusEl.className = 'alert alert-info';
+  statusEl.innerHTML = '<i class="ti ti-cloud-upload"></i>&nbsp; Syncing ' + records.length + ' record(s) to Firebase…';
   let ok = 0, fail = 0;
-  for (const rec of records) { (await saveToFirebase(rec)) ? ok++ : fail++; }
-  el.innerHTML = '<span style="color:var(--success-text);">Done — ' + ok + ' saved' + (fail ? ', ' + fail + ' failed' : '') + '.</span>';
+  for (const rec of records) {
+    const done = await saveToFirebase(rec);
+    if (done) ok++; else fail++;
+  }
+  statusEl.className = 'alert ' + (fail ? 'alert-warning' : 'alert-success');
+  statusEl.innerHTML = '<i class="ti ti-' + (fail ? 'alert-triangle' : 'circle-check') + '"></i>&nbsp; Synced ' + ok + ' record(s)'
+    + (fail ? ', ' + fail + ' failed (still cached locally).' : ' successfully.');
 }
 
+// ═══════════════════════════
+//  CSV EXPORT
+// ═══════════════════════════
+function exportCSV(isAdmin) {
+  const rows = isAdmin ? records : records.filter(r => r.site === currentSite);
+  if (!rows.length) { alert('No records to export.'); return; }
+  const cols = ['uid','site','siteName','receiver','delDate','delTime','delTemp','recvQty',
+    'svcDate','svcTime','mealType','prevLeftover','availQty','firstMeal','secondMeal',
+    'adultProg','adultNonProg','totalServed','waste','incomplete','totalUnsrv','leftover',
+    'sigName','isDraft','locked','editCount','createdAt','lastEditedAt','notes'];
+  const esc = (v) => {
+    if (v === undefined || v === null) return '';
+    const s = String(v).replace(/"/g, '""');
+    return /[",\n]/.test(s) ? '"' + s + '"' : s;
+  };
+  let csv = cols.join(',') + '\n';
+  rows.sort((a, b) => (b.svcDate || '').localeCompare(a.svcDate || '')).forEach(r => {
+    csv += cols.map(c => esc(r[c])).join(',') + '\n';
+  });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'SESSION_records_' + (isAdmin ? 'all_' : currentSite + '_') + today() + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Small query helper
+function q(id) { return document.getElementById(id); }
 
 // ═══════════════════════════
-//  MEAL COUNT SHEET EXPORT
+//  EXPORT: MEAL COUNT SHEET (Attachment 18) — single record
+//  ⚠ REBUILT during full-file regen — verify cell layout against your
+//    committed original before relying on it for a live claim.
 // ═══════════════════════════
 function exportMealCountSheet(uid) {
   const r = records.find(x => x.uid === uid);
-  if (!r) return;
+  if (!r) { alert('Record not found.'); return; }
+  const aoa = [
+    ['CACFP At-Risk Afterschool Meal Count Record (Attachment 18)'],
+    [],
+    ['Sponsoring Organization', 'Greater Cleveland Food Bank'],
+    ['Site Name', r.siteName, '', 'Site ID', r.site],
+    ['Record ID', r.uid, '', 'Meal Type', r.mealType || 'KidsCafe_Supper'],
+    [],
+    ['Delivery Date', r.delDate, '', 'Delivery Time', r.delTime],
+    ['Delivery Temp (°F)', r.delTemp, '', 'Received Qty', r.recvQty],
+    ['Receiver', r.receiver],
+    [],
+    ['Serve Date', r.svcDate, '', 'Serve Time', r.svcTime],
+    ['Previous Leftover', r.prevLeftover, '', 'Available Qty', r.availQty],
+    [],
+    ['Meal Counts'],
+    ['First Meals (reimbursable)', r.firstMeal],
+    ['Second Meals', r.secondMeal],
+    ['Adult — Program', r.adultProg],
+    ['Adult — Non-Program', r.adultNonProg],
+    ['Total Served', r.totalServed],
+    [],
+    ['Waste', r.waste],
+    ['Incomplete', r.incomplete],
+    ['Total Unservable', r.totalUnsrv],
+    ['Leftover (carried forward)', r.leftover],
+    [],
+    ['Balance Check', (r.availQty - (r.totalServed + r.totalUnsrv + r.leftover)) === 0 ? 'BALANCED' : 'OUT OF BALANCE'],
+    [],
+    ['Certified by', r.sigName, '', 'Certified', r.sigCertified ? 'Yes' : 'No'],
+    ['Edits', r.editCount || 0, '', 'Last edited', (r.lastEditedAt || '').replace('T', ' ').slice(0, 16)],
+    [],
+    ['Notes', r.notes || '']
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{ wch: 26 }, { wch: 22 }, { wch: 3 }, { wch: 18 }, { wch: 20 }];
   const wb = XLSX.utils.book_new();
-  const ws = {};
-  const merge = [];
-  let row = 1;
-
-  function setCell(r2, c2, v, opts) {
-    const addr = XLSX.utils.encode_cell({r: r2-1, c: c2-1});
-    ws[addr] = { v: v, t: typeof v === 'number' ? 'n' : 's' };
-    if (opts && opts.bold) ws[addr].s = { font: { bold: true } };
-  }
-  function mergeRange(r1,c1,r2,c2) { merge.push({s:{r:r1-1,c:c1-1},e:{r:r2-1,c:c2-1}}); }
-
-  // Title
-  mergeRange(row,1,row,20);
-  setCell(row,1,'DAILY MEAL COUNT FORM', {bold:true});
-  row++;
-
-  // Attachment label
-  setCell(row,17,'Attachment 18');
-  row++;
-
-  // Site info
-  setCell(row,1,'Site Name:'); mergeRange(row,2,row,9); setCell(row,2, r.siteName);
-  setCell(row,11,'Meal Type:'); setCell(row,14, r.mealType);
-  setCell(row,18,'Site Number:'); setCell(row,19, r.site);
-  row++;
-
-  setCell(row,1,'Address:');
-  setCell(row,10,'Telephone:');
-  row++;
-
-  setCell(row,1,"Supervisor's Name:"); mergeRange(row,4,row,8); setCell(row,4, r.receiver);
-  setCell(row,9,'Delivery Time:'); mergeRange(row,12,row,14); setCell(row,12, r.delTime);
-  setCell(row,15,'Date:'); mergeRange(row,16,row,20); setCell(row,16, r.svcDate);
-  row++;
-
-  // [1] Available
-  mergeRange(row,1,row,16);
-  setCell(row,1, 'Meals received/prepared: ' + r.recvQty + '  +  Prev leftover: ' + r.prevLeftover + '  =  Total meals available [1]: ' + r.availQty, {bold:true});
-  setCell(row,17, r.availQty);
-  row++;
-
-  // First meals grid header
-  mergeRange(row,1,row,20);
-  setCell(row,1, 'First Meals Served to Children (cross off number as each child receives a meal):');
-  row++;
-
-  // Number grid 1-150 (rows of 20, highlight up to firstMeal)
-  for (let start = 1; start <= 150; start += 20) {
-    for (let col = 0; col < 20 && (start+col) <= 150; col++) {
-      const num = start + col;
-      const addr = XLSX.utils.encode_cell({r: row-1, c: col});
-      const crossed = num <= (r.firstMeal || 0);
-      ws[addr] = { v: crossed ? '✓' + num : num, t: crossed ? 's' : 'n' };
-    }
-    row++;
-  }
-
-  // Total first meals [2]
-  mergeRange(row,1,row,15); setCell(row,1,'');
-  mergeRange(row,16,row,18); setCell(row,16,'Total First Meals + [2]', {bold:true});
-  setCell(row,19, r.firstMeal || 0);
-  row++;
-
-  // Second meals
-  mergeRange(row,1,row,20); setCell(row,1,'Second Meals Served to Children:');
-  row++;
-  for (let col = 1; col <= 10; col++) setCell(row, col, col <= (r.secondMeal||0) ? '✓'+col : col);
-  mergeRange(row,11,row,18); setCell(row,11,'Total Second Meals + [3]', {bold:true});
-  setCell(row,19, r.secondMeal || 0);
-  row++;
-
-  // Program adults
-  mergeRange(row,1,row,20); setCell(row,1,'Meals Served to Program Adults:');
-  row++;
-  for (let col = 1; col <= 10; col++) setCell(row, col, col <= (r.adultProg||0) ? '✓'+col : col);
-  mergeRange(row,11,row,18); setCell(row,11,'Total Program Adult Meals + [4]', {bold:true});
-  setCell(row,19, r.adultProg || 0);
-  row++;
-
-  // Non-program adults
-  mergeRange(row,1,row,20); setCell(row,1,'Meals Served to Non-Program Adults:');
-  row++;
-  for (let col = 1; col <= 10; col++) setCell(row, col, col <= (r.adultNonProg||0) ? '✓'+col : col);
-  mergeRange(row,11,row,18); setCell(row,11,'Total Non-Program Adult Meals + [5]', {bold:true});
-  setCell(row,19, r.adultNonProg || 0);
-  row++;
-
-  // Total served [6]
-  mergeRange(row,1,row,18); setCell(row,1,'TOTAL MEALS SERVED = [6]', {bold:true});
-  setCell(row,19, r.totalServed || 0);
-  row++;
-
-  // Unservable [7]
-  mergeRange(row,1,row,18); setCell(row,1,'Total damaged/incomplete/other non-reimbursable meals + [7]', {bold:true});
-  setCell(row,19, r.totalUnsrv || 0);
-  row++;
-
-  // Leftover [8]
-  mergeRange(row,1,row,18); setCell(row,1,'Total leftover meals + [8]', {bold:true});
-  setCell(row,19, r.leftover || 0);
-  row++;
-
-  // Balance [9]
-  const balance = r.totalServed + r.totalUnsrv + r.leftover;
-  mergeRange(row,1,row,20);
-  setCell(row,1,'Total of Items [6]+[7]+[8] = [9]: ' + balance + '  (should equal [1]: ' + r.availQty + ')  ' + (balance === r.availQty ? '✓ BALANCED' : '⚠ MISMATCH'), {bold:true});
-  row++;
-
-  // Notes
-  if (r.notes) {
-    mergeRange(row,1,row,20); setCell(row,1,'Notes: ' + r.notes);
-    row++;
-  }
-
-  // Signature
-  mergeRange(row,1,row,10); setCell(row,1,'By signing below, I certify that the above information is true and accurate:');
-  row++;
-  mergeRange(row,1,row,8); setCell(row,1, r.sigName);
-  setCell(row,9,'Signature');
-  mergeRange(row,13,row,18); setCell(row,13, r.svcDate);
-  setCell(row,19,'Date');
-  row++;
-
-  // Footer
-  mergeRange(row,1,row,20);
-  setCell(row,1,'Record ID: ' + r.uid + '  |  Generated from SESSION for GCFB');
-
-  ws['!ref'] = XLSX.utils.encode_range({s:{r:0,c:0}, e:{r:row, c:19}});
-  ws['!merges'] = merge;
-  ws['!cols'] = Array(20).fill({wch: 5});
-
   XLSX.utils.book_append_sheet(wb, ws, 'Meal Count Sheet');
-  XLSX.writeFile(wb, 'MealCountSheet_' + r.siteName.replace(/[^a-z0-9]/gi,'_') + '_' + r.svcDate + '.xlsx');
+  XLSX.writeFile(wb, 'MealCountSheet_' + r.site + '_' + r.svcDate + '.xlsx');
 }
 
 // ═══════════════════════════
-//  MONTHLY AUDIT REPORT EXPORT
-//  Matches: Sponsor Monthly Meal Count Summary by Site
+//  EXPORT: MONTHLY AUDIT REPORT — all sites (or one)
+//  ⚠ REBUILT during full-file regen — verify sheet/column layout against
+//    your committed original before relying on it for the monthly claim.
 // ═══════════════════════════
 function exportMonthlyReport(month, siteFilter) {
+  month = month || (q('export-mo-report') ? q('export-mo-report').value : today().slice(0, 7));
+  siteFilter = siteFilter || 'ALL';
+  if (!month) { alert('Choose a month first.'); return; }
   let recs = records.filter(r => r.svcDate && r.svcDate.startsWith(month) && !r.isDraft);
-  if (siteFilter && siteFilter !== 'ALL') recs = recs.filter(r => r.site === siteFilter);
-  if (!recs.length) { alert('No records found for the selected period.'); return; }
+  if (siteFilter !== 'ALL') recs = recs.filter(r => r.site === siteFilter);
+  if (!recs.length) { alert('No submitted records for ' + month + '.'); return; }
 
-  const wb = XLSX.utils.book_new();
-  const monthLabel = new Date(month + '-02').toLocaleString('en-US', { month: 'long', year: 'numeric' });
-
-  // ── Build per-site aggregates ─────────────────────────────
+  // Sheet 1 — Sponsor Monthly Meal Count Summary (by site)
   const bySite = {};
   recs.forEach(r => {
-    if (!bySite[r.site]) bySite[r.site] = {
-      name: r.siteName, id: r.site, mealType: r.mealType, days: 0,
-      received: 0, available: 0,
-      firstMeal: 0, secondMeal: 0, adultProg: 0, adultNonProg: 0,
-      totalServed: 0, incomplete: 0, waste: 0, leftover: 0,
-      firstMealMax: 0, flags: []
-    };
+    if (!bySite[r.site]) bySite[r.site] = { name: r.siteName, days: 0, received: 0, available: 0,
+      first: 0, second: 0, adultProg: 0, adultNon: 0, served: 0, waste: 0, incomplete: 0, leftover: 0 };
     const s = bySite[r.site];
-    s.days++;
-    s.received   += (r.recvQty || 0);
-    s.available  += (r.availQty || 0);
-    s.firstMeal  += (r.firstMeal || 0);
-    s.secondMeal += (r.secondMeal || 0);
-    s.adultProg  += (r.adultProg || 0);
-    s.adultNonProg += (r.adultNonProg || 0);
-    s.totalServed  += (r.totalServed || 0);
-    s.incomplete   += (r.incomplete || 0);
-    s.waste        += (r.waste || 0);
-    s.leftover     += (r.leftover || 0);
-    if ((r.firstMeal || 0) > s.firstMealMax) s.firstMealMax = r.firstMeal;
-    const af = isAnomaly(r);
-    if (af) s.flags.push(r.svcDate + ': ' + af.join('; '));
+    s.days++; s.received += r.recvQty || 0; s.available += r.availQty || 0;
+    s.first += r.firstMeal || 0; s.second += r.secondMeal || 0;
+    s.adultProg += r.adultProg || 0; s.adultNon += r.adultNonProg || 0;
+    s.served += r.totalServed || 0; s.waste += r.waste || 0;
+    s.incomplete += r.incomplete || 0; s.leftover += r.leftover || 0;
   });
-
-  const sites = Object.values(bySite).sort((a,b) => a.name.localeCompare(b.name));
-
-  // ── Sheet 1: Sponsor Monthly Meal Count Summary ───────────
-  // Row 1: Title
-  const summaryRows = [
-    ['Sponsor Monthly Meal Count Summary by Site'],
-    [monthLabel],
-    [],
-    // Group headers row
-    ['Program','','Meal','','','Site','','','Days','','Meal Counts'],
-    // Column headers — exactly matching the real file
-    [
-      'Program Abbreviation','Program Description',
-      'Meal Abbreviation','Meal Description','Sort Order',
-      'Name','Number','Multiple Serving Lines (MSL)',
-      'Days Served','Revision',
-      'Ordered','Received','Available',
-      'First Meal','Second Meal','Adult Program','Adult Non-Program','Total',
-      'Incomplete','Waste','Leftover','ADP','First Meal Max'
-    ]
-  ];
-
-  sites.forEach(s => {
-    const adp = s.days > 0 ? Math.round((s.firstMeal / s.days) * 100) / 100 : 0;
-    summaryRows.push([
-      (s.mealType||'').startsWith('SFSP') ? 'SFSP' : 'CACFP',
-      (s.mealType||'').startsWith('SFSP') ? 'Summer Food Service Program' : 'Child and Adult Care Food Program',
-      s.mealType ? (s.mealType.split('_')[1]||'SUP') : 'SUP',
-      s.mealType ? s.mealType.replace('_',' ') : 'Supper', 5,
-      s.name, s.id, 'FALSE',
-      s.days, 0,
-      s.received, s.received, s.available,
-      s.firstMeal, s.secondMeal, s.adultProg, s.adultNonProg, s.totalServed,
-      s.incomplete, s.waste, s.leftover,
-      adp, s.firstMealMax
-    ]);
+  const sumHead = ['Site', 'Site ID', 'Days', 'Received', 'Available', 'First (reimb.)', 'Second',
+    'Adult Prog', 'Adult Non-Prog', 'Total Served', 'Waste', 'Incomplete', 'Leftover'];
+  const sumAoa = [['Sponsor Monthly Meal Count Summary — ' + monthNameUpper(month)], [], sumHead];
+  const tot = { days: 0, received: 0, available: 0, first: 0, second: 0, adultProg: 0, adultNon: 0, served: 0, waste: 0, incomplete: 0, leftover: 0 };
+  Object.entries(bySite).sort(([,a],[,b]) => a.name.localeCompare(b.name)).forEach(([id, s]) => {
+    sumAoa.push([s.name, id, s.days, s.received, s.available, s.first, s.second, s.adultProg, s.adultNon, s.served, s.waste, s.incomplete, s.leftover]);
+    Object.keys(tot).forEach(k => tot[k] += s[k]);
   });
+  sumAoa.push(['TOTAL', '', tot.days, tot.received, tot.available, tot.first, tot.second, tot.adultProg, tot.adultNon, tot.served, tot.waste, tot.incomplete, tot.leftover]);
+  const wsSum = XLSX.utils.aoa_to_sheet(sumAoa);
+  wsSum['!cols'] = [{ wch: 34 }, { wch: 9 }, { wch: 6 }, { wch: 10 }, { wch: 10 }, { wch: 13 }, { wch: 8 }, { wch: 11 }, { wch: 14 }, { wch: 12 }, { wch: 8 }, { wch: 11 }, { wch: 9 }];
 
-  // Totals row
-  const T = sites.reduce((a,s) => ({
-    days: a.days+s.days, received: a.received+s.received, available: a.available+s.available,
-    firstMeal: a.firstMeal+s.firstMeal, secondMeal: a.secondMeal+s.secondMeal,
-    adultProg: a.adultProg+s.adultProg, adultNonProg: a.adultNonProg+s.adultNonProg,
-    totalServed: a.totalServed+s.totalServed, incomplete: a.incomplete+s.incomplete,
-    waste: a.waste+s.waste, leftover: a.leftover+s.leftover
-  }), {days:0,received:0,available:0,firstMeal:0,secondMeal:0,adultProg:0,adultNonProg:0,totalServed:0,incomplete:0,waste:0,leftover:0});
-  const tadp = T.days > 0 ? Math.round((T.firstMeal / T.days) * 100) / 100 : 0;
+  // Sheet 2 — Review Flags
+  const flagAoa = [['Review Flags — ' + monthNameUpper(month)], [], ['Site', 'Date', 'Record ID', 'Flag(s)']];
+  recs.forEach(r => {
+    const flags = isAnomaly(r);
+    if (flags) flagAoa.push([r.siteName, r.svcDate, r.uid, flags.join(' | ')]);
+  });
+  if (flagAoa.length === 3) flagAoa.push(['— No anomalies flagged for this period —']);
+  const wsFlags = XLSX.utils.aoa_to_sheet(flagAoa);
+  wsFlags['!cols'] = [{ wch: 34 }, { wch: 12 }, { wch: 12 }, { wch: 80 }];
 
-  summaryRows.push([]);
-  summaryRows.push([
-    'TOTALS','','','','',
-    'All Sites', '', '',
-    T.days, '',
-    T.received, T.received, T.available,
-    T.firstMeal, T.secondMeal, T.adultProg, T.adultNonProg, T.totalServed,
-    T.incomplete, T.waste, T.leftover, tadp, ''
-  ]);
-  summaryRows.push([]);
-  summaryRows.push(['Generated from SESSION for GCFB — ' + new Date().toLocaleDateString()]);
-
-  const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
-  wsSummary['!cols'] = [
-    {wch:10},{wch:36},{wch:8},{wch:12},{wch:7},
-    {wch:40},{wch:12},{wch:6},
-    {wch:8},{wch:7},
-    {wch:8},{wch:8},{wch:8},
-    {wch:10},{wch:10},{wch:12},{wch:14},{wch:8},
-    {wch:10},{wch:8},{wch:8},{wch:8},{wch:12}
-  ];
-  XLSX.utils.book_append_sheet(wb, wsSummary, 'Sponsor Monthly Meal Count Summ');
-
-  // ── Sheet 2: Anomaly / Review Flags ──────────────────────
-  const flagRows = [
-    ['CACFP Meal Count — Anomaly & Review Flags'],
-    [monthLabel],
-    [],
-    ['Site Name','Site ID','Serve Date','Available','Served','Waste','Leftover','Flag Details']
-  ];
-  recs.sort((a,b) => a.siteName.localeCompare(b.siteName)||a.svcDate.localeCompare(b.svcDate))
-    .forEach(r => {
-      const af = isAnomaly(r);
-      if (af) flagRows.push([r.siteName, r.site, r.svcDate, r.availQty, r.totalServed, r.waste, r.leftover, af.join(' | ')]);
-    });
-  if (flagRows.length === 4) flagRows.push(['No anomalies found for this period.']);
-  const wsFlags = XLSX.utils.aoa_to_sheet(flagRows);
-  wsFlags['!cols'] = [{wch:38},{wch:10},{wch:10},{wch:8},{wch:8},{wch:8},{wch:8},{wch:60}];
-  XLSX.utils.book_append_sheet(wb, wsFlags, 'Review Flags');
-
-  // ── Sheet 3: Raw Daily Data ───────────────────────────────
-  const rawRows = [[
-    'Record ID','Site Name','Site ID','Serve Date','Meal','Day of Week',
-    'Delivery Date','Delivery Temp','Received','Previous Leftover','Available',
-    'First Meal','Second Meal','Adult Program','Adult Non-Program','Total Served',
-    'Waste','Incomplete','Total Unservable','Leftover',
-    'Signed By','Notes','Created At','Last Edited','Edit Count'
-  ]];
-  recs.sort((a,b) => a.siteName.localeCompare(b.siteName)||a.svcDate.localeCompare(b.svcDate))
-    .forEach(r => {
-      const dow = r.svcDate ? new Date(r.svcDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long'}) : '';
-      rawRows.push([
-        r.uid, r.siteName, r.site, r.svcDate, r.mealType || 'SUPPER', dow,
-        r.delDate, r.delTemp, r.recvQty, r.prevLeftover, r.availQty,
-        r.firstMeal, r.secondMeal, r.adultProg, r.adultNonProg, r.totalServed,
-        r.waste, r.incomplete, r.totalUnsrv, r.leftover,
-        r.sigName, r.notes||'',
-        (r.createdAt||'').slice(0,16).replace('T',' '),
-        (r.lastEditedAt||'').slice(0,16).replace('T',' '),
-        r.editCount||0
-      ]);
-    });
-  const wsRaw = XLSX.utils.aoa_to_sheet(rawRows);
-  wsRaw['!cols'] = Array(25).fill({wch:13}); wsRaw['!cols'][1]={wch:38}; wsRaw['!cols'][3]={wch:10};
-  XLSX.utils.book_append_sheet(wb, wsRaw, 'Daily Detail');
-
-  const fname = 'MonthlyAuditReport_' + month + (siteFilter && siteFilter!=='ALL' ? '_'+siteFilter:'') + '.xlsx';
-  XLSX.writeFile(wb, fname);
-}
-
-// ═══════════════════════════
-//  SITE AUDIT REPORT EXPORT
-//  Matches: AUDIT_{Site}_{DateRange} format
-//  Sheets: Daily Meal Details, Monthly Averages, Monthly Totals, Site Information
-// ═══════════════════════════
-function exportSiteAudit() {
-  const siteId  = document.getElementById('audit-site').value;
-  const startDt = document.getElementById('audit-start').value;
-  const endDt   = document.getElementById('audit-end').value;
-  const statusEl = document.getElementById('audit-export-status');
-
-  if (!siteId || !startDt || !endDt) {
-    statusEl.style.display = 'block';
-    statusEl.innerHTML = '<span style="color:var(--danger-text);">Please select a site and date range.</span>';
-    return;
-  }
-  if (startDt > endDt) {
-    statusEl.style.display = 'block';
-    statusEl.innerHTML = '<span style="color:var(--danger-text);">Start date must be before end date.</span>';
-    return;
-  }
-
-  const siteName = SITES[siteId] ? SITES[siteId].name : siteId;
-  let recs = records.filter(r =>
-    r.site === siteId && !r.isDraft &&
-    r.svcDate >= startDt && r.svcDate <= endDt
-  ).sort((a,b) => a.svcDate.localeCompare(b.svcDate));
-
-  if (!recs.length) {
-    statusEl.style.display = 'block';
-    statusEl.innerHTML = '<span style="color:var(--warning-text);">No records found for this site and date range.</span>';
-    return;
-  }
+  // Sheet 3 — Daily Detail
+  const detHead = ['Site', 'Site ID', 'Serve Date', 'Received', 'Available', 'First', 'Second',
+    'Adult Prog', 'Adult Non-Prog', 'Total Served', 'Waste', 'Incomplete', 'Leftover', 'Signed By', 'Record ID'];
+  const detAoa = [detHead];
+  recs.sort((a, b) => (a.siteName || '').localeCompare(b.siteName || '') || a.svcDate.localeCompare(b.svcDate)).forEach(r => {
+    detAoa.push([r.siteName, r.site, r.svcDate, r.recvQty, r.availQty, r.firstMeal, r.secondMeal,
+      r.adultProg, r.adultNonProg, r.totalServed, r.waste, r.incomplete, r.leftover, r.sigName, r.uid]);
+  });
+  const wsDet = XLSX.utils.aoa_to_sheet(detAoa);
+  wsDet['!cols'] = detHead.map((h, i) => ({ wch: i === 0 ? 34 : 11 }));
 
   const wb = XLSX.utils.book_new();
-
-  // ── Sheet 1: Daily Meal Details ───────────────────────────
-  const dailyRows = [[
-    'Date','Meal','Day of the Week','ServingLines','Stranded',
-    'Delivery Date','Delivery Temp','Received','Previous Leftover','Available',
-    'First Meal','Second Meal','Adult Program','Adult Non-Program','Total Served',
-    'Additional Meal Requests','Waste','Incomplete','Total Unservable','Leftovers',
-    'Revisions','Revision Date/Time','Receiver'
-  ]];
-  recs.forEach(r => {
-    const dow = r.svcDate ? new Date(r.svcDate+'T12:00:00').toLocaleDateString('en-US',{weekday:'long'}) : '';
-    dailyRows.push([
-      r.svcDate, (r.mealType||'SUPPER').toUpperCase(), dow, 1, 'No',
-      r.delDate + (r.delTime ? ' ' + r.delTime : ''),
-      r.delTemp || 0,
-      r.recvQty || 0, r.prevLeftover || 0, r.availQty || 0,
-      r.firstMeal || 0, r.secondMeal || 0, r.adultProg || 0, r.adultNonProg || 0, r.totalServed || 0,
-      0,
-      r.waste || 0, r.incomplete || 0, r.totalUnsrv || 0, r.leftover || 0,
-      r.editCount || 1,
-      (r.lastEditedAt||r.createdAt||'').slice(0,16).replace('T',' ') + ' UTC',
-      r.sigName || ''
-    ]);
-  });
-  const wsDaily = XLSX.utils.aoa_to_sheet(dailyRows);
-  wsDaily['!cols'] = [{wch:10},{wch:8},{wch:11},{wch:6},{wch:7},{wch:16},{wch:10},
-    {wch:8},{wch:10},{wch:8},{wch:10},{wch:10},{wch:12},{wch:14},{wch:10},
-    {wch:8},{wch:8},{wch:10},{wch:12},{wch:8},{wch:8},{wch:22},{wch:20}];
-  XLSX.utils.book_append_sheet(wb, wsDaily, 'Daily Meal Details');
-
-  // ── Build monthly buckets for averages & totals ───────────
-  const byMonth = {};
-  recs.forEach(r => {
-    const mo = r.svcDate.slice(0,7); // YYYY-MM
-    if (!byMonth[mo]) byMonth[mo] = {
-      days:0, firstMeal:0, secondMeal:0, adultProg:0, adultNonProg:0,
-      totalServed:0, waste:0, incomplete:0, totalUnsrv:0, leftover:0,
-      received:0, prevLeftover:0, available:0, delTemp:0, tempCount:0,
-      firstMealMax:0, revisions:0
-    };
-    const m = byMonth[mo];
-    m.days++;
-    m.received    += r.recvQty||0; m.prevLeftover += r.prevLeftover||0;
-    m.available   += r.availQty||0;
-    m.firstMeal   += r.firstMeal||0; m.secondMeal += r.secondMeal||0;
-    m.adultProg   += r.adultProg||0; m.adultNonProg += r.adultNonProg||0;
-    m.totalServed += r.totalServed||0;
-    m.waste       += r.waste||0; m.incomplete += r.incomplete||0;
-    m.totalUnsrv  += r.totalUnsrv||0; m.leftover += r.leftover||0;
-    m.revisions   += r.editCount||1;
-    if ((r.firstMeal||0) > m.firstMealMax) m.firstMealMax = r.firstMeal||0;
-    if (r.delTemp && parseFloat(r.delTemp) > 0) { m.delTemp += parseFloat(r.delTemp); m.tempCount++; }
-  });
-
-  const moLabel = mo => {
-    const [yr,mn] = mo.split('-');
-    return new Date(yr,parseInt(mn)-1,1).toLocaleString('en-US',{month:'short',year:'2-digit'}).replace(' ','-');
-  };
-  const avg = (v,d) => d > 0 ? Math.round((v/d)*100)/100 : 0;
-
-  // ── Sheet 2: Monthly Averages ─────────────────────────────
-  const avgRows = [[
-    '','Meal','Days Served','ADP','Delivery Temp AVG','Received AVG',
-    'Previous Leftover AVG','Available AVG','First Meal AVG','Second Meal AVG',
-    'Adult Program AVG','Adult Non-Program AVG','Total Served AVG',
-    'Additional Meal Requests AVG','Waste AVG','Incomplete AVG',
-    'Total Unservable AVG','Leftovers Average','Revision Avg'
-  ]];
-  Object.entries(byMonth).sort(([a],[b])=>a.localeCompare(b)).forEach(([mo,m]) => {
-    const adp = avg(m.firstMeal, m.days);
-    avgRows.push([
-      moLabel(mo), 'SUPPER', m.days, adp,
-      m.tempCount > 0 ? avg(m.delTemp, m.tempCount) : 0,
-      avg(m.received, m.days), avg(m.prevLeftover, m.days), avg(m.available, m.days),
-      avg(m.firstMeal, m.days), avg(m.secondMeal, m.days),
-      avg(m.adultProg, m.days), avg(m.adultNonProg, m.days), avg(m.totalServed, m.days),
-      0, avg(m.waste, m.days), avg(m.incomplete, m.days),
-      avg(m.totalUnsrv, m.days), avg(m.leftover, m.days), avg(m.revisions, m.days)
-    ]);
-  });
-  const wsAvg = XLSX.utils.aoa_to_sheet(avgRows);
-  wsAvg['!cols'] = Array(19).fill({wch:12}); wsAvg['!cols'][0]={wch:8};
-  XLSX.utils.book_append_sheet(wb, wsAvg, 'Monthly Averages');
-
-  // ── Sheet 3: Monthly Totals ───────────────────────────────
-  const totRows = [[
-    'Month','Meal','Days Served','First Meal Max','Received Total',
-    'Previous Leftover Totals','Available Total','First Meal Totals',
-    'Second Meal Totals','Adult Program Totals','Adult Non-Program Totals',
-    'Served Total','Additional Meal Requests Totals','Waste Total',
-    'Incomplete Total','Total Unservable','Leftovers','Revision Total'
-  ]];
-  Object.entries(byMonth).sort(([a],[b])=>a.localeCompare(b)).forEach(([mo,m]) => {
-    totRows.push([
-      moLabel(mo), 'SUPPER', m.days, m.firstMealMax,
-      m.received, m.prevLeftover, m.available,
-      m.firstMeal, m.secondMeal, m.adultProg, m.adultNonProg, m.totalServed,
-      0, m.waste, m.incomplete, m.totalUnsrv, m.leftover, m.revisions
-    ]);
-  });
-  const wsTot = XLSX.utils.aoa_to_sheet(totRows);
-  wsTot['!cols'] = Array(18).fill({wch:12}); wsTot['!cols'][0]={wch:8};
-  XLSX.utils.book_append_sheet(wb, wsTot, 'Monthly Totals');
-
-  // ── Sheet 4: Site Information ─────────────────────────────
-  const siteRows = [
-    ['State','Sponsor Name','Sponsor Number','Site Name','Site Number','Program','Program Year'],
-    ['OH','Greater Cleveland Food Bank','SAS-OH-100', siteName, siteId, 'CACFP',
-      startDt.slice(0,4) + '-' + endDt.slice(0,4)]
-  ];
-  const wsSite = XLSX.utils.aoa_to_sheet(siteRows);
-  wsSite['!cols'] = [{wch:6},{wch:28},{wch:14},{wch:40},{wch:12},{wch:8},{wch:10}];
-  XLSX.utils.book_append_sheet(wb, wsSite, 'Site Information');
-
-  // ── Write file ────────────────────────────────────────────
-  const safeName = siteName.replace(/[^a-z0-9]/gi,'_').slice(0,30);
-  XLSX.writeFile(wb, 'AUDIT_' + safeName + '_' + siteId + '_' + startDt + '_to_' + endDt + '.xlsx');
-
-  statusEl.style.display = 'block';
-  statusEl.innerHTML = '<span style="color:var(--success-text);">✓ Audit report exported — ' + recs.length + ' service records across ' + Object.keys(byMonth).length + ' month(s).</span>';
+  XLSX.utils.book_append_sheet(wb, wsSum, 'Monthly Summary');
+  XLSX.utils.book_append_sheet(wb, wsFlags, 'Review Flags');
+  XLSX.utils.book_append_sheet(wb, wsDet, 'Daily Detail');
+  XLSX.writeFile(wb, 'CACFP_Monthly_Audit_' + month + (siteFilter !== 'ALL' ? '_' + siteFilter : '') + '.xlsx');
 }
 
 // ═══════════════════════════
-//  SITE INFO (Firebase-backed)
+//  EXPORT: SITE AUDIT REPORT — single site, date range
+//  ⚠ REBUILT during full-file regen — verify sheet/column layout against
+//    your committed original before relying on it for a state review.
+// ═══════════════════════════
+function exportSiteAudit() {
+  const site = q('audit-site') ? q('audit-site').value : '';
+  const start = q('audit-start') ? q('audit-start').value : '';
+  const end = q('audit-end') ? q('audit-end').value : '';
+  const statusEl = q('audit-export-status');
+  if (!site) { alert('Select a site.'); return; }
+  if (!start || !end) { alert('Choose a start and end date.'); return; }
+  let recs = records.filter(r => r.site === site && !r.isDraft && r.svcDate >= start && r.svcDate <= end)
+    .sort((a, b) => a.svcDate.localeCompare(b.svcDate));
+  if (!recs.length) { alert('No records for that site and date range.'); return; }
+  const siteName = (SITES[site] && SITES[site].name) || recs[0].siteName || site;
+
+  // Sheet 1 — Daily Meal Details
+  const head = ['Serve Date', 'Received', 'Available', 'First (reimb.)', 'Second', 'Adult Prog',
+    'Adult Non-Prog', 'Total Served', 'Waste', 'Incomplete', 'Leftover', 'Balance', 'Signed By'];
+  const aoa = [
+    ['CACFP Site Audit Report'],
+    ['Site', siteName, '', 'Site ID', site],
+    ['Date range', start + '  to  ' + end],
+    [],
+    head
+  ];
+  const tot = { received: 0, available: 0, first: 0, second: 0, adultProg: 0, adultNon: 0, served: 0, waste: 0, incomplete: 0, leftover: 0 };
+  recs.forEach(r => {
+    const bal = (r.availQty || 0) - ((r.totalServed || 0) + (r.totalUnsrv || 0) + (r.leftover || 0));
+    aoa.push([r.svcDate, r.recvQty, r.availQty, r.firstMeal, r.secondMeal, r.adultProg, r.adultNonProg,
+      r.totalServed, r.waste, r.incomplete, r.leftover, bal === 0 ? 'OK' : bal, r.sigName]);
+    tot.received += r.recvQty || 0; tot.available += r.availQty || 0; tot.first += r.firstMeal || 0;
+    tot.second += r.secondMeal || 0; tot.adultProg += r.adultProg || 0; tot.adultNon += r.adultNonProg || 0;
+    tot.served += r.totalServed || 0; tot.waste += r.waste || 0; tot.incomplete += r.incomplete || 0; tot.leftover += r.leftover || 0;
+  });
+  const days = recs.length;
+  aoa.push([]);
+  aoa.push(['MONTHLY TOTALS', tot.received, tot.available, tot.first, tot.second, tot.adultProg, tot.adultNon, tot.served, tot.waste, tot.incomplete, tot.leftover]);
+  const avg = (v) => days ? Math.round((v / days) * 10) / 10 : 0;
+  aoa.push(['DAILY AVERAGES', avg(tot.received), avg(tot.available), avg(tot.first), avg(tot.second), avg(tot.adultProg), avg(tot.adultNon), avg(tot.served), avg(tot.waste), avg(tot.incomplete), avg(tot.leftover)]);
+  aoa.push(['Service days', days]);
+  const wsDet = XLSX.utils.aoa_to_sheet(aoa);
+  wsDet['!cols'] = head.map((h, i) => ({ wch: i === 0 ? 14 : 12 }));
+
+  // Sheet 2 — Site Information
+  const staff = getSiteStaff(site);
+  const infoAoa = [
+    ['Site Information'],
+    [],
+    ['Agency / Site Name', siteName],
+    ['Site ID / Agency No.', site],
+    ['Supervisor Email', SITE_EMAILS[site] || '—'],
+    ['Trained Personnel'],
+    ...staff.map(nm => ['', nm])
+  ];
+  const wsInfo = XLSX.utils.aoa_to_sheet(infoAoa);
+  wsInfo['!cols'] = [{ wch: 24 }, { wch: 40 }];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, wsDet, 'Daily Details');
+  XLSX.utils.book_append_sheet(wb, wsInfo, 'Site Info');
+  XLSX.writeFile(wb, 'CACFP_Site_Audit_' + site + '_' + start + '_to_' + end + '.xlsx');
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.className = 'alert alert-success'; statusEl.innerHTML = '<i class="ti ti-circle-check"></i>&nbsp; Exported ' + days + ' day(s) for ' + siteName + '.'; }
+}
+
+// ═══════════════════════════
+//  SITE INFORMATION — Firebase CRUD
 // ═══════════════════════════
 function populateSiteInfoSelect() {
-  const sel = document.getElementById('si-site-select');
-  if (!sel || sel.options.length > 1) return;
+  const sel = q('si-site-select');
+  if (!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = '<option value="">Choose a site…</option>';
   Object.entries(SITES).filter(([k]) => k !== 'MONITOR')
     .sort(([,a],[,b]) => a.name.localeCompare(b.name))
     .forEach(([k, v]) => {
-      const o = document.createElement('option');
-      o.value = k; o.textContent = v.name + ' (' + k + ')';
-      sel.appendChild(o);
+      const o = document.createElement('option'); o.value = k; o.textContent = v.name + '  (' + k + ')'; sel.appendChild(o);
     });
+  if (prev && SITES[prev]) sel.value = prev;
+}
+
+async function addNewSite() {
+  const idEl = q('si-new-id'), nameEl = q('si-new-name'), statusEl = q('si-new-status');
+  const id = (idEl.value || '').trim();
+  const name = (nameEl.value || '').trim();
+  const show = (cls, msg) => { statusEl.style.display = 'block'; statusEl.className = 'alert ' + cls; statusEl.innerHTML = msg; };
+  if (!id || !name) { show('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; Enter both a site ID / agency number and a site name.'); return; }
+  if (id === 'MONITOR' || SITES[id]) { show('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; A site with ID <strong>' + id + '</strong> already exists.'); return; }
+  const doc = {
+    siteId: id, siteName: name, agencyName: name, agencyNumber: id,
+    pin: id, email: '', phone: '', staff: [], notes: '', active: true,
+    createdAt: new Date().toISOString()
+  };
+  try {
+    await _db.collection('site_info').doc(id).set(doc);
+    SITES[id] = { name: name, pin: id, active: true };
+    populateLoginDropdown();
+    populateSiteInfoSelect();
+    ['summary-site','lookup-site-filter','reimb-site','export-site-report'].forEach(sid => { const s = q(sid); if (s) fillSiteOptions(s, true, 'All sites'); });
+    const as = q('audit-site'); if (as) fillSiteOptions(as, false);
+    idEl.value = ''; nameEl.value = '';
+    q('si-site-select').value = id;
+    loadSiteInfo();
+    show('alert-success', '<i class="ti ti-circle-check"></i>&nbsp; Added <strong>' + name + '</strong> (ID ' + id + '). Its PIN defaults to the agency number — fill in staff, email, and PIN below, then Save.');
+  } catch (e) {
+    show('alert-danger', '<i class="ti ti-alert-triangle"></i>&nbsp; Could not save the new site: ' + (e.message || e));
+  }
 }
 
 async function loadSiteInfo() {
-  const siteId = document.getElementById('si-site-select').value;
-  const form = document.getElementById('si-form');
-  if (!siteId) { form.style.display = 'none'; return; }
+  const sel = q('si-site-select');
+  const site = sel.value;
+  const form = q('si-form');
+  if (!site) { form.style.display = 'none'; return; }
   form.style.display = 'block';
-  // Clear form first
-  ['si-agency-name','si-agency-number','si-pin','si-email','si-phone','si-staff','si-notes'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  // Pre-fill email from SITE_EMAILS if available
-  document.getElementById('si-email').value = SITE_EMAILS[siteId] || '';
-  // Load from Firebase
   try {
-    const doc = await _db.collection('site_info').doc(siteId).get();
-    if (doc.exists) {
-      const d = doc.data();
-      document.getElementById('si-agency-name').value   = d.agencyName   || '';
-      document.getElementById('si-agency-number').value = d.agencyNumber || '';
-      document.getElementById('si-pin').value           = d.pin          || siteId;
-      document.getElementById('si-email').value         = d.email        || SITE_EMAILS[siteId] || '';
-      document.getElementById('si-phone').value         = d.phone        || '';
-      document.getElementById('si-staff').value         = (d.staff || []).join('\n');
-      document.getElementById('si-notes').value         = d.notes        || '';
-    }
-  } catch(e) { console.warn('Could not load site info:', e); }
+    const snap = await _db.collection('site_info').doc(site).get();
+    const d = snap.exists ? snap.data() : {};
+    q('si-agency-name').value = d.agencyName || d.siteName || (SITES[site] && SITES[site].name) || '';
+    q('si-agency-number').value = d.agencyNumber || site;
+    q('si-pin').value = d.pin || (SITES[site] && SITES[site].pin) || '';
+    q('si-email').value = d.email || '';
+    q('si-phone').value = d.phone || '';
+    q('si-staff').value = (d.staff && d.staff.length ? d.staff : (STAFF[site] || [])).join('\n');
+    q('si-notes').value = d.notes || '';
+  } catch (e) {
+    console.warn('loadSiteInfo failed:', e);
+  }
 }
 
 async function saveSiteInfo() {
-  const siteId = document.getElementById('si-site-select').value;
-  const statusEl = document.getElementById('si-status');
-  if (!siteId) return;
-  const staffRaw = document.getElementById('si-staff').value;
-  const staff = staffRaw.split('\n').map(s => s.trim()).filter(Boolean);
-  const pinVal = document.getElementById('si-pin').value.trim() || siteId;
-  const nameVal = document.getElementById('si-agency-name').value.trim() || (SITES[siteId] ? SITES[siteId].name : siteId);
-  const data = {
-    siteId,
-    siteName:     nameVal,
-    agencyName:   nameVal,
-    agencyNumber: document.getElementById('si-agency-number').value.trim(),
-    pin:          pinVal,
-    active:       true,
-    email:        document.getElementById('si-email').value.trim(),
-    phone:        document.getElementById('si-phone').value.trim(),
-    staff,
-    notes:        document.getElementById('si-notes').value.trim(),
-    updatedAt:    new Date().toISOString()
+  const site = q('si-site-select').value;
+  const statusEl = q('si-status');
+  if (!site) return;
+  const staff = q('si-staff').value.split('\n').map(s => s.trim()).filter(Boolean);
+  const doc = {
+    siteId: site,
+    siteName: q('si-agency-name').value.trim() || site,
+    agencyName: q('si-agency-name').value.trim(),
+    agencyNumber: q('si-agency-number').value.trim(),
+    pin: q('si-pin').value.trim() || site,
+    email: q('si-email').value.trim(),
+    phone: q('si-phone').value.trim(),
+    staff: staff,
+    notes: q('si-notes').value.trim(),
+    active: true,
+    updatedAt: new Date().toISOString()
   };
+  const show = (cls, msg) => { statusEl.style.display = 'block'; statusEl.className = 'alert ' + cls; statusEl.innerHTML = msg; };
   try {
-    await _db.collection('site_info').doc(siteId).set(data);
-    // Update runtime SITE_EMAILS, STAFF, and SITES
-    if (data.email) SITE_EMAILS[siteId] = data.email;
-    if (staff.length) STAFF[siteId] = staff;
-    SITES[siteId] = { name: nameVal, pin: pinVal, active: true };
+    await _db.collection('site_info').doc(site).set(doc, { merge: true });
+    SITES[site] = { name: doc.siteName, pin: doc.pin, active: true };
+    if (doc.email) SITE_EMAILS[site] = doc.email; else delete SITE_EMAILS[site];
+    if (staff.length) STAFF[site] = staff;
     populateLoginDropdown();
-    statusEl.style.display = 'block';
-    statusEl.innerHTML = '<span style="color:var(--success-text);">✓ Saved to Firebase — ' + (SITES[siteId]||{name:siteId}).name + '</span>';
+    show('alert-success', '<i class="ti ti-circle-check"></i>&nbsp; Saved to Firebase.');
     loadAllSiteInfo();
-  } catch(e) {
-    statusEl.style.display = 'block';
-    statusEl.innerHTML = '<span style="color:var(--danger-text);">✗ Save failed: ' + e.message + '</span>';
+  } catch (e) {
+    show('alert-danger', '<i class="ti ti-alert-triangle"></i>&nbsp; Save failed: ' + (e.message || e));
   }
 }
 
 function clearSiteInfoForm() {
-  document.getElementById('si-site-select').value = '';
-  document.getElementById('si-form').style.display = 'none';
-  ['si-agency-name','si-agency-number','si-pin','si-email','si-phone','si-staff','si-notes'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
+  ['si-agency-name','si-agency-number','si-pin','si-email','si-phone','si-staff','si-notes'].forEach(id => { const el = q(id); if (el) el.value = ''; });
+  const s = q('si-status'); if (s) s.style.display = 'none';
 }
 
 async function loadAllSiteInfo() {
-  const ctr = document.getElementById('si-all-table');
+  const ctr = q('si-all-table');
   if (!ctr) return;
-  ctr.innerHTML = '<p style="font-size:13px;color:var(--text-soft);">Loading…</p>';
+  ctr.innerHTML = '<div class="empty"><span class="spinner" style="border-color:rgba(63,114,184,0.3);border-top-color:var(--navy);"></span></div>';
   try {
     const snap = await _db.collection('site_info').get();
-    const data = {};
-    snap.docs.forEach(d => { data[d.id] = d.data(); });
-    const allSites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR')
-      .sort(([,a],[,b]) => a.name.localeCompare(b.name));
-    let h = '<table class="rec-table"><thead><tr>'
-      + '<th style="width:200px;">Site name</th>'
-      + '<th>Agency name</th>'
-      + '<th>Agency #</th>'
-      + '<th>Email</th>'
-      + '<th>Phone</th>'
-      + '<th>Staff count</th>'
-      + '<th style="width:50px;"></th>'
-      + '</tr></thead><tbody>';
-    allSites.forEach(([k, v]) => {
-      const d = data[k] || {};
-      const hasData = d.agencyName || d.email || (d.staff && d.staff.length);
-      h += '<tr style="' + (hasData ? '' : 'opacity:0.5;') + '">';
-      h += '<td title="' + v.name + '">' + v.name.slice(0,22) + (v.name.length>22?'…':'') + '</td>';
-      h += '<td>' + (d.agencyName||'—') + '</td>';
-      h += '<td>' + (d.agencyNumber||'—') + '</td>';
-      h += '<td style="font-size:11px;">' + (d.email||'—') + '</td>';
-      h += '<td>' + (d.phone||'—') + '</td>';
-      h += '<td style="text-align:center;">' + ((d.staff||[]).length||'—') + '</td>';
-      h += '<td><button class="btn-sm blue" data-siteid="' + k + '" onclick="editSiteInfoRow(this)"><i class="ti ti-pencil"></i></button></td>';
-      h += '</tr>';
+    const docs = snap.docs.map(d => d.data()).filter(d => d.siteId !== 'MONITOR')
+      .sort((a, b) => (a.siteName || a.agencyName || '').localeCompare(b.siteName || b.agencyName || ''));
+    if (!docs.length) { ctr.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i>No site info on file. Import from Excel or add a site above.</div>'; return; }
+    let h = '<table class="rec-table"><thead><tr><th>Site</th><th style="width:90px;">Site ID</th><th style="width:60px;">PIN</th><th>Email</th><th style="width:70px;">Staff</th><th style="width:70px;"></th></tr></thead><tbody>';
+    docs.forEach(d => {
+      const nm = d.siteName || d.agencyName || d.siteId;
+      h += '<tr><td title="' + nm + '">' + nm + '</td><td>' + d.siteId + '</td><td>' + (d.pin || '—') + '</td><td title="' + (d.email||'') + '">' + (d.email || '—') + '</td><td>' + ((d.staff && d.staff.length) || 0) + '</td>'
+        + '<td><button class="btn-sm blue" onclick="editSiteInfoRow(\'' + d.siteId + '\')"><i class="ti ti-pencil"></i></button></td></tr>';
     });
     h += '</tbody></table>';
-    h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">'
-      + Object.keys(data).length + ' of ' + allSites.length + ' sites have information on file.</p>';
     ctr.innerHTML = h;
-  } catch(e) {
-    ctr.innerHTML = '<p style="font-size:13px;color:var(--danger-text);">Could not load: ' + e.message + '</p>';
+  } catch (e) {
+    ctr.innerHTML = '<div class="empty"><i class="ti ti-wifi-off"></i>Could not load site info.</div>';
   }
 }
 
-// Also load site_info from Firebase on login to populate STAFF and SITE_EMAILS
-// ═══════════════════════════
-//  EXCEL IMPORT FOR SITE INFO
-// ═══════════════════════════
-let importPreviewData = [];
+function editSiteInfoRow(site) {
+  const sel = q('si-site-select');
+  if (sel) { sel.value = site; loadSiteInfo(); }
+  q('si-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
 
-function previewImport(event) {
-  const file = event.target.files[0];
+// ═══════════════════════════
+//  EXCEL SITE-INFO IMPORT
+// ═══════════════════════════
+let _importRows = [];
+function showImportStatus(cls, msg) {
+  const el = q('si-import-status');
+  el.style.display = 'block'; el.className = 'alert ' + cls; el.innerHTML = msg;
+}
+function previewImport(evt) {
+  const file = evt.target.files[0];
   if (!file) return;
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = (e) => {
     try {
       const wb = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
       const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-      if (rows.length < 2) { showImportStatus('error','File appears empty.'); return; }
-      const headers = rows[0].map(v => String(v).trim());
-      const col = (name) => headers.findIndex(v => v.toLowerCase().includes(name.toLowerCase()));
-      const colT1   = col('Training Attendee 1');
-      const colT2   = col('Training Attendee 2');
-      const colNo   = col('AGENCY NO');
-      const colOrg  = col('Organization Name');
-      const colAdm  = col('Administrator Contact');
-      const colEm1  = col('Admin Email');
-      const colSup  = col('On-Site Supervisor');
-      const colEm2  = col('Email2');
-      if (colNo === -1 || colEm1 === -1) {
-        showImportStatus('error','Could not find "AGENCY NO" and "Admin Email" columns. Check the file matches the template.');
-        return;
-      }
-      importPreviewData = [];
-      rows.slice(1).forEach(row => {
-        const agencyNo = String(row[colNo]||'').trim();
-        if (!agencyNo) return;
-        const staff = [];
-        if (colT1>=0 && row[colT1]) staff.push(String(row[colT1]).trim());
-        if (colT2>=0 && row[colT2]) staff.push(String(row[colT2]).trim());
-        if (colSup>=0 && row[colSup]) staff.push(String(row[colSup]).trim());
-        const colPin2 = col('PIN') >= 0 ? col('PIN') : col('Password') >= 0 ? col('Password') : -1;
-        const sitePin = colPin2 >= 0 && row[colPin2] ? String(row[colPin2]).trim() : agencyNo;
-        const siteNameVal = colOrg>=0 ? String(row[colOrg]||'').trim() : agencyNo;
-        importPreviewData.push({
-          siteId:       agencyNo,
-          siteName:     siteNameVal,
-          agencyName:   siteNameVal,
-          agencyNumber: agencyNo,
-          pin:          sitePin,
-          active:       true,
-          email:        colEm1>=0 ? String(row[colEm1]||'').trim() : '',
-          email2:       colEm2>=0 ? String(row[colEm2]||'').trim() : '',
-          adminContact: colAdm>=0 ? String(row[colAdm]||'').trim() : '',
-          staff:        [...new Set(staff.filter(Boolean))],
-          updatedAt:    new Date().toISOString()
-        });
-      });
-      if (!importPreviewData.length) {
-        showImportStatus('error','No matching site IDs found. Ensure AGENCY NO values match site numbers in the app.');
-        return;
-      }
-      let h = '<p style="font-size:13px;color:var(--text-mid);margin-bottom:8px;"><strong>'
-        + importPreviewData.length + ' sites</strong> ready to import — review before confirming:</p>';
-      h += '<div style="overflow-x:auto;max-height:220px;overflow-y:auto;">'
-        + '<table class="rec-table"><thead><tr>'
-        + '<th>Status</th><th>Site</th><th>Agency #</th><th>PIN</th><th>Admin email</th><th>Staff</th>'
-        + '</tr></thead><tbody>';
-      importPreviewData.forEach(r => {
-        const isNew = !SITES[r.siteId];
-        h += '<tr><td><span class="pill ' + (isNew ? 'pill-warn' : 'pill-ok') + '">' + (isNew ? 'New' : 'Update') + '</span></td><td>' + r.siteName.slice(0,22) + '</td><td>' + r.agencyNumber + '</td>'
-          + '<td style="font-family:monospace;">' + (r.pin||r.agencyNumber) + '</td>'
-          + '<td style="font-size:11px;">' + (r.email||'—') + '</td>'
-          + '<td style="font-size:11px;">' + r.staff.join(', ') + '</td></tr>';
-      });
+      const raw = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      const pick = (row, keys) => { for (const k of Object.keys(row)) { const kn = k.toLowerCase().replace(/[^a-z0-9]/g, ''); if (keys.some(t => kn.includes(t))) return String(row[k]).trim(); } return ''; };
+      _importRows = raw.map(row => {
+        const staff = [pick(row, ['trainingattendee1','attendee1']), pick(row, ['trainingattendee2','attendee2']), pick(row, ['onsitesupervisor','supervisor'])].filter(Boolean);
+        return {
+          siteId: pick(row, ['agencyno','agencynumber','siteid']),
+          siteName: pick(row, ['agencyname','sitename','agency']) || pick(row, ['name']),
+          email: pick(row, ['adminemail','email']),
+          adminContact: pick(row, ['administratorcontact','admincontact','contact']),
+          staff
+        };
+      }).filter(r => r.siteId);
+      const prev = q('si-import-preview');
+      if (!_importRows.length) { prev.style.display = 'none'; q('si-import-btn').style.display = 'none'; showImportStatus('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; No rows with an AGENCY NO column were found.'); return; }
+      let h = '<div class="table-scroll"><table class="rec-table"><thead><tr><th>Site ID</th><th>Name</th><th>Email</th><th>Staff</th></tr></thead><tbody>';
+      _importRows.slice(0, 50).forEach(r => { h += '<tr><td>' + r.siteId + '</td><td>' + r.siteName + '</td><td>' + (r.email || '—') + '</td><td>' + r.staff.length + '</td></tr>'; });
       h += '</tbody></table></div>';
-      document.getElementById('si-import-preview').innerHTML = h;
-      document.getElementById('si-import-preview').style.display = 'block';
-      document.getElementById('si-import-btn').style.display = 'inline-flex';
-      document.getElementById('si-import-status').style.display = 'none';
-    } catch(err) { showImportStatus('error','Could not read file: ' + err.message); }
+      if (_importRows.length > 50) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:6px;">Showing first 50 of ' + _importRows.length + ' rows.</p>';
+      prev.style.display = 'block'; prev.innerHTML = h;
+      q('si-import-btn').style.display = 'inline-flex';
+      showImportStatus('alert-info', '<i class="ti ti-info-circle"></i>&nbsp; ' + _importRows.length + ' site(s) ready to import. Review, then click <strong>Import to Firebase</strong>.');
+    } catch (err) {
+      showImportStatus('alert-danger', '<i class="ti ti-alert-triangle"></i>&nbsp; Could not read that file: ' + (err.message || err));
+    }
   };
   reader.readAsArrayBuffer(file);
 }
-
 async function runImport() {
-  if (!importPreviewData.length) return;
-  const btn = document.getElementById('si-import-btn');
-  btn.innerHTML = '<i class="ti ti-loader-2"></i> Importing…'; btn.disabled = true;
+  if (!_importRows.length) return;
+  showImportStatus('alert-info', '<i class="ti ti-cloud-upload"></i>&nbsp; Importing ' + _importRows.length + ' site(s)…');
   let ok = 0, fail = 0;
-  for (const site of importPreviewData) {
+  for (const r of _importRows) {
+    const doc = {
+      siteId: r.siteId, siteName: r.siteName || r.siteId, agencyName: r.siteName || '',
+      agencyNumber: r.siteId, pin: r.siteId, email: r.email || '', adminContact: r.adminContact || '',
+      staff: r.staff || [], active: true, updatedAt: new Date().toISOString()
+    };
     try {
-      await _db.collection('site_info').doc(site.siteId).set(site);
-      SITE_EMAILS[site.siteId] = site.email;
-      if (site.staff.length) STAFF[site.siteId] = site.staff;
+      await _db.collection('site_info').doc(r.siteId).set(doc, { merge: true });
+      SITES[r.siteId] = { name: doc.siteName, pin: doc.pin, active: true };
+      if (doc.email) SITE_EMAILS[r.siteId] = doc.email;
+      if (doc.staff.length) STAFF[r.siteId] = doc.staff;
       ok++;
-    } catch(e) { console.warn('Import failed for ' + site.siteId, e); fail++; }
+    } catch (e) { fail++; }
   }
-  btn.innerHTML = '<i class="ti ti-cloud-upload"></i> Import to Firebase'; btn.disabled = false;
-  importPreviewData = [];
-  document.getElementById('si-import-preview').style.display = 'none';
-  document.getElementById('si-import-file').value = '';
-  btn.style.display = 'none';
-  showImportStatus(fail===0?'ok':'warn',
-    fail===0 ? '✓ Imported ' + ok + ' sites. Site list, emails, staff, and PINs are now live.' : ok + ' imported, ' + fail + ' failed.');
-  await loadSitesFromFirebase();
+  populateLoginDropdown();
+  populateSiteInfoSelect();
   loadAllSiteInfo();
-}
-
-function showImportStatus(type, msg) {
-  const el = document.getElementById('si-import-status');
-  if (!el) return;
-  el.style.display = 'block';
-  const col = {ok:'var(--success-text)',error:'var(--danger-text)',warn:'var(--warning-text)'};
-  el.innerHTML = '<span style="color:' + (col[type]||'inherit') + ';">' + msg + '</span>';
-}
-
-function editSiteInfoRow(btn) {
-  const siteId = btn.getAttribute('data-siteid');
-  const sel = document.getElementById('si-site-select');
-  if (sel) { sel.value = siteId; loadSiteInfo(); sel.scrollIntoView({behavior:'smooth'}); }
+  showImportStatus(fail ? 'alert-warning' : 'alert-success', '<i class="ti ti-' + (fail ? 'alert-triangle' : 'circle-check') + '"></i>&nbsp; Imported ' + ok + ' site(s)' + (fail ? ', ' + fail + ' failed.' : '.'));
 }
 
 // ═══════════════════════════
-//  EMAIL MANAGEMENT (Setup tab)
+//  EMAIL CONFIGURATION
 // ═══════════════════════════
-function renderSiteEmailList() {
-  const ctr = document.getElementById('site-email-list');
-  if (!ctr) return;
-  const saved = JSON.parse(safeGet('cacfp_site_emails') || '{}');
-  // Merge saved into SITE_EMAILS
-  Object.keys(saved).forEach(k => { if (SITE_EMAILS.hasOwnProperty(k)) SITE_EMAILS[k] = saved[k]; });
-  let h = '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
-  h += '<thead><tr><th style="text-align:left;padding:6px 8px;font-size:11px;color:var(--text-soft);border-bottom:2px solid var(--border);">Site</th><th style="text-align:left;padding:6px 8px;font-size:11px;color:var(--text-soft);border-bottom:2px solid var(--border);">Supervisor Email</th></tr></thead><tbody>';
-  Object.entries(SITES).filter(([k]) => k !== 'MONITOR').forEach(([k, v]) => {
-    h += '<tr><td style="padding:5px 8px;border-bottom:1px solid var(--border-soft);color:var(--text-mid);font-size:12px;">' + v.name + '</td>';
-    h += '<td style="padding:4px 8px;border-bottom:1px solid var(--border-soft);"><input type="email" data-site="' + k + '" value="' + (SITE_EMAILS[k]||'') + '" placeholder="supervisor@site.org" style="width:100%;height:30px;padding:0 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:DM Sans,sans-serif;"></td></tr>';
-  });
-  h += '</tbody></table>';
-  ctr.innerHTML = h;
-  // Pre-fill dept email
-  const saved_dept = safeGet('cacfp_dept_email');
-  if (saved_dept) document.getElementById('dept-email-input').value = saved_dept;
-}
-
 function saveDeptEmail() {
-  const val = document.getElementById('dept-email-input').value.trim();
-  const el = document.getElementById('dept-email-status');
-  if (!val) return;
+  const val = (q('dept-email-input').value || '').trim();
   safeSet('cacfp_dept_email', val);
-  // Update the runtime constant
-  window._DEPT_EMAIL_OVERRIDE = val;
-  el.style.display = 'block';
-  el.innerHTML = '<span style="color:var(--success-text);">✓ Department email saved.</span>';
+  const el = q('dept-email-status');
+  el.style.display = 'block'; el.style.color = 'var(--success-text)';
+  el.textContent = '✓ Saved.';
+  setTimeout(() => { el.style.display = 'none'; }, 3000);
 }
-
-function saveSiteEmails() {
-  const inputs = document.querySelectorAll('#site-email-list input[data-site]');
-  const saved = {};
-  inputs.forEach(inp => {
-    const k = inp.getAttribute('data-site');
-    SITE_EMAILS[k] = inp.value.trim();
-    if (inp.value.trim()) saved[k] = inp.value.trim();
+function renderSiteEmailList() {
+  const ctr = q('site-email-list');
+  if (!ctr) return;
+  const di = q('dept-email-input');
+  if (di && !di.value) di.value = getDeptEmail();
+  const sites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR').sort(([,a],[,b]) => a.name.localeCompare(b.name));
+  if (!sites.length) { ctr.innerHTML = '<div class="empty" style="padding:1rem;"><i class="ti ti-inbox"></i>No sites loaded.</div>'; return; }
+  let h = '';
+  sites.forEach(([k, v]) => {
+    h += '<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">'
+      + '<span style="flex:0 0 200px;font-size:12px;color:var(--text-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + v.name + '">' + v.name + '</span>'
+      + '<input type="email" data-site-email="' + k + '" value="' + (SITE_EMAILS[k] || '') + '" placeholder="supervisor@site.org" style="flex:1;height:32px;font-size:13px;">'
+      + '</div>';
   });
-  safeSet('cacfp_site_emails', JSON.stringify(saved));
-  const el = document.getElementById('site-email-status');
-  el.style.display = 'block';
-  el.innerHTML = '<span style="color:var(--success-text);">✓ Site emails saved — ' + Object.keys(saved).length + ' address(es) on file.</span>';
+  ctr.innerHTML = h;
 }
-
-function exportCSV(isAdmin) {
-  const myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
-  if (!myRecs.length) return;
-  const hdr = ['Record ID','Site ID','Site Name','Receiver','Del Date','Del Time','Del Temp (F)','Recv Qty','Svc Date','Svc Time','Meal Type','Prev Leftover','Available Qty','First Meal','Second Meal','Adult Program','Adult Non-Program','Total Served','Waste','Incomplete','Total Unservable','Leftover','Sig Name','Certified','Notes','Created At','Last Edited At','Edit Count'];
-  const rows = myRecs.map(r => [
-    r.uid, r.site, q(r.siteName), q(r.receiver), r.delDate, r.delTime, r.delTemp, r.recvQty,
-    r.svcDate, r.svcTime, r.mealType, r.prevLeftover, r.availQty,
-    r.firstMeal, r.secondMeal, r.adultProg, r.adultNonProg, r.totalServed,
-    r.waste, r.incomplete, r.totalUnsrv, r.leftover,
-    q(r.sigName), r.sigCertified ? 'Yes' : 'No', q(r.notes || ''),
-    r.createdAt, r.lastEditedAt, r.editCount || 0
-  ].join(','));
-  const csv = [hdr.join(','), ...rows].join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-  a.download = 'CACFP_' + today() + '.csv';
-  a.click();
+async function saveSiteEmails() {
+  const inputs = document.querySelectorAll('[data-site-email]');
+  const statusEl = q('site-email-status');
+  let ok = 0, fail = 0;
+  for (const inp of inputs) {
+    const site = inp.getAttribute('data-site-email');
+    const email = inp.value.trim();
+    if (email) SITE_EMAILS[site] = email; else delete SITE_EMAILS[site];
+    try { await _db.collection('site_info').doc(site).set({ email }, { merge: true }); ok++; }
+    catch (e) { fail++; }
+  }
+  statusEl.style.display = 'block'; statusEl.style.color = fail ? 'var(--warning-text)' : 'var(--success-text)';
+  statusEl.textContent = fail ? ('Saved ' + ok + ', ' + fail + ' failed.') : ('✓ Saved ' + ok + ' site email(s).');
+  setTimeout(() => { statusEl.style.display = 'none'; }, 4000);
 }
-function q(s) { return '"' + (s || '').replace(/"/g, '""') + '"'; }
-
-
-
 </script>
 </body>
 </html>
