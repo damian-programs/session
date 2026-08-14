@@ -1792,7 +1792,10 @@ function setTrackerView(v) {
   const sum = document.getElementById('tracker-summary');
   const grid = document.getElementById('tracker-grid');
   if (sum) sum.innerHTML = '';
-  if (grid) grid.innerHTML = '';
+  // The daily view fills this container with a grid of cards; the weekly/monthly
+  // views inject a full-width <table>. If the container stays display:grid, that
+  // table becomes a single ~200px grid item — so switch it to block for tables.
+  if (grid) { grid.innerHTML = ''; grid.style.display = (v === 'daily') ? 'grid' : 'block'; }
   // Make sure each view has a date to work with, or its renderer bails out early and shows nothing.
   if (v === 'daily') {
     const td = document.getElementById('tracker-date');
@@ -1824,6 +1827,7 @@ function renderTracker() {
   const allSites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR');
   const grid = document.getElementById('tracker-grid');
   const summary = document.getElementById('tracker-summary');
+  if (grid) grid.style.display = 'grid';
   const missing = allSites.filter(([k]) => !submitted.has(k));
   summary.innerHTML = '<strong>' + submitted.size + '</strong> of <strong>' + allSites.length + '</strong> sites submitted for ' + date + '. <span style="color:var(--danger-text);">' + missing.length + ' missing.</span>';
   grid.innerHTML = allSites.map(([k, v]) => {
@@ -1848,6 +1852,7 @@ function renderTrackerWeekly() {
   const trackerGrid = document.getElementById('tracker-grid');
   const trackerSum  = document.getElementById('tracker-summary');
   if (!trackerGrid || !trackerSum) return;
+  trackerGrid.style.display = 'block';
   const monday = new Date(startVal + 'T12:00:00');
   const dow = monday.getDay();
   if (dow !== 1) { monday.setDate(monday.getDate() - (dow === 0 ? 6 : dow - 1)); }
@@ -1902,6 +1907,7 @@ function renderTrackerMonthly() {
   const trackerGrid = document.getElementById('tracker-grid');
   const trackerSum  = document.getElementById('tracker-summary');
   if (!trackerGrid || !trackerSum) return;
+  trackerGrid.style.display = 'block';
   const [yr, mo] = month.split('-').map(Number);
   const daysInMonth = new Date(yr, mo, 0).getDate();
   const weekdays = [];
