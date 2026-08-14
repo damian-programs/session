@@ -275,12 +275,14 @@ background-image:
 .counter-btn:active { transform: scale(0.96); }
 
 /* TRACKER TABLE */
-/* Fixed layout so the whole table always fits its container (no horizontal scroll on desktop). */
+/* Fixed layout + per-column widths (set via <colgroup> in the renderers) so the whole table
+   always fits its container, no matter how much text lands in a cell. */
 .tracker-table { width:100%; table-layout:fixed; border-collapse:collapse; font-size:11px; }
-.tracker-table th { padding:5px 6px; font-size:9.5px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; color:var(--text-soft); border-bottom:2px solid var(--border); text-align:center; overflow:hidden; text-overflow:ellipsis; word-break:break-word; }
-.tracker-table th.site-col { text-align:left; width:22%; }
-.tracker-table td { padding:5px 6px; border-bottom:1px solid var(--border-soft); text-align:center; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; word-break:break-word; }
+.tracker-table th { padding:5px 6px; font-size:9.5px; font-weight:600; text-transform:uppercase; letter-spacing:0.03em; color:var(--text-soft); border-bottom:2px solid var(--border); text-align:center; white-space:normal; overflow:hidden; word-break:normal; overflow-wrap:normal; line-height:1.2; }
+.tracker-table th.site-col { text-align:left; }
+.tracker-table td { padding:5px 6px; border-bottom:1px solid var(--border-soft); text-align:center; vertical-align:middle; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; word-break:normal; }
 .tracker-table td.site-col { text-align:left; font-size:11px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.tracker-table td.dates-col { text-align:left; font-size:11px; color:var(--text-mid); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .tracker-table tr:hover td { background:var(--cream); }
 .day-cell-ok   { background:var(--success-bg); color:var(--success-text); border-radius:4px; padding:2px 5px; font-size:10px; font-weight:600; }
 .day-cell-miss { background:var(--danger-bg);  color:var(--danger-text);  border-radius:4px; padding:2px 5px; font-size:10px; font-weight:600; }
@@ -1872,7 +1874,11 @@ function renderTrackerWeekly() {
   });
   const dayLabels = weekDays.map(d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'numeric',day:'numeric'}));
   let totalMissing = 0;
-  let h = '<div class="table-scroll"><table class="tracker-table"><thead><tr><th class="site-col">Site</th>';
+  let h = '<div class="table-scroll"><table class="tracker-table">'
+    + '<colgroup><col style="width:26%">'
+    + '<col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%"><col style="width:8%">'
+    + '<col style="width:10%"><col style="width:8%"></colgroup>'
+    + '<thead><tr><th class="site-col">Site</th>';
   dayLabels.forEach(d => { h += '<th>' + d + '</th>'; });
   h += '<th>Status</th><th>Email</th></tr></thead><tbody>';
   allSites.forEach(([k, v]) => {
@@ -1924,8 +1930,10 @@ function renderTrackerMonthly() {
     submittedByDate[d] = new Set(records.filter(r => r.svcDate === d && !r.isDraft).map(r => r.site));
   });
   let totalMissing = 0;
-  let h = '<div class="table-scroll"><table class="tracker-table"><thead><tr>'
-    + '<th class="site-col">Site</th><th>Expected</th><th>Submitted</th><th>Missing</th><th>Rate</th><th>Missing Dates</th><th>Email</th>'
+  let h = '<div class="table-scroll"><table class="tracker-table">'
+    + '<colgroup><col style="width:20%"><col style="width:8%"><col style="width:9%"><col style="width:8%"><col style="width:8%"><col style="width:38%"><col style="width:9%"></colgroup>'
+    + '<thead><tr>'
+    + '<th class="site-col">Site</th><th>Expected</th><th>Submitted</th><th>Missing</th><th>Rate</th><th style="text-align:left;">Missing dates</th><th>Email</th>'
     + '</tr></thead><tbody>';
   allSites.forEach(([k, v]) => {
     const submitted = weekdays.filter(d => submittedByDate[d].has(k));
@@ -1938,11 +1946,11 @@ function renderTrackerMonthly() {
     const rateColor = rate === 100 ? 'var(--success-text)' : rate >= 80 ? 'var(--warning-text)' : 'var(--danger-text)';
     h += '<tr>';
     h += '<td class="site-col" title="' + v.name + '">' + v.name + '</td>';
-    h += '<td style="text-align:center;">' + weekdays.length + '</td>';
-    h += '<td style="text-align:center;">' + submitted.length + '</td>';
-    h += '<td style="text-align:center;color:' + (missing.length ? 'var(--danger-text)' : 'var(--success-text)') + ';">' + missing.length + '</td>';
-    h += '<td style="text-align:center;font-weight:600;color:' + rateColor + ';">' + rate + '%</td>';
-    h += '<td style="font-size:11px;color:var(--text-mid);max-width:220px;white-space:normal;">' + (missing.length ? missingFmt : '<span style="color:var(--success-text);">All submitted ✓</span>') + '</td>';
+    h += '<td>' + weekdays.length + '</td>';
+    h += '<td>' + submitted.length + '</td>';
+    h += '<td style="color:' + (missing.length ? 'var(--danger-text)' : 'var(--success-text)') + ';">' + missing.length + '</td>';
+    h += '<td style="font-weight:600;color:' + rateColor + ';">' + rate + '%</td>';
+    h += '<td class="dates-col" title="' + (missing.length ? missing.length + ' missing: ' + missingFmt : 'All submitted') + '">' + (missing.length ? missingFmt : '<span style="color:var(--success-text);">All submitted &#10003;</span>') + '</td>';
   if (!allOk && hasEmail) {
       h += '<td><input type="checkbox" class="tracker-sel" data-site="' + k + '" data-dates=\'' + JSON.stringify(missing) + '\' onchange="updateSelCount()" style="width:16px;height:16px;accent-color:var(--navy);cursor:pointer;" title="Select to email"></td>';
     } else if (!allOk) {
