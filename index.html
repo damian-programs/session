@@ -1802,6 +1802,24 @@ function setTrackerView(v) {
   const grid = document.getElementById('tracker-grid');
   if (sum) sum.innerHTML = '';
   if (grid) grid.innerHTML = '';
+  // Make sure each view has a date to work with, or its renderer bails out early and shows nothing.
+  if (v === 'daily') {
+    const td = document.getElementById('tracker-date');
+    if (td && !td.value) td.value = today();
+  }
+  if (v === 'weekly') {
+    const ws = document.getElementById('tracker-week-start');
+    if (ws && !ws.value) {
+      const d = new Date();
+      const dow = d.getDay();
+      d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1)); // snap back to this week's Monday
+      ws.value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+  }
+  if (v === 'monthly') {
+    const mo = document.getElementById('tracker-month');
+    if (mo && !mo.value) mo.value = today().slice(0, 7);
+  }
   if (v === 'daily')   renderTracker();
   if (v === 'weekly')  renderTrackerWeekly();
   if (v === 'monthly') renderTrackerMonthly();
