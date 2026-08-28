@@ -3537,7 +3537,7 @@ function showRequestForm() {
     '<div class="week-day ' + (qty[k] > 0 ? 'on' : 'off') + '" id="req-tile-' + k + '">'
     + '<div class="week-day-name">' + name + '</div>'
     + '<label class="day-toggle"><input type="checkbox" id="req-on-' + k + '" ' + (qty[k] > 0 ? 'checked' : '') + ' ' + (locks.schedule ? 'disabled' : '') + ' onchange="reqToggle(\'' + k + '\')"> Deliver</label>'
-    + '<input type="number" min="0" class="qty-edit" id="req-q-' + k + '" value="' + (qty[k] || '') + '" placeholder="0" ' + (locks.quantity || qty[k] === 0 ? (locks.quantity ? 'disabled' : '') : '') + ' oninput="reqTint(\'' + k + '\')">'
+    + '<input type="number" min="0" class="qty-edit" id="req-q-' + k + '" value="' + (qty[k] || '') + '" placeholder="0" oninput="reqTint(\'' + k + '\')">'
     + '</div>').join('');
   DAYS.forEach(([k]) => reqToggle(k, true));
   const a = document.getElementById('req-alert');
@@ -3554,7 +3554,11 @@ function reqToggle(k, init) {
   const info = SITE_INFO[currentSite] || {};
   const qtyLocked = !!(info.locks && info.locks.quantity);
   if (!on) { q.value = ''; q.disabled = true; }
-  else { q.disabled = qtyLocked && (normQty(info.qty)[k] > 0); if (!init && !q.value) { q.value = ''; q.disabled = false; } }
+  else {
+    const cur = normQty(info.qty)[k];
+    if (qtyLocked && cur > 0) { q.value = cur; q.disabled = true; }   // locked: existing days keep their quantity
+    else q.disabled = false;                                          // new day, or quantity unlocked
+  }
   reqTint(k);
 }
 function reqTint(k) {
