@@ -54,6 +54,7 @@
   --shadow-card: 0 2px 8px rgba(63,114,184,0.10), 0 1px 2px rgba(63,114,184,0.06);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-padding-top: 110px; }
 body { font-family: 'DM Sans', sans-serif;
   background-color: var(--cream);
   background-image:
@@ -76,7 +77,10 @@ body { font-family: 'DM Sans', sans-serif;
 .app { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 
 /* TABS */
-.tabs { display: flex; gap: 2px; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; flex-wrap: wrap; }
+.tabs { display: flex; gap: 2px; border-bottom: 2px solid var(--border); margin-bottom: 1.5rem; flex-wrap: wrap;
+  position: sticky; top: 56px; z-index: 90; background: var(--cream); padding-top: 6px;
+  margin-left: -1.5rem; margin-right: -1.5rem; padding-left: 1.5rem; padding-right: 1.5rem;
+  box-shadow: 0 6px 12px -8px rgba(63,114,184,0.25); }
 .tab { padding: 9px 14px; font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif; border: none; background: transparent; color: var(--text-soft); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color 0.15s; }
 .tab.active { color: var(--navy); border-bottom-color: var(--navy); }
 .tab:hover:not(.active) { color: var(--text-mid); }
@@ -439,9 +443,7 @@ background-image:
       <!-- Change request form (hidden until "Request a change") -->
       <div class="card" id="home-request-card" style="display:none;border-left:3px solid var(--pending-border);">
         <div class="card-title"><i class="ti ti-edit"></i>Request a quantity or schedule change</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
-          Check the days you want a delivery and enter the number of meals for each. Your request is sent to the Kids Cafe team for approval &mdash; nothing changes until they approve it. While it's pending you'll see an <strong style="color:var(--pending-text);">orange notice</strong> at the top of this page.
-        </p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Check the days you want a delivery. Enter the meals for each. That's it. The request goes to the Kids Cafe team. Nothing changes until they approve it. While you wait, an <strong style="color:var(--pending-text);">orange notice</strong> stays at the top of this page. The effective date is set seven work days out. Change it if you need to.</p>
         <div id="req-week" class="week-grid"></div>
         <div class="grid2" style="margin-top:1rem;">
           <div class="fg">
@@ -449,7 +451,7 @@ background-image:
             <select id="req-by"><option value="">Select name&hellip;</option></select>
           </div>
           <div class="fg">
-            <label for="req-effective">Effective date (optional)</label>
+            <label for="req-effective">Projected effective date</label>
             <input type="date" id="req-effective">
           </div>
           <div class="fg full">
@@ -467,9 +469,7 @@ background-image:
       <!-- Availability calendar (moved below the quantity/schedule status) -->
       <div class="card">
         <div class="card-title"><i class="ti ti-calendar-check"></i>Site availability calendar</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
-          Mark the weekdays your site is <strong>open</strong> (serving meals) or <strong>closed</strong>. Every Monday&ndash;Saturday starts as <strong>open</strong> &mdash; click a day to switch it to <strong>closed</strong>, and click again to reopen it. These dates drive your Per-Site Monthly Count Report and the monitor's closed-date report. Lock the month when you're done; unlocking to make changes again requires your site PIN.
-        </p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Every Monday through Saturday starts <strong>open</strong>. Click a day to close it. Click again to open it. These dates feed your monthly report and the monitor's closed-date report. When the month is right, lock it. Unlocking takes your site PIN.</p>
         <div class="filter-row" style="margin-bottom:1rem;">
           <div class="fg"><label for="cal-month">Month</label><input type="month" id="cal-month" oninput="loadCalendar()" style="width:160px;"></div>
         </div>
@@ -535,7 +535,7 @@ background-image:
       <!-- Draft Save -->
       <div class="card" style="border:1px dashed var(--border);background:var(--cream);">
         <div class="card-title"><i class="ti ti-device-floppy"></i>Save draft</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Delivery info filled in? Save a draft now and return later to complete the meal service section.</p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Delivery filled in but the meal isn't served yet? Save a draft. Come back later and finish.</p>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
           <button class="btn-sec" onclick="saveDraft()"><i class="ti ti-device-floppy"></i> Save draft</button>
           <span id="draft-status" style="font-size:12px;color:var(--text-soft);"></span>
@@ -627,7 +627,7 @@ background-image:
       <div class="card">
         <div class="card-title"><i class="ti ti-pen"></i>E-signature</div>
         <div id="locked-banner" class="alert alert-warning" style="display:none;margin-bottom:1rem;">
-          <i class="ti ti-lock"></i>&nbsp; This record has been certified and <strong>locked</strong>. Only a monitor administrator can unlock it for editing.
+          <i class="ti ti-lock"></i>&nbsp; This record is certified and <strong>locked</strong>. A monitor can unlock it.
         </div>
         <div class="esig-box">
           <div class="fg">
@@ -677,7 +677,7 @@ background-image:
     <div id="pane-lookup" style="display:none;">
 
       <div class="card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-        <div style="font-size:13px;color:var(--text-mid);"><i class="ti ti-activity" style="color:var(--amber);"></i> Live figures pulled from Firebase. Use the filters in each section to focus on a site or month.</div>
+        <div style="font-size:13px;color:var(--text-mid);"><i class="ti ti-activity" style="color:var(--amber);"></i> Live numbers from Firebase. Filter by site or month in each section.</div>
         <button class="btn-sec" style="font-size:12px;height:34px;" onclick="refreshLookup()"><i class="ti ti-refresh"></i> Refresh all</button>
       </div>
 
@@ -723,10 +723,7 @@ background-image:
       <!-- Reimbursement Estimate (live) — kept at the bottom of Site Lookup -->
       <div class="card" style="border-left:3px solid var(--amber);">
         <div class="card-title"><i class="ti ti-cash"></i>Reimbursement tracker</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
-          Only <strong>first meals served to children</strong> are reimbursable under CACFP At-Risk Afterschool &mdash; one supper per child, per day.
-          Second meals and adult meals are <strong>not</strong> reimbursed. <strong>% reimbursed</strong> = first meals &divide; total meals served.
-        </p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">CACFP pays for one supper per child, per day. First meals only. Seconds and adult meals are not reimbursed. <strong>% reimbursed</strong> is first meals divided by total served.</p>
         <div class="filter-row" style="margin-bottom:1rem;">
           <div class="fg"><label for="reimb-month">Month</label><input type="month" id="reimb-month" oninput="renderReimbursement()" style="width:160px;"></div>
           <div class="fg"><label for="reimb-site">Site</label>
@@ -775,7 +772,7 @@ background-image:
           <button class="btn-primary" onclick="sendSelectedReminders()">
             <i class="ti ti-mail-forward"></i> Email selected (<span id="tracker-sel-count">0</span>)
           </button>
-          <span id="tracker-send-note" style="font-size:12px;color:var(--text-soft);">Sends one reminder per checked site through Postmark.</span>
+          <span id="tracker-send-note" style="font-size:12px;color:var(--text-soft);">One reminder per checked site, through Postmark.</span>
         </div>
         <div id="tracker-send-status" style="display:none;margin-bottom:1rem;"></div>
         <div class="tracker-grid" id="tracker-grid"></div>
@@ -791,22 +788,14 @@ background-image:
           <div class="card-title" style="margin-bottom:0;"><i class="ti ti-bell-ringing"></i>Pending quantity &amp; schedule change requests</div>
           <button class="btn-sec" style="font-size:12px;height:34px;" onclick="loadPendingRequests()"><i class="ti ti-refresh"></i> Refresh</button>
         </div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Sites submit these from their Home tab. Approving writes the new Mon&ndash;Sat quantities to the site record, logs the change, and emails the site. Rejecting keeps the current values.</p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Sites send these from their Home tab. Approve, and the new Mon&ndash;Sat quantities are written to the site, logged, and emailed back. Reject, and nothing moves.</p>
         <div id="pending-requests"></div>
       </div>
 
       <!-- Excel Import -->
       <div class="card" style="border-left:3px solid var(--amber);">
         <div class="card-title"><i class="ti ti-file-import"></i>Import from Excel</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
-          Upload the <strong>Session_Import.xlsx</strong> workbook (first sheet is read). Columns mapped:
-          <strong>AGENCY NO</strong> &rarr; Site ID &nbsp;&middot;&nbsp; <strong>Organization Name</strong> &rarr; Site name &nbsp;&middot;&nbsp;
-          <strong>Training Attendee 1/2</strong> + <strong>On-Site Supervisor</strong> &rarr; Trained personnel &nbsp;&middot;&nbsp;
-          <strong>Orders</strong> &rarr; who places the site's orders &nbsp;&middot;&nbsp;
-          <strong>Email</strong> &rarr; primary (reminders) &nbsp;&middot;&nbsp; <strong>Email2</strong> &rarr; on-site supervisor email &nbsp;&middot;&nbsp;
-          <strong>Monday&ndash;Saturday</strong> &rarr; meals delivered each day &nbsp;&middot;&nbsp; plus address, dates, hot/cold, hours, service time and days serving.
-          Existing PINs, notes and locks are preserved.
-        </p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Upload <strong>Session_Import.xlsx</strong>. The first sheet is read. AGENCY NO becomes the site ID. Organization Name becomes the site name. The two attendees, the administrator, and the on-site supervisor become trained personnel. Email is for reminders; Email2 reaches the supervisor. Monday through Saturday are meals delivered each day. Address, dates, hot or cold, hours, and service time come along too. PINs, notes, and locks you already set are kept.</p>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
           <label style="cursor:pointer;">
             <input type="file" id="si-import-file" accept=".xlsx,.xls" style="display:none;" onchange="previewImport(event)">
@@ -825,9 +814,7 @@ background-image:
       <!-- Add New Site -->
       <div class="card" style="border-left:3px solid var(--navy);">
         <div class="card-title"><i class="ti ti-circle-plus"></i>Add a new site</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
-          Create a brand-new site that isn't in the list yet. The agency number becomes the site ID, and its default PIN is the agency number until you change it below. After adding, the new site opens in the manager so you can fill in staff, email, and PIN.
-        </p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">A site that isn't on the list yet. The agency number becomes its ID and its first PIN. Once added, it opens below so you can fill in the rest.</p>
         <div class="filter-row" style="margin-bottom:0.75rem;">
           <div class="fg">
             <label for="si-new-id">New site ID / Agency number</label>
@@ -845,9 +832,7 @@ background-image:
       <!-- Site Information manager (contact card) -->
       <div class="card">
         <div class="card-title"><i class="ti ti-building-skyscraper"></i>Site information manager</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
-          Select a site to view and edit its contact card, delivery quantities, schedule and locks. All changes save directly to Firebase.
-        </p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Pick a site. Edit its contact card, quantities, schedule, and locks. Changes save straight to Firebase.</p>
         <div class="filter-row" style="margin-bottom:1rem;">
           <div class="fg">
             <label for="si-site-select">Select site</label>
@@ -902,17 +887,17 @@ background-image:
             <div class="week-day"><div class="week-day-name">Friday</div><input type="number" min="0" id="si-q-fri" class="qty-edit" placeholder="0"></div>
             <div class="week-day"><div class="week-day-name">Saturday</div><input type="number" min="0" id="si-q-sat" class="qty-edit" placeholder="0"></div>
           </div>
-          <p style="font-size:12px;color:var(--text-soft);margin-bottom:1rem;">A day with a quantity of 0 or blank is treated as <strong>no delivery</strong> that day.</p>
+          <p style="font-size:12px;color:var(--text-soft);margin-bottom:1rem;">Zero or blank means no delivery that day.</p>
 
           <div class="card-title"><i class="ti ti-lock"></i>Locks</div>
           <div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:1rem;font-size:13px;color:var(--text-mid);">
             <label style="display:flex;align-items:center;gap:7px;font-weight:500;cursor:pointer;"><input type="checkbox" id="si-lock-qty" style="width:16px;height:16px;accent-color:var(--navy);"> Quantity locked</label>
             <label style="display:flex;align-items:center;gap:7px;font-weight:500;cursor:pointer;"><input type="checkbox" id="si-lock-sched" style="width:16px;height:16px;accent-color:var(--navy);"> Weekly delivery schedule locked</label>
-            <span style="font-size:11px;color:var(--text-soft);">When locked, the site can't submit a change request for that item until it's unlocked (site PIN or monitor).</span>
+            <span style="font-size:11px;color:var(--text-soft);">Locked means the site can't request a change to it until it's unlocked.</span>
           </div>
 
           <div class="fg" style="margin-bottom:1rem;">
-            <label>Trained personnel <span style="font-size:12px;color:var(--text-soft);">&mdash; one name per line (shown in the receiver / signature dropdowns; auto-filled from the attendees, administrator contact and on-site supervisor above if left blank)</span></label>
+            <label>Trained personnel <span style="font-size:12px;color:var(--text-soft);">&mdash; one per line. These fill the receiver and signature dropdowns. Leave blank and the attendees, administrator, and supervisor above are used</span></label>
             <textarea id="si-staff" rows="5" placeholder="Name One&#10;Name Two&#10;Name Three" style="height:110px;"></textarea>
           </div>
           <div class="fg" style="margin-bottom:1rem;">
@@ -941,9 +926,7 @@ background-image:
     <div id="pane-sitecal" style="display:none;">
       <div class="card">
         <div class="card-title"><i class="ti ti-calendar-cog"></i>Site availability &mdash; monitor editor</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
-          Pick any site and month to view and edit its open/closed service days. Changes write to the same calendar the site sees and drive the Per-Site Monthly Count Report and the Closed-Dates Report. As monitor you can edit a month <strong>even if the site locked it</strong>, and you can lock or unlock on the site's behalf without their PIN.
-        </p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Any site, any month. Open and close days here and the site sees the same calendar. It feeds the monthly report and the closed-date report. Locks don't stop you. You can lock or unlock for a site without their PIN.</p>
         <div class="filter-row" style="margin-bottom:1rem;">
           <div class="fg"><label for="acal-site">Site</label>
             <select id="acal-site" onchange="loadAdminCalendar()" style="width:280px;"><option value="">Select site&hellip;</option></select>
@@ -971,13 +954,33 @@ background-image:
     <div id="pane-exports" style="display:none;">
       <div class="card">
         <div class="card-title"><i class="ti ti-files"></i>Export reports</div>
-        <p class="report-desc" style="margin-bottom:0;">Scroll down and generate whichever report you need. Each one pulls from the same live Firebase records. Individual <strong>Meal Count Sheets</strong> (Attachment 18) are exported per record from the print/export buttons in <strong>Site Lookup &rarr; All sites</strong>.</p>
+        <p class="report-desc" style="margin-bottom:0;">Every report below reads the same live records. Pick one and export it. Meal Count Sheets for a single day come from the print buttons in <strong>Site Lookup &rarr; All sites</strong>.</p>
+      </div>
+
+      <!-- ERM Order Sheet (KC_Template) -->
+      <div class="card" style="border-left:3px solid var(--navy);">
+        <div class="card-title"><i class="ti ti-shopping-cart"></i>ERM Order Sheet (KC_Template)</div>
+        <p class="report-desc">The weekly <strong>KC_Template</strong> sheet for the ERM system. Choose whose orders and any day in the week. It snaps to Monday. Each site's Mon&ndash;Sat quantities fill the day columns. Days a site marked closed are left blank, and column A lists them. Combination-meal sites go in the COMBO block.</p>
+        <div class="filter-row" style="margin-bottom:0.75rem;">
+          <div class="fg"><label for="erm-orders">Orders placed by</label>
+            <select id="erm-orders" style="width:180px;"><option value="">Loading&hellip;</option></select>
+          </div>
+          <div class="fg"><label for="erm-week">Week (any day in it)</label><input type="date" id="erm-week" style="width:170px;"></div>
+        </div>
+        <div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:1rem;font-size:13px;color:var(--text-mid);">
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" id="erm-blank-closed" checked style="width:16px;height:16px;accent-color:var(--navy);"> Leave closed days blank</label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" id="erm-combo" checked style="width:16px;height:16px;accent-color:var(--navy);"> Put combination-meal sites in COMBO columns</label>
+        </div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn-primary" onclick="exportErmOrderSheet()"><i class="ti ti-file-spreadsheet"></i> Export KC_Template order sheet</button>
+        </div>
+        <div id="erm-status" style="margin-top:8px;font-size:13px;display:none;"></div>
       </div>
 
       <!-- Quantity, Calendar & Schedule Report (+ Change Log) -->
       <div class="card" style="border-left:3px solid var(--pending-border);">
         <div class="card-title"><i class="ti ti-truck-delivery"></i>Quantity, Schedule &amp; Calendar Report</div>
-        <p class="report-desc">A workbook of every site's <strong>current delivery quantities</strong> (Mon&ndash;Sat), <strong>weekly delivery schedule</strong> and locks, the selected month's <strong>availability calendar</strong> (closed dates per site), any <strong>pending change requests</strong>, and a <strong>Change Log</strong> sheet listing every quantity, schedule, calendar and site-info change across all users &mdash; who made it, when, and what changed.</p>
+        <p class="report-desc">Four sheets. Every site's current <strong>quantities</strong> and weekly schedule, with locks. The month's <strong>calendar</strong>, closed dates per site. <strong>Pending requests</strong>. And a <strong>Change Log</strong>: every quantity, schedule, calendar, and site edit by anyone &mdash; who, when, what.</p>
         <div class="filter-row" style="margin-bottom:1rem;">
           <div class="fg"><label for="qsc-month">Calendar month</label><input type="month" id="qsc-month" style="width:160px;"></div>
           <div class="fg"><label for="qsc-site">Site</label>
@@ -995,7 +998,7 @@ background-image:
       <!-- Per-Site Monthly Count Report -->
       <div class="card" style="border-left:3px solid var(--amber);">
         <div class="card-title"><i class="ti ti-file-spreadsheet"></i>Per-Site Monthly Count Report</div>
-        <p class="report-desc">A workbook for <strong>one site across a selected month range</strong>, in the state report template: <strong>Daily Meal Details</strong> (one row per <em>weekday</em> Mon&ndash;Sat with a totals row &mdash; open days show counts, unsubmitted days show blank, and days the site marked closed on its Availability calendar show <strong>CLOSED</strong>), <strong>Monthly Averages</strong> and <strong>Monthly Totals</strong> (one row per month), and a <strong>Site Information</strong> sheet. Pick a site and the first &amp; last month to include.</p>
+        <p class="report-desc">One site, a range of months, in the state template. <strong>Daily Meal Details</strong> lists every weekday Mon&ndash;Sat: counts on open days, blank where nothing was submitted, <strong>CLOSED</strong> where the site said so. <strong>Monthly Averages</strong>, <strong>Monthly Totals</strong>, and a <strong>Site Information</strong> sheet follow.</p>
         <div class="filter-row" style="margin-bottom:1rem;">
           <div class="fg"><label for="psm-site">Site</label>
             <select id="psm-site" style="width:260px;"><option value="">Select site&hellip;</option></select>
@@ -1014,7 +1017,7 @@ background-image:
       <!-- Weekly Waste & Leftover Report (admin) -->
       <div class="card" style="border-left:3px solid var(--navy);">
         <div class="card-title"><i class="ti ti-trash"></i>Weekly Waste &amp; Leftover Report</div>
-        <p class="report-desc">A week-by-week workbook (Mon&ndash;Sat) showing <strong>waste and leftover</strong> for every site: a <strong>Summary</strong> sheet with each site's totals and waste/leftover percentage of available, plus <strong>Waste by Day</strong> and <strong>Leftover by Day</strong> matrices. Pick any date inside the week you want &mdash; the report snaps back to that week's Monday. Use it to spot sites with recurring waste or over-ordering.</p>
+        <p class="report-desc">One week, Mon&ndash;Sat, every site. A <strong>Summary</strong> with totals and waste and leftover as a share of available. Then <strong>Waste by Day</strong> and <strong>Leftover by Day</strong>. Pick any day in the week; it snaps to Monday. Use it to spot over-ordering.</p>
         <div class="filter-row" style="margin-bottom:1rem;">
           <div class="fg"><label for="wwl-week">Week (any day in it)</label><input type="date" id="wwl-week" style="width:170px;"></div>
           <div class="fg"><label for="wwl-site">Site</label>
@@ -1032,7 +1035,7 @@ background-image:
       <!-- Site Closed-Dates Report (admin) -->
       <div class="card" style="border-left:3px solid var(--navy);">
         <div class="card-title"><i class="ti ti-calendar-off"></i>Site Closed-Dates Report</div>
-        <p class="report-desc">A monthly workbook listing every site's <strong>closed dates</strong> &mdash; the weekdays each site unchecked on its Availability calendar &mdash; with how many service days stayed open. A <strong>Closed Summary</strong> sheet gives one row per site (closed count, open count, and the closed-date list), and a <strong>Closed Dates</strong> sheet gives one row per closed date. Pulls live from each site's calendar; use it to reconcile missing submissions against planned closures.</p>
+        <p class="report-desc">Every site's <strong>closed dates</strong> for a month, straight from their calendars. <strong>Closed Summary</strong> is one row per site: closed, open, and the dates. <strong>Closed Dates</strong> is one row per date. Good for checking missing submissions against planned closures.</p>
         <div class="filter-row" style="margin-bottom:1rem;">
           <div class="fg"><label for="closed-month">Month</label><input type="month" id="closed-month" style="width:160px;"></div>
         </div>
@@ -1047,7 +1050,7 @@ background-image:
       <!-- Site Audit Report -->
       <div class="card" style="border-left:3px solid var(--navy);">
         <div class="card-title"><i class="ti ti-report-analytics"></i>Site Audit Report</div>
-        <p class="report-desc">A detailed audit workbook for a <strong>single site across a date range</strong>, matching the CACFP audit format: daily meal details, monthly averages, monthly totals, and a site information sheet. Use this when a monitor or state reviewer requests one site's full history.</p>
+        <p class="report-desc">One site, one date range, in the CACFP audit layout: daily details, monthly averages, monthly totals, site information. For when a monitor or the state asks for a site's full history.</p>
         <div class="grid2" style="margin-bottom:1rem;">
           <div class="fg">
             <label for="audit-site">Site</label>
@@ -1075,7 +1078,7 @@ background-image:
       <!-- Monthly Audit Report -->
       <div class="card" style="border-left:3px solid var(--navy);">
         <div class="card-title"><i class="ti ti-calendar-stats"></i>Monthly Audit Report</div>
-        <p class="report-desc">A month-wide workbook across <strong>all sites (or one site)</strong>: the Sponsor Monthly Meal Count Summary by site, a review-flags sheet listing every anomaly, and a raw daily-detail sheet. Use this for the monthly claim review and the compliance department's summary.</p>
+        <p class="report-desc">A month across all sites, or one. The Sponsor Monthly Meal Count Summary by site, a sheet of every review flag, and the raw daily detail. This is the monthly claim review.</p>
         <div class="filter-row" style="margin-bottom:1rem;">
           <div class="fg"><label for="export-mo-report">Month</label><input type="month" id="export-mo-report" style="width:160px;"></div>
           <div class="fg"><label for="export-site-report">Site</label>
@@ -1083,7 +1086,7 @@ background-image:
           </div>
         </div>
         <div class="btn-row" style="margin-top:0;">
-          <button class="btn-primary green" onclick="exportMonthlyReport(document.getElementById('export-mo-report').value, document.getElementById('export-site-report').value)">
+          <button class="btn-primary" onclick="exportMonthlyReport(document.getElementById('export-mo-report').value, document.getElementById('export-site-report').value)">
             <i class="ti ti-file-spreadsheet"></i> Export Monthly Audit Report
           </button>
         </div>
@@ -1092,7 +1095,7 @@ background-image:
       <!-- Initial Estimated Reimbursement -->
       <div class="card" style="border-left:3px solid var(--amber);">
         <div class="card-title"><i class="ti ti-cash"></i>Initial Estimated Reimbursement</div>
-        <p class="report-desc">A single-sheet workbook matching the compliance department's format: per-site Received / Available / Attendance / 1st &amp; 2nd meals, with <strong>Real 2nds capped at MIN(2nd, 1st&times;2%)</strong>, a combined total, and an estimated reimbursement at the $4.90 multiplier. This is the initial estimate handed off for the monthly claim.</p>
+        <p class="report-desc">One sheet in the compliance department's format. Per site: Received, Available, Attendance, 1st and 2nd meals. Real 2nds are capped at 2% of 1sts. Then a total and an estimate at $4.90. This is the first pass for the monthly claim.</p>
         <div class="filter-row" style="margin-bottom:1rem;">
           <div class="fg"><label for="export-mo-reimb">Month</label><input type="month" id="export-mo-reimb" style="width:160px;"></div>
         </div>
@@ -1106,7 +1109,7 @@ background-image:
       <!-- All Records CSV -->
       <div class="card">
         <div class="card-title"><i class="ti ti-download"></i>All Records (CSV)</div>
-        <p class="report-desc">Every record across every site as a flat CSV &mdash; one row per meal record with all fields. Use this for spreadsheets, pivot tables, or importing into another system.</p>
+        <p class="report-desc">Every record, every site, one row each, all fields. For spreadsheets and pivot tables.</p>
         <div class="btn-row" style="margin-top:0;">
           <button class="btn-sec" onclick="exportCSV(true)"><i class="ti ti-file-spreadsheet"></i> Export all records as CSV</button>
         </div>
@@ -1117,7 +1120,7 @@ background-image:
     <div id="pane-settings" style="display:none;">
       <div class="setup-banner">
         <strong><i class="ti ti-database" style="font-size:15px;"></i> Firebase Database &mdash; Connected</strong>
-        <p style="margin-top:6px;">This app is connected to Firebase Firestore (project: <strong>meal-tracker-ba544</strong>). Records save and load automatically &mdash; no configuration needed.</p>
+        <p style="margin-top:6px;">Connected to Firebase Firestore, project <strong>meal-tracker-ba544</strong>. Records save and load on their own. Nothing to configure.</p>
       </div>
       <div class="card">
         <div class="card-title"><i class="ti ti-database"></i>Firebase status</div>
@@ -1130,9 +1133,7 @@ background-image:
       <!-- Postmark email configuration -->
       <div class="card" style="border-left:3px solid var(--navy);">
         <div class="card-title"><i class="ti ti-mail-cog"></i>Email (Postmark)</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
-          Reminder emails and change notifications are sent through <strong>Postmark</strong> via a small relay (the Postmark server token never lives in this page). Follow the <em>SESSION Postmark Setup Guide</em> to deploy the relay, then paste its URL below. These settings are saved to Firebase (<code>app_config/email</code>) so every monitor session uses them.
-        </p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Reminders and change notices go out through <strong>Postmark</strong>. A small relay holds the server token, so it never sits in this page. Follow the <em>Postmark Setup Guide</em>, deploy the relay, paste its URL here. Settings save to Firebase (<code>app_config/email</code>) and every monitor uses them.</p>
         <div class="grid2" style="margin-bottom:1rem;">
           <div class="fg full"><label for="em-proxy-url">Relay URL</label><input type="url" id="em-proxy-url" placeholder="https://session-mail.your-subdomain.workers.dev"></div>
           <div class="fg"><label for="em-proxy-key">Relay access key <span style="font-size:11px;color:var(--text-soft);">(must match the relay's SESSION_KEY)</span></label><input type="text" id="em-proxy-key" placeholder="long random string"></div>
@@ -1149,7 +1150,7 @@ background-image:
 
       <div class="card">
         <div class="card-title"><i class="ti ti-mail"></i>Site emails</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:0.75rem;">Administrator email per site (the address reminder emails go to). Edit here for a quick fix, or use the Update Sites tab for the full contact card.</p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:0.75rem;">The administrator email for each site. Reminders go here. Quick fixes only; the full card is in Update Sites.</p>
         <div id="site-email-list" style="max-height:400px;overflow-y:auto;"></div>
         <div class="btn-row" style="margin-top:1rem;">
           <button class="btn-primary" onclick="saveSiteEmails()"><i class="ti ti-device-floppy"></i> Save site emails</button>
@@ -1159,7 +1160,7 @@ background-image:
 
       <div class="card">
         <div class="card-title"><i class="ti ti-database-plus"></i>Initialize new site fields</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">One-time step after this update: adds the new fields (Mon&ndash;Sat quantities, locks, contact-card fields) with blank defaults to every existing <code>site_info</code> document that doesn't have them yet. Safe to run more than once &mdash; existing values are never overwritten.</p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Run this once after the update. It adds the new fields &mdash; Mon&ndash;Sat quantities, locks, contact card &mdash; to every site that lacks them. Safe to run again. It never overwrites what's there.</p>
         <div class="btn-row" style="margin-top:0;">
           <button class="btn-sec" onclick="initializeSiteFields()"><i class="ti ti-database-plus"></i> Add missing fields to all sites</button>
         </div>
@@ -1168,7 +1169,7 @@ background-image:
 
       <div class="card">
         <div class="card-title"><i class="ti ti-cloud-upload"></i>Sync local cache to Firebase</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Push any locally cached records up to Firebase.</p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Push records cached on this device up to Firebase.</p>
         <div class="btn-row">
           <button class="btn-sec" onclick="syncAllToFirebase()"><i class="ti ti-cloud-upload"></i> Sync all local records</button>
         </div>
@@ -1303,7 +1304,7 @@ async function loadSitesFromFirebase() {
     if (snap.empty) {
       SITES = { 'MONITOR': { name: 'Monitor Organization', pin: '99999', active: true } };
       populateLoginDropdown();
-      if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'No sites in Firebase yet. Sign in as Monitor and use the Update Sites tab to import.'; }
+      if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'No sites yet. Sign in as Monitor and import them under Update Sites.'; }
       return;
     }
     const newSites = { 'MONITOR': { name: 'Monitor Organization', pin: '99999', active: true } };
@@ -1327,7 +1328,7 @@ async function loadSitesFromFirebase() {
       sel.innerHTML = '<option value="">Disconnected — reconnect and retry</option>';
       sel.disabled = true;
     }
-    if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Could not reach the database. Check your connection and press Retry.'; }
+    if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Can\'t reach the database. Check your connection and try again.'; }
     showOfflineBanner("Disconnected from the internet — the site list can't load. Please reconnect.");
   }
 }
@@ -1576,6 +1577,19 @@ function populateExportSelects() {
   if (qm && !qm.value) qm.value = today().slice(0,7);
   const qs = document.getElementById('qsc-site');
   if (qs && qs.options.length <= 1) fillSiteOptions(qs, true, 'All sites');
+  const ew = document.getElementById('erm-week');
+  if (ew && !ew.value) ew.value = today();
+  populateOrdersSelect();
+}
+
+function populateOrdersSelect() {
+  const sel = document.getElementById('erm-orders');
+  if (!sel) return;
+  const cur = sel.value;
+  const names = Array.from(new Set(Object.values(SITE_INFO).map(i => (i.orders || '').trim()).filter(Boolean))).sort((a,b)=>a.localeCompare(b));
+  sel.innerHTML = '<option value="ALL">All (every site)</option>' + names.map(n => '<option value="' + esc(n) + '">' + esc(n) + '</option>').join('');
+  if (!names.length) sel.innerHTML += '<option value="" disabled>No "Orders" values on file — import Session_Import.xlsx</option>';
+  if (cur && Array.from(sel.options).some(o => o.value === cur)) sel.value = cur;
 }
 
 // ═══════════════════════════
@@ -1932,7 +1946,7 @@ function renderTable(isAdmin) {
     if (fv && fv !== 'ALL') myRecs = myRecs.filter(r => r.site === fv);
   }
   const ctr = document.getElementById(isAdmin ? 'all-records' : 'my-records');
-  if (!myRecs.length) { ctr.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i>No records yet.</div>'; return; }
+  if (!myRecs.length) { ctr.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i>Nothing here yet. Records show up as you log them.</div>'; return; }
 
   let sorted;
   if (isAdmin) {
@@ -2423,7 +2437,7 @@ function refreshSendRow() {
   const selAll = document.getElementById('tracker-select-all');
   if (selAll) selAll.checked = false;
   const note = document.getElementById('tracker-send-note');
-  if (note) note.textContent = emailReady() ? 'Sends one reminder per checked site through Postmark.' : 'Postmark not configured — opens one Outlook draft per checked site instead.';
+  if (note) note.textContent = emailReady() ? 'One reminder per checked site, through Postmark.' : 'Postmark isn\'t set up yet. This opens an Outlook draft for each checked site instead.';
   updateSelCount();
 }
 function updateSelCount() {
@@ -2443,7 +2457,7 @@ function reminderText(siteId, dates) {
   const prettyDates = dateList.map(d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })).join(', ');
   const subject = 'CACFP Meal Count Reminder — ' + siteName;
   const body =
-    'Hello ' + siteName + ',\n\n' +
+    'Hello ' + (((SITE_INFO[siteId]||{}).adminContact) || siteName) + ',\n\n' +
     'Our records show the CACFP meal count submission is still missing for the following service date(s):\n\n' +
     '  • ' + dateList.join('\n  • ') + '\n\n' +
     'Please log in to SESSION and complete the meal count sheet(s) for ' + prettyDates + ' at your earliest convenience so we can keep the monthly claim on track.\n\n' +
@@ -2780,6 +2794,25 @@ function exportCSV(isAdmin) {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
+// Contact-card rows shared by every "Site Information" sheet — pulls from the imported site_info values.
+function siteInfoSheetRows(siteId) {
+  const i = SITE_INFO[siteId] || {};
+  const q = normQty(i.qty);
+  return [['SITE INFORMATION'], [],
+    ['Organization name', i.siteName || (SITES[siteId] && SITES[siteId].name) || siteId],
+    ['Agency no', i.agencyNumber || siteId],
+    ['Address', [i.address, i.city, i.zip].filter(Boolean).join(', ')],
+    ['Administrator contact', i.adminContact || ''], ['Email', i.email || ''],
+    ['On-site supervisor', i.onsiteSupervisor || ''], ['Email2', i.email2 || ''],
+    ['Training attendees', [i.attendee1, i.attendee2].filter(Boolean).join('; ')],
+    ['Orders placed by', i.orders || ''],
+    ['Program dates', (i.startDate || i.endDate) ? (i.startDate || '?') + ' to ' + (i.endDate || '?') : ''],
+    ['Meal type', i.mealKind || ''], ['Meal service time', i.mealServiceTime || ''],
+    ['Operating hours', i.operatingHours || ''], ['Operating hours (Sat)', i.operatingHoursSat || ''],
+    ['Days serving', i.daysServing || deriveDaysServing(q)],
+    ['Weekly deliveries', qtySummary(q) + ' (' + weeklyTotal(q) + '/wk)']];
+}
+
 // ═══════════════════════════
 //  MEAL COUNT SHEET (single record, Attachment 18)
 //  NOTE: rebuilt export — verify against the committed original before live claim use.
@@ -2789,7 +2822,9 @@ function exportMealCountSheet(uid) {
   if (!r) { alert('Record not found.'); return; }
   const aoa = [];
   aoa.push(['CACFP KIDS CAFE — DAILY MEAL COUNT SHEET']);
+  const si = SITE_INFO[r.site] || {};
   aoa.push(['Site', r.siteName || r.site, '', 'Service date', r.svcDate || '']);
+  aoa.push(['Agency no', si.agencyNumber || r.site, '', 'Address', [si.address, si.city, si.zip].filter(Boolean).join(', ')]);
   aoa.push(['Record ID', r.uid, '', 'Meal type', r.mealType || 'KidsCafe_Supper']);
   aoa.push([]);
   aoa.push(['DELIVERY']);
@@ -2918,8 +2953,8 @@ function exportSiteAudit() {
   XLSX.utils.book_append_sheet(wb, wsA, 'Monthly Averages');
   XLSX.utils.book_append_sheet(wb, wsT, 'Monthly Totals');
 
-  const info = [['SITE INFORMATION'], [], ['Agency name', siteName], ['Site ID', site],
-    ['Report range', start + ' to ' + end], ['Records included', recs.length], ['Generated', new Date().toLocaleString()]];
+  const info = siteInfoSheetRows(site).concat([[],
+    ['Report range', start + ' to ' + end], ['Records included', recs.length], ['Generated', new Date().toLocaleString()]]);
   const wsI = XLSX.utils.aoa_to_sheet(info); wsI['!cols'] = [{wch:20},{wch:40}];
   XLSX.utils.book_append_sheet(wb, wsI, 'Site Information');
 
@@ -3049,12 +3084,12 @@ async function exportPerSiteMonthReport() {
   XLSX.utils.book_append_sheet(wb, wsA, 'Monthly Averages');
   XLSX.utils.book_append_sheet(wb, wsT, 'Monthly Totals');
 
-  const info = [['SITE INFORMATION'], [], ['Agency name', siteName], ['Site ID', site],
+  const info = siteInfoSheetRows(site).concat([[],
     ['Report range', months[0] + ' to ' + months[months.length - 1]],
     ['Weekdays in range (Mon–Sat)', months.reduce((a,m)=>a+weekdaysInMonth(m).length,0)],
     ['Submitted service days', Object.keys(recByDate).length],
     ['Closed days marked', months.reduce((a,m)=>a+closedByMonth[m].size,0)],
-    ['Generated', new Date().toLocaleString()]];
+    ['Generated', new Date().toLocaleString()]]);
   const wsI = XLSX.utils.aoa_to_sheet(info); wsI['!cols'] = [{wch:28},{wch:40}];
   XLSX.utils.book_append_sheet(wb, wsI, 'Site Information');
 
@@ -3440,10 +3475,8 @@ function renderHome(info) {
   meta.innerHTML =
     stat('Meals per week', total, days.length + ' delivery day' + (days.length === 1 ? '' : 's'))
     + stat('Delivery days', info.daysServing || deriveDaysServing(qty))
-    + stat('Meal type', info.mealKind || '—')
     + stat('Program dates', (info.startDate || info.endDate) ? fmtDate(info.startDate) + ' → ' + fmtDate(info.endDate) : '—')
-    + stat('Meal service time', info.mealServiceTime || '—')
-    + stat('Orders placed by', info.orders || '—');
+    + stat('Meal service time', info.mealServiceTime || '—');
 
   week.innerHTML = DAYS.map(([k, name]) => {
     // If a request is pending, tint the days that would change.
@@ -3453,7 +3486,7 @@ function renderHome(info) {
     }
     return dayTile(k, name, qty[k]);
   }).join('');
-  note.textContent = total ? 'These are your approved delivery quantities. Use "Request a change" below if enrollment or your schedule changes.' : 'No delivery quantities are on file for your site yet. Submit a request below or contact the Kids Cafe team.';
+  note.textContent = total ? 'Your approved deliveries. If enrollment or your days change, use Request a change.' : 'No quantities on file yet. Send a request below, or reach the Kids Cafe team.';
 
   // Locks: quantity + weekly schedule (calendar has its own lock in the card below).
   const chip = (kind, label) => {
@@ -3463,7 +3496,7 @@ function renderHome(info) {
             : '<button class="btn-sm" onclick="lockSiteItem(\'' + kind + '\')"><i class="ti ti-lock"></i> Lock</button>') + '</span>';
   };
   locksEl.innerHTML = chip('quantity', 'Quantity') + chip('schedule', 'Weekly delivery schedule')
-    + '<span style="font-size:11px;color:var(--text-soft);">Lock an item once it\'s confirmed for the year. A locked item can\'t be changed by request until it\'s unlocked (your PIN, or the monitor).</span>';
+    + '<span style="font-size:11px;color:var(--text-soft);">Lock it once it\'s settled for the year. Locked items can\'t be changed by request until unlocked, with your PIN or by the monitor.</span>';
 
   // Pending notice (orange)
   if (homePending) {
@@ -3540,12 +3573,20 @@ function showRequestForm() {
     + '<input type="number" min="0" class="qty-edit" id="req-q-' + k + '" value="' + (qty[k] || '') + '" placeholder="0" oninput="reqTint(\'' + k + '\')">'
     + '</div>').join('');
   DAYS.forEach(([k]) => reqToggle(k, true));
+  document.getElementById('req-effective').value = addWorkDays(7);
   const a = document.getElementById('req-alert');
   a.style.display = locks.quantity || locks.schedule ? 'flex' : 'none';
   a.className = 'alert alert-warning';
   a.innerHTML = '<i class="ti ti-lock"></i>&nbsp; ' + (locks.quantity ? 'Quantity is locked — you can only change which days you receive a delivery. ' : '') + (locks.schedule ? 'Weekly delivery schedule is locked — you can only change quantities on your existing delivery days.' : '');
   document.getElementById('home-request-card').style.display = 'block';
   document.getElementById('home-request-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+// N business days (Mon–Fri) after today, as YYYY-MM-DD.
+function addWorkDays(n) {
+  const d = new Date(); d.setHours(12,0,0,0);
+  let left = n;
+  while (left > 0) { d.setDate(d.getDate() + 1); const w = d.getDay(); if (w !== 0 && w !== 6) left--; }
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 function hideRequestForm() { document.getElementById('home-request-card').style.display = 'none'; }
 function reqToggle(k, init) {
@@ -3963,6 +4004,102 @@ async function runImport() {
 }
 
 // ═══════════════════════════
+//  ERM ORDER SHEET (KC_Template layout)
+//  Row 1: C1 = start date (Monday); K1 "COMBO"; R1 "BREAKFAST"
+//  Row 2: A "Start Date/Close Dates" | B NO. | C NAME | D–J main block (Mon–Sun) | K–Q COMBO | R–X BREAKFAST
+//  Data rows: A closed dates (mm-dd), B agency no, C name, day columns = quantities.
+// ═══════════════════════════
+async function exportErmOrderSheet() {
+  const who = document.getElementById('erm-orders').value;
+  const weekVal = document.getElementById('erm-week').value;
+  const blankClosed = document.getElementById('erm-blank-closed').checked;
+  const useCombo = document.getElementById('erm-combo').checked;
+  const statusEl = document.getElementById('erm-status');
+  if (!who) { alert('Pick whose orders to build.'); return; }
+  if (!weekVal) { alert('Pick a date in the week.'); return; }
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.innerHTML = '<span class="spinner dark"></span> Reading sites and calendars…'; }
+
+  // Snap to Monday; build the 7 dates (Mon–Sun) the template's row 2 covers.
+  const d = new Date(weekVal + 'T12:00:00');
+  const dow = d.getDay();
+  d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
+  const monday = new Date(d);
+  const week = [];
+  for (let i = 0; i < 7; i++) { const x = new Date(monday); x.setDate(x.getDate() + i); week.push(ymd(x.getFullYear(), x.getMonth()+1, x.getDate())); }
+  const months = Array.from(new Set(week.map(x => x.slice(0,7))));
+
+  // Sites: fresh from Firestore so quantities/orders are current.
+  let sites = [];
+  try {
+    const snap = await _db.collection('site_info').get();
+    sites = snap.docs.map(x => x.data()).filter(x => x.siteId && x.siteId !== 'MONITOR' && x.active !== false);
+    sites.forEach(absorbSiteDoc);
+  } catch (e) { if (statusEl) statusEl.innerHTML = '<span class="status-dot red"></span> Could not read site_info.'; return; }
+  if (who !== 'ALL') sites = sites.filter(x => (x.orders || '').trim().toLowerCase() === who.toLowerCase());
+  sites = sites.filter(x => weeklyTotal(normQty(x.qty)) > 0);
+  sites.sort((a,b) => (a.siteName||a.siteId).localeCompare(b.siteName||b.siteId));
+  if (!sites.length) { if (statusEl) statusEl.innerHTML = '<span class="status-dot red"></span> No sites with quantities found for ' + esc(who) + '.'; return; }
+
+  // Closed dates for each site across the month(s) the week touches.
+  const closedBySite = {};
+  await Promise.all(sites.map(async s => {
+    const all = [];
+    for (const m of months) all.push(...await fetchClosedDates(s.siteId, m));
+    closedBySite[s.siteId] = new Set(all.filter(x => week.includes(x)));
+  }));
+
+  // Build the sheet.
+  const ws = {};
+  const setC = (ref, v, extra) => { ws[ref] = Object.assign(typeof v === 'number' ? { t: 'n', v } : v instanceof Date ? { t: 'd', v } : { t: 's', v: String(v) }, extra || {}); };
+  const COLS = 'ABCDEFGHIJKLMNOPQRSTUVWX'.split('');
+  const mainCols = COLS.slice(3, 10);   // D–J
+  const comboCols = COLS.slice(10, 17); // K–Q
+  setC('A1', '  '); setC('B1', 'Start Date:   ');
+  setC('C1', new Date(monday.getFullYear(), monday.getMonth(), monday.getDate()), { z: 'mm/dd/yy;@' });
+  setC('K1', 'COMBO'); setC('R1', 'BREAKFAST');
+  setC('A2', 'Start Date/Close Dates'); setC('B2', 'NO.'); setC('C2', 'NAME');
+  // Date headers as formulas, exactly like the template (so changing C1 re-dates the sheet).
+  [['D','J'],['K','Q'],['R','X']].forEach(([from, to]) => {
+    const fi = COLS.indexOf(from), ti = COLS.indexOf(to);
+    for (let i = fi; i <= ti; i++) {
+      const f = i === fi ? 'IF($C1<>"",$C1,"")' : 'IF($C1<>"",' + COLS[i-1] + '2+1,"")';
+      ws[COLS[i] + '2'] = { t: 'n', f, z: 'ddd\\ mm/dd' };
+    }
+  });
+  let row = 3, blanked = 0, comboCount = 0;
+  const closedLog = [];
+  sites.forEach(s => {
+    const q = normQty(s.qty);
+    const closed = closedBySite[s.siteId] || new Set();
+    const isCombo = useCombo && /comb/i.test(s.mealKind || '');
+    const cols = isCombo ? comboCols : mainCols;
+    if (isCombo) comboCount++;
+    const closedList = Array.from(closed).sort().map(x => x.slice(5));
+    if (closedList.length) { setC('A' + row, closedList.join(', ')); closedLog.push((s.siteName||s.siteId) + ': ' + closedList.join(', ')); }
+    const agency = parseInt(s.agencyNumber || s.siteId);
+    setC('B' + row, isNaN(agency) ? String(s.agencyNumber || s.siteId) : agency);
+    setC('C' + row, s.siteName || s.siteId);
+    DAYS.forEach(([k], i) => {
+      const qty = q[k] || 0;
+      if (!qty) return;
+      if (blankClosed && closed.has(week[i])) { blanked++; return; }
+      setC(cols[i] + row, qty);
+    });
+    row++;
+  });
+  ws['!ref'] = 'A1:X' + (row - 1);
+  ws['!cols'] = [{wch:21.4},{wch:12.1},{wch:49},{wch:11.1},{wch:10.1},{wch:11},{wch:10.3},{wch:9},{wch:9},{wch:9},{wch:1.7},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:1.7},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'OrderSheet');
+  const mmdd = x => x.slice(5);
+  const fname = 'KC_Template__' + mmdd(week[0]) + '--' + mmdd(week[5]) + (who !== 'ALL' ? '_' + who.replace(/[^A-Za-z0-9]/g, '') : '') + '.xlsx';
+  XLSX.writeFile(wb, fname);
+  if (statusEl) statusEl.innerHTML = '<span class="status-dot green"></span> Exported ' + sites.length + ' site(s) for week of ' + fmtDate(week[0]) + (comboCount ? ' (' + comboCount + ' in COMBO block)' : '') + (blanked ? '; ' + blanked + ' closed-day cell(s) left blank' : '; no closed days this week') + '.'
+    + (closedLog.length ? '<div style="margin-top:4px;font-size:12px;color:var(--text-soft);">Closed: ' + esc(closedLog.join(' · ')) + '</div>' : '');
+  logChange({ siteId: 'ALL', siteName: 'All sites', by: 'Monitor', category: 'site_info', action: 'ERM order sheet exported', detail: (who === 'ALL' ? 'All orders' : who) + ', week of ' + week[0] + ', ' + sites.length + ' site(s)' });
+}
+
+// ═══════════════════════════
 //  QUANTITY, SCHEDULE & CALENDAR REPORT (+ Change Log across all users)
 // ═══════════════════════════
 async function exportQuantityScheduleReport() {
@@ -3994,12 +4131,12 @@ async function exportQuantityScheduleReport() {
   // Sheet 2 — Calendar for the month (closed dates + lock state per site)
   const expected = weekdaysInMonth(month).length;
   const calRows = [['AVAILABILITY CALENDAR — ' + monthNameUpper(month)], ['Expected service weekdays (Mon–Sat)', expected], [],
-    ['Site','Open days','Closed days','Month locked','Closed dates','Last updated','Updated by']];
+    ['Site','Open days','Closed days','Month locked','Closed dates (mm-dd)','Last updated','Updated by']];
   await Promise.all(sites.map(async s => {
     let data = {};
     try { const doc = await _db.collection('site_calendar').doc(calDocId(s.siteId, month)).get(); if (doc.exists) data = doc.data(); } catch (e) {}
     const closed = Array.isArray(data.closedDates) ? data.closedDates.slice().sort() : [];
-    s._cal = [s.siteName||s.siteId, expected - closed.length, closed.length, data.locked ? 'Yes' : 'No', closed.join(', '), data.updatedAt ? data.updatedAt.replace('T',' ').slice(0,16) : '', data.updatedBy || ''];
+    s._cal = [s.siteName||s.siteId, expected - closed.length, closed.length, data.locked ? 'Yes' : 'No', closed.map(d => d.slice(5)).join(', '), data.updatedAt ? data.updatedAt.replace('T',' ').slice(0,16) : '', data.updatedBy || ''];
   }));
   sites.forEach(s => calRows.push(s._cal));
   const wsC = XLSX.utils.aoa_to_sheet(calRows); wsC['!cols'] = [{wch:32},{wch:10},{wch:11},{wch:12},{wch:60},{wch:17},{wch:11}];
