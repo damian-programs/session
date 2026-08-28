@@ -982,8 +982,8 @@ background-image:
 
       <!-- ERM Order Sheet (KC_Template) -->
       <div class="card" style="border-left:3px solid var(--navy);">
-        <div class="card-title"><i class="ti ti-shopping-cart"></i>ERM Order Sheet (KC_Template)</div>
-        <p class="report-desc">The weekly <strong>KC_Template</strong> sheet for the ERM system. Choose whose orders and any day in the week. It snaps to Monday. Each site's Mon&ndash;Sat quantities fill the day columns. Days a site marked closed are left blank, and column A lists them. Combination-meal sites go in the COMBO block.</p>
+        <div class="card-title"><i class="ti ti-shopping-cart"></i>Weekly Order Import (KITCAT template)</div>
+        <p class="report-desc">The weekly <strong>KITCAT</strong> order sheet in the KC_Template layout. Choose whose orders and any day in the week. It snaps to Monday. Each site's Mon&ndash;Sat quantities fill the day columns. Closed days, the site's own or program-wide, are left blank and listed in column A. <strong>Cold Meals</strong> sites go in the main block; <strong>Hot / combination</strong> sites go in the COMBO block. Columns Z&ndash;AB add Orders, Meal type, and Closed dates for reference.</p>
         <div class="filter-row" style="margin-bottom:0.75rem;">
           <div class="fg"><label for="erm-orders">Orders placed by</label>
             <select id="erm-orders" style="width:180px;"><option value="">Loading&hellip;</option></select>
@@ -992,10 +992,10 @@ background-image:
         </div>
         <div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:1rem;font-size:13px;color:var(--text-mid);">
           <label style="display:flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" id="erm-blank-closed" checked style="width:16px;height:16px;accent-color:var(--navy);"> Leave closed days blank</label>
-          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" id="erm-combo" checked style="width:16px;height:16px;accent-color:var(--navy);"> Put combination-meal sites in COMBO columns</label>
+          <label style="display:flex;align-items:center;gap:7px;cursor:pointer;"><input type="checkbox" id="erm-combo" checked style="width:16px;height:16px;accent-color:var(--navy);"> Put Hot / combination sites in COMBO columns (Cold Meals stay in the main block)</label>
         </div>
         <div class="btn-row" style="margin-top:0;">
-          <button class="btn-primary" onclick="exportErmOrderSheet()"><i class="ti ti-file-spreadsheet"></i> Export KC_Template order sheet</button>
+          <button class="btn-primary" onclick="exportErmOrderSheet()"><i class="ti ti-file-spreadsheet"></i> Export weekly order import</button>
         </div>
         <div id="erm-status" style="margin-top:8px;font-size:13px;display:none;"></div>
       </div>
@@ -4123,7 +4123,7 @@ async function runImport() {
 }
 
 // ═══════════════════════════
-//  ERM ORDER SHEET (KC_Template layout)
+//  WEEKLY ORDER IMPORT — KITCAT (KC_Template layout)
 //  Row 1: C1 = start date (Monday); K1 "COMBO"; R1 "BREAKFAST"
 //  Row 2: A "Start Date/Close Dates" | B NO. | C NAME | D–J main block (Mon–Sun) | K–Q COMBO | R–X BREAKFAST
 //  Data rows: A closed dates (mm-dd), B agency no, C name, day columns = quantities.
@@ -4161,11 +4161,24 @@ async function exportErmOrderSheet() {
 
   // Closed dates for each site across the month(s) the week touches.
   const closedBySite = {};
+  let calDocs = 0;
   await Promise.all(sites.map(async s => {
     const all = [];
-    for (const m of months) all.push(...await fetchClosedDates(s.siteId, m));
-    closedBySite[s.siteId] = new Set(all.filter(x => week.includes(x)));
+    for (const m of months) {
+      try {
+        const doc = await _db.collection('site_calendar').doc(calDocId(String(s.siteId), m)).get();
+        if (doc.exists) { calDocs++; const d = doc.data(); all.push(...(d.closedDates || []), ...(d.programClosed || [])); }
+      } catch (e) {}
+    }
+    closedBySite[s.siteId] = new Set(all.map(String).filter(x => week.includes(x)));
   }));
+  // Program-wide closures apply to every site even if a site's calendar doc was never written.
+  const programWide = [];
+  try {
+    const snap = await _db.collection('program_closures').get();
+    snap.docs.forEach(d => { const x = d.data(); if (x.date && week.includes(x.date)) programWide.push(x.date); });
+  } catch (e) {}
+  programWide.forEach(dt => sites.forEach(s => closedBySite[s.siteId].add(dt)));
 
   // Build the sheet.
   const ws = {};
@@ -4177,6 +4190,7 @@ async function exportErmOrderSheet() {
   setC('C1', new Date(monday.getFullYear(), monday.getMonth(), monday.getDate()), { z: 'mm/dd/yy;@' });
   setC('K1', 'COMBO'); setC('R1', 'BREAKFAST');
   setC('A2', 'Start Date/Close Dates'); setC('B2', 'NO.'); setC('C2', 'NAME');
+  setC('Z2', 'Orders'); setC('AA2', 'Meal type'); setC('AB2', 'Closed dates (mm-dd)');
   // Date headers as formulas, exactly like the template (so changing C1 re-dates the sheet).
   [['D','J'],['K','Q'],['R','X']].forEach(([from, to]) => {
     const fi = COLS.indexOf(from), ti = COLS.indexOf(to);
@@ -4190,11 +4204,14 @@ async function exportErmOrderSheet() {
   sites.forEach(s => {
     const q = normQty(s.qty);
     const closed = closedBySite[s.siteId] || new Set();
-    const isCombo = useCombo && /comb/i.test(s.mealKind || '');
+    const kind = (s.mealKind || '').trim();
+    const isCombo = useCombo && kind !== '' && !/cold/i.test(kind);   // "Cold Meals" → main block; Hot / combination → COMBO
     const cols = isCombo ? comboCols : mainCols;
     if (isCombo) comboCount++;
     const closedList = Array.from(closed).sort().map(x => x.slice(5));
     if (closedList.length) { setC('A' + row, closedList.join(', ')); closedLog.push((s.siteName||s.siteId) + ': ' + closedList.join(', ')); }
+    // Reference columns (outside the template's import range): Z Orders, AA Meal type, AB Closed dates
+    setC('Z' + row, s.orders || ''); setC('AA' + row, kind || ''); setC('AB' + row, closedList.join(', '));
     const agency = parseInt(s.agencyNumber || s.siteId);
     setC('B' + row, isNaN(agency) ? String(s.agencyNumber || s.siteId) : agency);
     setC('C' + row, s.siteName || s.siteId);
@@ -4206,14 +4223,14 @@ async function exportErmOrderSheet() {
     });
     row++;
   });
-  ws['!ref'] = 'A1:X' + (row - 1);
-  ws['!cols'] = [{wch:21.4},{wch:12.1},{wch:49},{wch:11.1},{wch:10.1},{wch:11},{wch:10.3},{wch:9},{wch:9},{wch:9},{wch:1.7},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:1.7},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9}];
+  ws['!ref'] = 'A1:AB' + (row - 1);
+  ws['!cols'] = [{wch:21.4},{wch:12.1},{wch:49},{wch:11.1},{wch:10.1},{wch:11},{wch:10.3},{wch:9},{wch:9},{wch:9},{wch:1.7},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:1.7},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:9},{wch:2},{wch:10},{wch:12},{wch:24}];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'OrderSheet');
   const mmdd = x => x.slice(5);
   const fname = 'KC_Template__' + mmdd(week[0]) + '--' + mmdd(week[5]) + (who !== 'ALL' ? '_' + who.replace(/[^A-Za-z0-9]/g, '') : '') + '.xlsx';
   XLSX.writeFile(wb, fname);
-  if (statusEl) statusEl.innerHTML = '<span class="status-dot green"></span> Exported ' + sites.length + ' site(s) for week of ' + fmtDate(week[0]) + (comboCount ? ' (' + comboCount + ' in COMBO block)' : '') + (blanked ? '; ' + blanked + ' closed-day cell(s) left blank' : '; no closed days this week') + '.'
+  if (statusEl) statusEl.innerHTML = '<span class="status-dot green"></span> Exported ' + sites.length + ' site(s) for week of ' + fmtDate(week[0]) + (comboCount ? ' (' + comboCount + ' in COMBO block)' : ' (none in COMBO block)') + '; ' + calDocs + ' site calendar(s) read' + (programWide.length ? ', program-wide closures: ' + programWide.map(x => x.slice(5)).join(', ') : '') + (blanked ? '; ' + blanked + ' closed-day cell(s) left blank' : '; no closed days this week') + '.'
     + (closedLog.length ? '<div style="margin-top:4px;font-size:12px;color:var(--text-soft);">Closed: ' + esc(closedLog.join(' · ')) + '</div>' : '');
   logChange({ siteId: 'ALL', siteName: 'All sites', by: 'Monitor', category: 'site_info', action: 'ERM order sheet exported', detail: (who === 'ALL' ? 'All orders' : who) + ', week of ' + week[0] + ', ' + sites.length + ' site(s)' });
 }
