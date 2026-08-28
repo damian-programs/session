@@ -912,7 +912,7 @@ background-image:
           </div>
 
           <div class="fg" style="margin-bottom:1rem;">
-            <label>Trained personnel <span style="font-size:12px;color:var(--text-soft);">&mdash; one name per line (shown in the receiver / signature dropdowns; auto-filled from the attendees and supervisor above if left blank)</span></label>
+            <label>Trained personnel <span style="font-size:12px;color:var(--text-soft);">&mdash; one name per line (shown in the receiver / signature dropdowns; auto-filled from the attendees, administrator contact and on-site supervisor above if left blank)</span></label>
             <textarea id="si-staff" rows="5" placeholder="Name One&#10;Name Two&#10;Name Three" style="height:110px;"></textarea>
           </div>
           <div class="fg" style="margin-bottom:1rem;">
@@ -1290,7 +1290,7 @@ function absorbSiteDoc(data) {
   if (!data.siteId || data.siteId === 'MONITOR') return;
   SITE_INFO[data.siteId] = { ...siteDefaults(), ...data, qty: normQty(data.qty), locks: { quantity: false, schedule: false, ...(data.locks || {}) } };
   if (data.email) SITE_EMAILS[data.siteId] = data.email;
-  const staff = (data.staff && data.staff.length) ? data.staff : [data.attendee1, data.attendee2, data.onsiteSupervisor].filter(Boolean);
+  const staff = (data.staff && data.staff.length) ? data.staff : [data.attendee1, data.attendee2, data.adminContact, data.onsiteSupervisor].filter(Boolean);
   if (staff.length) STAFF[data.siteId] = staff;
 }
 
@@ -3770,7 +3770,7 @@ async function saveSiteInfo() {
   if (!rec.daysServing) rec.daysServing = deriveDaysServing(qty);
   rec.locks = { quantity: document.getElementById('si-lock-qty').checked, schedule: document.getElementById('si-lock-sched').checked };
   let staff = g('si-staff').split('\n').map(s => s.trim()).filter(Boolean);
-  if (!staff.length) staff = [rec.attendee1, rec.attendee2, rec.onsiteSupervisor].filter(Boolean);
+  if (!staff.length) staff = [rec.attendee1, rec.attendee2, rec.adminContact, rec.onsiteSupervisor].filter(Boolean);
   rec.staff = staff;
   const prev = SITE_INFO[site] || {};
   try {
@@ -3900,7 +3900,7 @@ function previewImport(evt) {
           qty, mealServiceTime: str(pick(r, ['Meal Service Time:','Meal Service Time'])),
           daysServing: str(pick(r, ['Days Serving'])) || deriveDaysServing(qty)
         };
-        rec.staff = [rec.attendee1, rec.attendee2, rec.onsiteSupervisor].filter(Boolean);
+        rec.staff = [rec.attendee1, rec.attendee2, rec.adminContact, rec.onsiteSupervisor].filter(Boolean);
         return rec;
       }).filter(r => r.siteId && r.siteName);
     } catch (err) {
