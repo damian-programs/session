@@ -45,6 +45,9 @@
   --danger-text: #c0392b;
   --info-bg: #eef4fd;
   --info-text: #1a4a8a;
+  --pending-bg: #fff1dc;
+  --pending-border: #f0a94a;
+  --pending-text: #8a4b00;
   --radius: 10px;
   --radius-sm: 6px;
   --shadow: 0 1px 3px rgba(63,114,184,0.08), 0 4px 16px rgba(63,114,184,0.06);
@@ -90,7 +93,7 @@ body { font-family: 'DM Sans', sans-serif;
 /* FORM */
 .fg { display: flex; flex-direction: column; gap: 5px; }
 label { font-size: 14px; font-weight: 600; color: var(--text-mid); }
-input[type=text], input[type=number], input[type=date], input[type=time], input[type=password], input[type=email], input[type=month], select, textarea {
+input[type=text], input[type=number], input[type=date], input[type=time], input[type=password], input[type=email], input[type=month], input[type=url], select, textarea {
   width: 100%; height: 38px; padding: 0 11px; border: 1px solid var(--border); border-radius: var(--radius-sm);
   font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--text-main); background: var(--white);
   transition: border-color 0.15s, box-shadow 0.15s; outline: none; appearance: none; -webkit-appearance: none;
@@ -127,6 +130,7 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 .alert-danger  { background: var(--danger-bg);  color: var(--danger-text);  border: 1px solid #f5c6c2; }
 .alert-warning { background: var(--warning-bg); color: var(--warning-text); border: 1px solid #fde8a0; }
 .alert-info    { background: var(--info-bg);    color: var(--info-text);    border: 1px solid #c0d8f8; }
+.alert-pending { background: var(--pending-bg); color: var(--pending-text); border: 1px solid var(--pending-border); }
 
 /* BUTTONS */
 .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 1.25rem; }
@@ -135,12 +139,18 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 .btn-primary:active { transform: scale(0.98); }
 .btn-primary.green { background: var(--amber); color: white; }
 .btn-primary.green:hover { background: var(--amber-dark); }
+.btn-primary.orange { background: #d9822b; }
+.btn-primary.orange:hover { background: #b96a1c; }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-sec { background: white; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 0 16px; height: 40px; font-size: 14px; font-family: 'DM Sans', sans-serif; color: var(--text-mid); cursor: pointer; display: flex; align-items: center; gap: 7px; transition: background 0.15s; }
 .btn-sec:hover { background: var(--cream); }
+.btn-sec:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-sm { height: 30px; font-size: 11px; padding: 0 10px; border: 1px solid var(--border); border-radius: 4px; background: white; cursor: pointer; color: var(--text-mid); font-family: 'DM Sans', sans-serif; display: inline-flex; align-items: center; gap: 4px; }
 .btn-sm:hover { background: var(--cream); }
 .btn-sm.blue { border-color: var(--navy); color: var(--navy); }
 .btn-sm.print-btn { border-color: var(--amber); color: var(--amber-dark); }
+.btn-sm.green { border-color: var(--success-text); color: var(--success-text); }
+.btn-sm.red { border-color: var(--danger-text); color: var(--danger-text); }
 
 /* E-SIG */
 .esig-box { background: var(--cream); border: 1px solid var(--border-soft); border-radius: var(--radius-sm); padding: 1.1rem; }
@@ -153,11 +163,13 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 .rec-table td { padding: 8px 8px; border-bottom: 1px solid var(--border-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-main); vertical-align: middle; }
 .rec-table tr:last-child td { border-bottom: none; }
 .rec-table tr:hover td { background: var(--cream); }
+.rec-table.auto { table-layout: auto; }
 .pill { display: inline-block; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
 .pill-ok   { background: var(--success-bg); color: var(--success-text); }
 .pill-warn { background: var(--warning-bg); color: var(--warning-text); }
 .pill-danger { background: var(--danger-bg); color: var(--danger-text); }
 .pill-info { background: var(--info-bg); color: var(--info-text); }
+.pill-pending { background: var(--pending-bg); color: var(--pending-text); border: 1px solid var(--pending-border); }
 .empty { text-align: center; padding: 2.5rem 1rem; color: var(--text-soft); font-size: 14px; }
 .empty i { font-size: 28px; display: block; margin-bottom: 8px; opacity: 0.5; }
 
@@ -172,7 +184,6 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 .tracker-card.missing   { background: var(--danger-bg);  border-color: #f5c6c2; color: var(--danger-text); }
 .tracker-card-name { font-weight: 600; margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tracker-card-sub { font-size: 10px; opacity: 0.8; }
-/* Tracker tables always fit their card; scroll internally if wider */
 .table-scroll { overflow-x: auto; width: 100%; max-width: 100%; -webkit-overflow-scrolling: touch; padding-bottom: 6px; scrollbar-width: thin; scrollbar-color: var(--navy) var(--border-soft); }
 .table-scroll::-webkit-scrollbar { height: 11px; }
 .table-scroll::-webkit-scrollbar-track { background: var(--border-soft); border-radius: 6px; }
@@ -202,37 +213,19 @@ background-image:
   radial-gradient(at 80% 85%, rgba(0,0,0,0.28), transparent 55%);
              display: flex; align-items: center; justify-content: center; padding: 2rem; }
 .login-card { background: white; border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(63,114,184,0.25); }
-.login-logo { text-align: center; margin-bottom: 2rem; }
+.login-logo { text-align: center; margin-bottom: 1.5rem; }
 .login-logo h1 { font-size: 22px; font-weight: 600; color: var(--navy); margin-bottom: 4px; }
 .login-logo p { font-size: 13px; color: var(--text-soft); }
 .login-demo { margin-top: 1.25rem; background: var(--cream); border-radius: var(--radius-sm); padding: 10px 14px; font-size: 12px; color: var(--text-soft); text-align: center; }
 .login-demo strong { color: var(--text-mid); }
-.login-logo { text-align: center; margin-bottom: 1.5rem; }
-.session-mark {
-  font-size: 44px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-indent: 0.16em;   /* re-centers text against the right-side letter-spacing */
-  color: #3f72b8;  
-  line-height: 1;
-  margin-top: 4px;
-}
-.session-rule {
-  width: 40px; height: 2px;
-  background: transparent; opacity: 0.5;
-  margin: 14px auto;
-}
-.session-tagline {
-  font-size: 14px;
-  color: var(--text-soft);
-  line-height: 1.6;
-  margin: 0;
-  font-weight: 700;
-}
+.session-mark { font-size: 44px; font-weight: 700; letter-spacing: 0.16em; text-indent: 0.16em; color: #3f72b8; line-height: 1; margin-top: 4px; }
+.session-rule { width: 40px; height: 2px; background: transparent; opacity: 0.5; margin: 14px auto; }
+.session-tagline { font-size: 14px; color: var(--text-soft); line-height: 1.6; margin: 0; font-weight: 700; }
 .session-tagline b { color: #3f72b8; font-weight: 700; }
 
 /* SPINNER */
 .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; }
+.spinner.dark { border-color: rgba(63,114,184,0.3); border-top-color: var(--navy); }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* SETUP */
@@ -240,11 +233,10 @@ background-image:
 .setup-banner strong { font-weight: 600; }
 .setup-banner ol { margin: 8px 0 0 18px; line-height: 2; }
 .setup-banner code { background: rgba(63,114,184,0.12); padding: 1px 5px; border-radius: 3px; font-family: 'DM Mono', monospace; font-size: 11px; }
-.sheets-url-row { display: flex; gap: 8px; align-items: flex-end; margin-top: 10px; }
-.sheets-url-row input { flex: 1; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 5px; background: #ccc; }
 .status-dot.green { background: var(--success-text); }
 .status-dot.red   { background: var(--danger-text); }
+.status-dot.orange { background: var(--pending-border); }
 .sync-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-soft); margin-top: 8px; }
 
 /* PRINT */
@@ -279,9 +271,6 @@ background-image:
 .counter-btn:active { transform: scale(0.96); }
 
 /* TRACKER TABLE */
-/* Tracker tables: auto layout + width:100% so columns/rows stretch across the whole
-   container; a min-width keeps them readable and triggers the horizontal slider on
-   narrow screens instead of crushing the columns. */
 .tracker-table { width:100%; border-collapse:collapse; font-size:12px; }
 .tracker-table.t-weekly  { min-width:700px; }
 .tracker-table.t-monthly { min-width:840px; }
@@ -317,6 +306,36 @@ background-image:
 .cal-locked.cal-closed:hover { background:var(--danger-bg); }
 .cal-today { outline:2px solid var(--navy); outline-offset:0; }
 @media (max-width:500px){ .cal-cell{ min-height:48px; padding:4px; } .cal-tag{ font-size:9px; } .cal-num{ font-size:12px; } }
+
+/* HOME — DELIVERY QUANTITY & SCHEDULE */
+.home-meta { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:10px; margin-bottom:1rem; }
+.home-meta .calc-card { text-align:left; }
+.home-meta .calc-val { font-size:15px; font-family:'DM Sans',sans-serif; font-weight:600; }
+.week-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:8px; }
+.week-day { border-radius:var(--radius-sm); border:1px solid var(--border-soft); padding:10px 8px; text-align:center; }
+.week-day.on  { background:var(--success-bg); border-color:#b8e8c8; }
+.week-day.off { background:var(--cream); color:var(--text-soft); }
+.week-day.pending { background:var(--pending-bg); border-color:var(--pending-border); }
+.week-day-name { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-soft); margin-bottom:4px; }
+.week-day-qty { font-family:'DM Mono',monospace; font-size:24px; font-weight:500; color:var(--text-main); line-height:1.1; }
+.week-day.off .week-day-qty { font-size:13px; color:var(--text-soft); }
+.week-day-sub { font-size:10px; color:var(--text-soft); margin-top:3px; }
+.week-day .qty-edit { text-align:center; font-size:18px; font-weight:600; height:40px; margin-top:4px; padding:0 4px; }
+.week-day .day-toggle { display:flex; align-items:center; justify-content:center; gap:5px; font-size:11px; color:var(--text-mid); cursor:pointer; margin-top:6px; }
+.week-day .day-toggle input { width:15px; height:15px; accent-color:var(--navy); }
+.lock-row { display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border-soft); }
+.lock-chip { display:inline-flex; align-items:center; gap:8px; font-size:12px; color:var(--text-mid); background:var(--cream); border:1px solid var(--border-soft); border-radius:20px; padding:4px 6px 4px 12px; }
+.lock-chip .btn-sm { height:24px; font-size:10px; border-radius:14px; }
+.lock-chip.is-locked { background:var(--warning-bg); border-color:#fde8a0; color:var(--warning-text); }
+.pending-box { background:var(--pending-bg); border:2px solid var(--pending-border); border-radius:var(--radius); padding:1rem 1.1rem; margin-bottom:1rem; color:var(--pending-text); animation: pendingPulse 2.4s ease-in-out infinite; }
+.pending-box h4 { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; display:flex; align-items:center; gap:7px; margin-bottom:6px; }
+.pending-box .week-grid { margin-top:8px; }
+@keyframes pendingPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(240,169,74,0.0); } 50% { box-shadow: 0 0 0 4px rgba(240,169,74,0.28); } }
+@media (prefers-reduced-motion: reduce) { .pending-box { animation:none; } }
+.req-diff { font-family:'DM Mono',monospace; font-size:11px; }
+.req-diff .was { color:var(--text-soft); text-decoration:line-through; margin-right:4px; }
+.req-diff .now { color:var(--pending-text); font-weight:600; }
+@media (max-width:600px){ .week-grid { grid-template-columns:repeat(3,1fr); } }
 
 /* RESPONSIVE */
 @media (max-width: 500px) {
@@ -386,15 +405,88 @@ background-image:
   <div class="app">
     <div class="date-strip"><i class="ti ti-calendar"></i><span id="hdr-date"></span></div>
     <div class="tabs">
-      <button class="tab active" id="tab-entry"   onclick="showTab('entry')">Log meal record</button>
+      <button class="tab active" id="tab-home"    onclick="showTab('home')">Home</button>
+      <button class="tab"        id="tab-entry"   onclick="showTab('entry')">Log meal record</button>
       <button class="tab"        id="tab-records" onclick="showTab('records')">My records</button>
-      <button class="tab"        id="tab-calendar" onclick="showTab('calendar')">Availability</button>
       <button class="tab" id="tab-lookup"      onclick="showTab('lookup')"      style="display:none;">Site Lookup</button>
       <button class="tab" id="tab-tracker"     onclick="showTab('tracker')"     style="display:none;">Site Tracker</button>
       <button class="tab" id="tab-updatesites" onclick="showTab('updatesites')" style="display:none;">Update Sites</button>
       <button class="tab" id="tab-sitecal"     onclick="showTab('sitecal')"     style="display:none;">Site Availability</button>
       <button class="tab" id="tab-exports"     onclick="showTab('exports')"     style="display:none;">Export Reports</button>
       <button class="tab" id="tab-settings"    onclick="showTab('settings')"    style="display:none;">Settings</button>
+    </div>
+
+    <!-- HOME TAB (site users): current quantity + weekly delivery schedule, then the availability calendar -->
+    <div id="pane-home" style="display:none;">
+
+      <!-- Pending change notification (orange) -->
+      <div id="home-pending"></div>
+
+      <!-- Current quantity & weekly delivery schedule -->
+      <div class="card" style="border-left:3px solid var(--navy);">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:1rem;">
+          <div class="card-title" style="margin-bottom:0;"><i class="ti ti-truck-delivery"></i>Your delivery quantities &amp; weekly schedule</div>
+          <button class="btn-sec" style="font-size:12px;height:34px;" onclick="loadHome()"><i class="ti ti-refresh"></i> Refresh</button>
+        </div>
+        <div id="home-meta" class="home-meta"></div>
+        <div id="home-week" class="week-grid"></div>
+        <div id="home-week-note" style="font-size:12px;color:var(--text-soft);margin-top:8px;"></div>
+        <div class="lock-row" id="home-locks"></div>
+        <div class="btn-row" id="home-actions" style="margin-top:1rem;"></div>
+        <div id="home-status" style="margin-top:8px;font-size:13px;display:none;"></div>
+      </div>
+
+      <!-- Change request form (hidden until "Request a change") -->
+      <div class="card" id="home-request-card" style="display:none;border-left:3px solid var(--pending-border);">
+        <div class="card-title"><i class="ti ti-edit"></i>Request a quantity or schedule change</div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
+          Check the days you want a delivery and enter the number of meals for each. Your request is sent to the Kids Cafe team for approval &mdash; nothing changes until they approve it. While it's pending you'll see an <strong style="color:var(--pending-text);">orange notice</strong> at the top of this page.
+        </p>
+        <div id="req-week" class="week-grid"></div>
+        <div class="grid2" style="margin-top:1rem;">
+          <div class="fg">
+            <label for="req-by">Requested by</label>
+            <select id="req-by"><option value="">Select name&hellip;</option></select>
+          </div>
+          <div class="fg">
+            <label for="req-effective">Effective date (optional)</label>
+            <input type="date" id="req-effective">
+          </div>
+          <div class="fg full">
+            <label for="req-note">Reason / note (optional)</label>
+            <textarea id="req-note" placeholder="e.g. Enrollment went up; we need 10 more on Tuesdays and Thursdays."></textarea>
+          </div>
+        </div>
+        <div id="req-alert" style="display:none;margin-top:1rem;"></div>
+        <div class="btn-row">
+          <button class="btn-primary orange" onclick="submitChangeRequest()"><i class="ti ti-send"></i> Submit request</button>
+          <button class="btn-sec" onclick="hideRequestForm()"><i class="ti ti-x"></i> Cancel</button>
+        </div>
+      </div>
+
+      <!-- Availability calendar (moved below the quantity/schedule status) -->
+      <div class="card">
+        <div class="card-title"><i class="ti ti-calendar-check"></i>Site availability calendar</div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
+          Mark the weekdays your site is <strong>open</strong> (serving meals) or <strong>closed</strong>. Every Monday&ndash;Saturday starts as <strong>open</strong> &mdash; click a day to switch it to <strong>closed</strong>, and click again to reopen it. These dates drive your Per-Site Monthly Count Report and the monitor's closed-date report. Lock the month when you're done; unlocking to make changes again requires your site PIN.
+        </p>
+        <div class="filter-row" style="margin-bottom:1rem;">
+          <div class="fg"><label for="cal-month">Month</label><input type="month" id="cal-month" oninput="loadCalendar()" style="width:160px;"></div>
+        </div>
+        <div id="cal-summary" style="font-size:13px;color:var(--text-mid);margin-bottom:0.75rem;"></div>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:1rem;">
+          <button class="btn-sec" id="cal-lock-btn" onclick="lockCalendar()"><i class="ti ti-lock"></i> Lock month</button>
+          <button class="btn-primary" id="cal-unlock-btn" onclick="unlockCalendar()" style="display:none;"><i class="ti ti-lock-open"></i> Unlock with PIN</button>
+          <span id="cal-lock-state" style="font-size:12px;color:var(--text-soft);display:inline-flex;align-items:center;gap:5px;"></span>
+          <span id="cal-status" style="font-size:12px;display:none;align-items:center;gap:5px;"></span>
+        </div>
+        <div id="cal-grid"></div>
+        <div style="display:flex;gap:16px;margin-top:1rem;font-size:11px;color:var(--text-soft);flex-wrap:wrap;">
+          <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;border-radius:3px;background:var(--success-bg);border:1px solid #b8e8c8;display:inline-block;"></span> Open</span>
+          <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;border-radius:3px;background:var(--danger-bg);border:1px solid #f5c6c2;display:inline-block;"></span> Closed</span>
+          <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;border-radius:3px;background:var(--cream);border:1px solid var(--border-soft);display:inline-block;"></span> Sunday / non-service</span>
+        </div>
+      </div>
     </div>
 
     <!-- ENTRY TAB -->
@@ -557,6 +649,9 @@ background-image:
         </div>
       </div>
 
+      <!-- Bottom copy of the form alert — mirrors #entry-alert so errors are visible next to the Save button too -->
+      <div id="entry-alert-bottom" style="display:none;margin-top:1rem;"></div>
+
       <div class="btn-row">
         <button class="btn-primary" id="save-btn" onclick="saveRecord()"><i class="ti ti-device-floppy"></i> Save record</button>
         <button class="btn-sec" onclick="clearForm()"><i class="ti ti-refresh"></i> Clear form</button>
@@ -575,32 +670,6 @@ background-image:
           </div>
         </div>
         <div id="my-records"></div>
-      </div>
-    </div>
-
-    <!-- AVAILABILITY CALENDAR TAB (site users) -->
-    <div id="pane-calendar" style="display:none;">
-      <div class="card">
-        <div class="card-title"><i class="ti ti-calendar-check"></i>Site availability calendar</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
-          Mark the weekdays your site is <strong>open</strong> (serving meals) or <strong>closed</strong>. Every Monday&ndash;Saturday starts as <strong>open</strong> &mdash; click a day to switch it to <strong>closed</strong>, and click again to reopen it. These dates drive your Per-Site Monthly Count Report and the monitor's closed-date report. Lock the month when you're done; unlocking to make changes again requires your site PIN.
-        </p>
-        <div class="filter-row" style="margin-bottom:1rem;">
-          <div class="fg"><label for="cal-month">Month</label><input type="month" id="cal-month" oninput="loadCalendar()" style="width:160px;"></div>
-        </div>
-        <div id="cal-summary" style="font-size:13px;color:var(--text-mid);margin-bottom:0.75rem;"></div>
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:1rem;">
-          <button class="btn-sec" id="cal-lock-btn" onclick="lockCalendar()"><i class="ti ti-lock"></i> Lock month</button>
-          <button class="btn-primary" id="cal-unlock-btn" onclick="unlockCalendar()" style="display:none;"><i class="ti ti-lock-open"></i> Unlock with PIN</button>
-          <span id="cal-lock-state" style="font-size:12px;color:var(--text-soft);display:inline-flex;align-items:center;gap:5px;"></span>
-          <span id="cal-status" style="font-size:12px;display:none;align-items:center;gap:5px;"></span>
-        </div>
-        <div id="cal-grid"></div>
-        <div style="display:flex;gap:16px;margin-top:1rem;font-size:11px;color:var(--text-soft);flex-wrap:wrap;">
-          <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;border-radius:3px;background:var(--success-bg);border:1px solid #b8e8c8;display:inline-block;"></span> Open</span>
-          <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;border-radius:3px;background:var(--danger-bg);border:1px solid #f5c6c2;display:inline-block;"></span> Closed</span>
-          <span style="display:inline-flex;align-items:center;gap:5px;"><span style="width:12px;height:12px;border-radius:3px;background:var(--cream);border:1px solid var(--border-soft);display:inline-block;"></span> Sunday / non-service</span>
-        </div>
       </div>
     </div>
 
@@ -656,7 +725,7 @@ background-image:
         <div class="card-title"><i class="ti ti-cash"></i>Reimbursement tracker</div>
         <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
           Only <strong>first meals served to children</strong> are reimbursable under CACFP At-Risk Afterschool &mdash; one supper per child, per day.
-          Second meals and adult meals are <strong>not</strong> reimbursed.
+          Second meals and adult meals are <strong>not</strong> reimbursed. <strong>% reimbursed</strong> = first meals &divide; total meals served.
         </p>
         <div class="filter-row" style="margin-bottom:1rem;">
           <div class="fg"><label for="reimb-month">Month</label><input type="month" id="reimb-month" oninput="renderReimbursement()" style="width:160px;"></div>
@@ -675,26 +744,22 @@ background-image:
       <div class="card">
         <div class="card-title"><i class="ti ti-checklist"></i>Submission tracker</div>
 
-        <!-- View toggle -->
         <div style="display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;">
           <button class="btn-sec" id="tview-daily"   onclick="setTrackerView('daily')"   style="font-size:12px;height:32px;">Daily</button>
           <button class="btn-sec" id="tview-weekly"  onclick="setTrackerView('weekly')"  style="font-size:12px;height:32px;">Weekly</button>
           <button class="btn-sec" id="tview-monthly" onclick="setTrackerView('monthly')" style="font-size:12px;height:32px;">Monthly</button>
         </div>
 
-        <!-- Daily controls -->
         <div id="tracker-ctrl-daily" class="filter-row" style="margin-bottom:1rem;">
           <div class="fg"><label for="tracker-date">Date</label><input type="date" id="tracker-date" oninput="renderTracker()" style="width:160px;"></div>
         </div>
 
-        <!-- Weekly controls -->
         <div id="tracker-ctrl-weekly" style="display:none;margin-bottom:1rem;">
           <div class="filter-row">
             <div class="fg"><label for="tracker-week-start">Week start (Monday)</label><input type="date" id="tracker-week-start" oninput="renderTrackerWeekly()" style="width:160px;"></div>
           </div>
         </div>
 
-        <!-- Monthly controls -->
         <div id="tracker-ctrl-monthly" style="display:none;margin-bottom:1rem;">
           <div class="filter-row">
             <div class="fg"><label for="tracker-month">Month</label><input type="month" id="tracker-month" oninput="renderTrackerMonthly()" style="width:160px;"></div>
@@ -703,7 +768,6 @@ background-image:
 
         <div id="tracker-summary" style="margin-bottom:1rem;font-size:13px;color:var(--text-mid);"></div>
 
-        <!-- Selected reminders row -->
         <div id="tracker-send-all-row" style="display:none;align-items:center;gap:12px;margin-bottom:1rem;flex-wrap:wrap;">
           <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-mid);cursor:pointer;">
             <input type="checkbox" id="tracker-select-all" onchange="toggleSelectAll(this)" style="width:16px;height:16px;accent-color:var(--navy);"> Select all
@@ -711,23 +775,37 @@ background-image:
           <button class="btn-primary" onclick="sendSelectedReminders()">
             <i class="ti ti-mail-forward"></i> Email selected (<span id="tracker-sel-count">0</span>)
           </button>
-          <span style="font-size:12px;color:var(--text-soft);">Opens one Outlook draft per checked site.</span>
+          <span id="tracker-send-note" style="font-size:12px;color:var(--text-soft);">Sends one reminder per checked site through Postmark.</span>
         </div>
+        <div id="tracker-send-status" style="display:none;margin-bottom:1rem;"></div>
         <div class="tracker-grid" id="tracker-grid"></div>
       </div>
     </div>
 
-    <!-- UPDATE SITES TAB (import + add new + manual entry) -->
+    <!-- UPDATE SITES TAB (pending requests + import + add new + manual entry) -->
     <div id="pane-updatesites" style="display:none;">
+
+      <!-- Pending change requests -->
+      <div class="card" style="border-left:3px solid var(--pending-border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+          <div class="card-title" style="margin-bottom:0;"><i class="ti ti-bell-ringing"></i>Pending quantity &amp; schedule change requests</div>
+          <button class="btn-sec" style="font-size:12px;height:34px;" onclick="loadPendingRequests()"><i class="ti ti-refresh"></i> Refresh</button>
+        </div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Sites submit these from their Home tab. Approving writes the new Mon&ndash;Sat quantities to the site record, logs the change, and emails the site. Rejecting keeps the current values.</p>
+        <div id="pending-requests"></div>
+      </div>
 
       <!-- Excel Import -->
       <div class="card" style="border-left:3px solid var(--amber);">
         <div class="card-title"><i class="ti ti-file-import"></i>Import from Excel</div>
         <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
-          Upload your <strong>site_info_import_template.xlsx</strong> to bulk-import all site information.
-          Columns mapped: <strong>Training Attendee 1/2</strong> + <strong>On-Site Supervisor</strong> &rarr; Staff &nbsp;&middot;&nbsp;
-          <strong>AGENCY NO</strong> &rarr; Site ID &nbsp;&middot;&nbsp; <strong>Admin Email</strong> &rarr; Primary email (used for reminders) &nbsp;&middot;&nbsp;
-          <strong>Administrator Contact</strong> &rarr; Admin contact.
+          Upload the <strong>Session_Import.xlsx</strong> workbook (first sheet is read). Columns mapped:
+          <strong>AGENCY NO</strong> &rarr; Site ID &nbsp;&middot;&nbsp; <strong>Organization Name</strong> &rarr; Site name &nbsp;&middot;&nbsp;
+          <strong>Training Attendee 1/2</strong> + <strong>On-Site Supervisor</strong> &rarr; Trained personnel &nbsp;&middot;&nbsp;
+          <strong>Orders</strong> &rarr; who places the site's orders &nbsp;&middot;&nbsp;
+          <strong>Email</strong> &rarr; primary (reminders) &nbsp;&middot;&nbsp; <strong>Email2</strong> &rarr; on-site supervisor email &nbsp;&middot;&nbsp;
+          <strong>Monday&ndash;Saturday</strong> &rarr; meals delivered each day &nbsp;&middot;&nbsp; plus address, dates, hot/cold, hours, service time and days serving.
+          Existing PINs, notes and locks are preserved.
         </p>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
           <label style="cursor:pointer;">
@@ -756,7 +834,7 @@ background-image:
             <input type="text" id="si-new-id" placeholder="e.g. 14999" style="width:220px;">
           </div>
           <div class="fg">
-            <label for="si-new-name">Site / Agency name</label>
+            <label for="si-new-name">Site / Organization name</label>
             <input type="text" id="si-new-name" placeholder="e.g. Example Afterschool" style="width:320px;">
           </div>
           <button class="btn-primary" style="height:38px;" onclick="addNewSite()"><i class="ti ti-plus"></i> Add site</button>
@@ -764,12 +842,11 @@ background-image:
         <div id="si-new-status" style="font-size:13px;display:none;"></div>
       </div>
 
-      <!-- Site Information manager -->
+      <!-- Site Information manager (contact card) -->
       <div class="card">
         <div class="card-title"><i class="ti ti-building-skyscraper"></i>Site information manager</div>
         <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
-          Select a site to view and edit its trained personnel, supervisor email, agency name, and agency number.
-          All changes save directly to Firebase &mdash; not to local storage or GitHub.
+          Select a site to view and edit its contact card, delivery quantities, schedule and locks. All changes save directly to Firebase.
         </p>
         <div class="filter-row" style="margin-bottom:1rem;">
           <div class="fg">
@@ -780,31 +857,63 @@ background-image:
           </div>
         </div>
         <div id="si-form" style="display:none;">
+
+          <div class="card-title" style="margin-top:0.5rem;"><i class="ti ti-id"></i>Organization</div>
           <div class="grid2" style="margin-bottom:1rem;">
-            <div class="fg">
-              <label for="si-agency-name">Agency name</label>
-              <input type="text" id="si-agency-name" placeholder="e.g. Greater Cleveland Food Bank">
-            </div>
-            <div class="fg">
-              <label for="si-agency-number">Agency number</label>
-              <input type="text" id="si-agency-number" placeholder="e.g. 12345">
-            </div>
-            <div class="fg">
-              <label for="si-pin">Site PIN / Password</label>
-              <input type="text" id="si-pin" placeholder="5-digit PIN" maxlength="10">
-            </div>
-            <div class="fg">
-              <label for="si-email">Supervisor email</label>
-              <input type="email" id="si-email" placeholder="supervisor@site.org">
-            </div>
-            <div class="fg">
-              <label for="si-phone">Phone number</label>
-              <input type="text" id="si-phone" placeholder="(216) 555-0100">
-            </div>
+            <div class="fg"><label for="si-agency-name">Organization name</label><input type="text" id="si-agency-name" placeholder="e.g. 3MB Afterschool"></div>
+            <div class="fg"><label for="si-agency-number">Agency no</label><input type="text" id="si-agency-number" placeholder="e.g. 11778"></div>
+            <div class="fg full"><label for="si-address">Address</label><input type="text" id="si-address" placeholder="Street address"></div>
+            <div class="fg"><label for="si-city">City</label><input type="text" id="si-city" placeholder="Cleveland"></div>
+            <div class="fg"><label for="si-zip">ZIP</label><input type="text" id="si-zip" placeholder="44110"></div>
+            <div class="fg"><label for="si-pin">Site PIN / Password</label><input type="text" id="si-pin" placeholder="5-digit PIN" maxlength="10"></div>
+            <div class="fg"><label for="si-phone">Phone number</label><input type="text" id="si-phone" placeholder="(216) 555-0100"></div>
           </div>
+
+          <div class="card-title"><i class="ti ti-users"></i>Contacts</div>
+          <div class="grid2" style="margin-bottom:1rem;">
+            <div class="fg"><label for="si-attendee1">Training Attendee 1</label><input type="text" id="si-attendee1"></div>
+            <div class="fg"><label for="si-attendee2">Training Attendee 2</label><input type="text" id="si-attendee2"></div>
+            <div class="fg"><label for="si-orders">Orders <span style="font-size:11px;color:var(--text-soft);">(who places this site's orders)</span></label><input type="text" id="si-orders" placeholder="e.g. Damian"></div>
+            <div class="fg"><label for="si-admin-contact">Administrator Contact</label><input type="text" id="si-admin-contact"></div>
+            <div class="fg"><label for="si-email">Email <span style="font-size:11px;color:var(--text-soft);">(administrator &mdash; used for reminders)</span></label><input type="email" id="si-email" placeholder="admin@site.org"></div>
+            <div class="fg"><label for="si-onsite">On-Site Supervisor</label><input type="text" id="si-onsite"></div>
+            <div class="fg"><label for="si-email2">Email2 <span style="font-size:11px;color:var(--text-soft);">(on-site supervisor)</span></label><input type="email" id="si-email2" placeholder="supervisor@site.org"></div>
+          </div>
+
+          <div class="card-title"><i class="ti ti-calendar-event"></i>Program &amp; service</div>
+          <div class="grid2" style="margin-bottom:1rem;">
+            <div class="fg"><label for="si-start">Start date</label><input type="date" id="si-start"></div>
+            <div class="fg"><label for="si-end">End date</label><input type="date" id="si-end"></div>
+            <div class="fg"><label for="si-meal-kind">Combination (hot/cold) or cold meals?</label>
+              <select id="si-meal-kind"><option value="">Select&hellip;</option><option>Hot Meals</option><option>Cold Meals</option><option>Combination (hot/cold)</option></select>
+            </div>
+            <div class="fg"><label for="si-svc-time">Meal Service Time</label><input type="text" id="si-svc-time" placeholder="e.g. 5:00-6:00pm"></div>
+            <div class="fg"><label for="si-hours">Site Operating Hours</label><input type="text" id="si-hours" placeholder="e.g. 2:30-7:00pm"></div>
+            <div class="fg"><label for="si-hours-sat">Site Operating Hours &mdash; Saturday</label><input type="text" id="si-hours-sat" placeholder="Leave blank if closed Saturday"></div>
+            <div class="fg full"><label for="si-days-serving">Days Serving</label><input type="text" id="si-days-serving" placeholder="e.g. Monday- Friday (auto-filled from quantities if blank)"></div>
+          </div>
+
+          <div class="card-title"><i class="ti ti-truck-delivery"></i>Delivery quantities (meals received each day)</div>
+          <div class="week-grid" style="margin-bottom:1rem;">
+            <div class="week-day"><div class="week-day-name">Monday</div><input type="number" min="0" id="si-q-mon" class="qty-edit" placeholder="0"></div>
+            <div class="week-day"><div class="week-day-name">Tuesday</div><input type="number" min="0" id="si-q-tue" class="qty-edit" placeholder="0"></div>
+            <div class="week-day"><div class="week-day-name">Wednesday</div><input type="number" min="0" id="si-q-wed" class="qty-edit" placeholder="0"></div>
+            <div class="week-day"><div class="week-day-name">Thursday</div><input type="number" min="0" id="si-q-thu" class="qty-edit" placeholder="0"></div>
+            <div class="week-day"><div class="week-day-name">Friday</div><input type="number" min="0" id="si-q-fri" class="qty-edit" placeholder="0"></div>
+            <div class="week-day"><div class="week-day-name">Saturday</div><input type="number" min="0" id="si-q-sat" class="qty-edit" placeholder="0"></div>
+          </div>
+          <p style="font-size:12px;color:var(--text-soft);margin-bottom:1rem;">A day with a quantity of 0 or blank is treated as <strong>no delivery</strong> that day.</p>
+
+          <div class="card-title"><i class="ti ti-lock"></i>Locks</div>
+          <div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:1rem;font-size:13px;color:var(--text-mid);">
+            <label style="display:flex;align-items:center;gap:7px;font-weight:500;cursor:pointer;"><input type="checkbox" id="si-lock-qty" style="width:16px;height:16px;accent-color:var(--navy);"> Quantity locked</label>
+            <label style="display:flex;align-items:center;gap:7px;font-weight:500;cursor:pointer;"><input type="checkbox" id="si-lock-sched" style="width:16px;height:16px;accent-color:var(--navy);"> Weekly delivery schedule locked</label>
+            <span style="font-size:11px;color:var(--text-soft);">When locked, the site can't submit a change request for that item until it's unlocked (site PIN or monitor).</span>
+          </div>
+
           <div class="fg" style="margin-bottom:1rem;">
-            <label>Trained personnel <span style="font-size:12px;color:var(--text-soft);">&mdash; one name per line</span></label>
-            <textarea id="si-staff" rows="5" placeholder="Name One&#10;Name Two&#10;Name Three" style="height:130px;"></textarea>
+            <label>Trained personnel <span style="font-size:12px;color:var(--text-soft);">&mdash; one name per line (shown in the receiver / signature dropdowns; auto-filled from the attendees and supervisor above if left blank)</span></label>
+            <textarea id="si-staff" rows="5" placeholder="Name One&#10;Name Two&#10;Name Three" style="height:110px;"></textarea>
           </div>
           <div class="fg" style="margin-bottom:1rem;">
             <label for="si-notes">Site notes (optional)</label>
@@ -865,7 +974,25 @@ background-image:
         <p class="report-desc" style="margin-bottom:0;">Scroll down and generate whichever report you need. Each one pulls from the same live Firebase records. Individual <strong>Meal Count Sheets</strong> (Attachment 18) are exported per record from the print/export buttons in <strong>Site Lookup &rarr; All sites</strong>.</p>
       </div>
 
-      <!-- Per-Site Monthly Count Report (matches attached template) -->
+      <!-- Quantity, Calendar & Schedule Report (+ Change Log) -->
+      <div class="card" style="border-left:3px solid var(--pending-border);">
+        <div class="card-title"><i class="ti ti-truck-delivery"></i>Quantity, Schedule &amp; Calendar Report</div>
+        <p class="report-desc">A workbook of every site's <strong>current delivery quantities</strong> (Mon&ndash;Sat), <strong>weekly delivery schedule</strong> and locks, the selected month's <strong>availability calendar</strong> (closed dates per site), any <strong>pending change requests</strong>, and a <strong>Change Log</strong> sheet listing every quantity, schedule, calendar and site-info change across all users &mdash; who made it, when, and what changed.</p>
+        <div class="filter-row" style="margin-bottom:1rem;">
+          <div class="fg"><label for="qsc-month">Calendar month</label><input type="month" id="qsc-month" style="width:160px;"></div>
+          <div class="fg"><label for="qsc-site">Site</label>
+            <select id="qsc-site" style="width:220px;"><option value="ALL">All sites</option></select>
+          </div>
+        </div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn-primary orange" onclick="exportQuantityScheduleReport()">
+            <i class="ti ti-file-spreadsheet"></i> Export Quantity, Schedule &amp; Calendar Report
+          </button>
+        </div>
+        <div id="qsc-status" style="margin-top:8px;font-size:13px;display:none;"></div>
+      </div>
+
+      <!-- Per-Site Monthly Count Report -->
       <div class="card" style="border-left:3px solid var(--amber);">
         <div class="card-title"><i class="ti ti-file-spreadsheet"></i>Per-Site Monthly Count Report</div>
         <p class="report-desc">A workbook for <strong>one site across a selected month range</strong>, in the state report template: <strong>Daily Meal Details</strong> (one row per <em>weekday</em> Mon&ndash;Sat with a totals row &mdash; open days show counts, unsubmitted days show blank, and days the site marked closed on its Availability calendar show <strong>CLOSED</strong>), <strong>Monthly Averages</strong> and <strong>Monthly Totals</strong> (one row per month), and a <strong>Site Information</strong> sheet. Pick a site and the first &amp; last month to include.</p>
@@ -876,7 +1003,6 @@ background-image:
           <div class="fg"><label for="psm-from">From month</label><input type="month" id="psm-from" style="width:150px;"></div>
           <div class="fg"><label for="psm-to">To month</label><input type="month" id="psm-to" style="width:150px;"></div>
         </div>
-
         <div class="btn-row" style="margin-top:0;">
           <button class="btn-primary green" onclick="exportPerSiteMonthReport()">
             <i class="ti ti-file-spreadsheet"></i> Export Per-Site Monthly Count Report
@@ -1000,6 +1126,46 @@ background-image:
           <button class="btn-primary" onclick="checkFirebaseStatus()"><i class="ti ti-refresh"></i> Check connection</button>
         </div>
       </div>
+
+      <!-- Postmark email configuration -->
+      <div class="card" style="border-left:3px solid var(--navy);">
+        <div class="card-title"><i class="ti ti-mail-cog"></i>Email (Postmark)</div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">
+          Reminder emails and change notifications are sent through <strong>Postmark</strong> via a small relay (the Postmark server token never lives in this page). Follow the <em>SESSION Postmark Setup Guide</em> to deploy the relay, then paste its URL below. These settings are saved to Firebase (<code>app_config/email</code>) so every monitor session uses them.
+        </p>
+        <div class="grid2" style="margin-bottom:1rem;">
+          <div class="fg full"><label for="em-proxy-url">Relay URL</label><input type="url" id="em-proxy-url" placeholder="https://session-mail.your-subdomain.workers.dev"></div>
+          <div class="fg"><label for="em-proxy-key">Relay access key <span style="font-size:11px;color:var(--text-soft);">(must match the relay's SESSION_KEY)</span></label><input type="text" id="em-proxy-key" placeholder="long random string"></div>
+          <div class="fg"><label for="em-from">From address <span style="font-size:11px;color:var(--text-soft);">(verified Postmark sender)</span></label><input type="email" id="em-from" placeholder="kidscafe@gcfoodbank.org"></div>
+          <div class="fg"><label for="em-notify">Change-notification recipient <span style="font-size:11px;color:var(--text-soft);">(gets an email whenever a site changes its calendar, quantity or schedule)</span></label><input type="email" id="em-notify" placeholder="kidscafe@gcfoodbank.org"></div>
+          <div class="fg"><label for="em-dept">Department email <span style="font-size:11px;color:var(--text-soft);">(shown in signatures / reply-to)</span></label><input type="email" id="em-dept" placeholder="kidscafe@gcfoodbank.org"></div>
+        </div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn-primary green" onclick="saveEmailConfig()"><i class="ti ti-check"></i> Save email settings</button>
+          <button class="btn-sec" onclick="sendTestEmail()"><i class="ti ti-send"></i> Send test email</button>
+        </div>
+        <div id="em-status" style="font-size:13px;margin-top:8px;display:none;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="ti ti-mail"></i>Site emails</div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:0.75rem;">Administrator email per site (the address reminder emails go to). Edit here for a quick fix, or use the Update Sites tab for the full contact card.</p>
+        <div id="site-email-list" style="max-height:400px;overflow-y:auto;"></div>
+        <div class="btn-row" style="margin-top:1rem;">
+          <button class="btn-primary" onclick="saveSiteEmails()"><i class="ti ti-device-floppy"></i> Save site emails</button>
+        </div>
+        <div id="site-email-status" style="font-size:12px;margin-top:8px;display:none;"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="ti ti-database-plus"></i>Initialize new site fields</div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">One-time step after this update: adds the new fields (Mon&ndash;Sat quantities, locks, contact-card fields) with blank defaults to every existing <code>site_info</code> document that doesn't have them yet. Safe to run more than once &mdash; existing values are never overwritten.</p>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn-sec" onclick="initializeSiteFields()"><i class="ti ti-database-plus"></i> Add missing fields to all sites</button>
+        </div>
+        <div id="init-fields-status" style="margin-top:8px;font-size:13px;display:none;"></div>
+      </div>
+
       <div class="card">
         <div class="card-title"><i class="ti ti-cloud-upload"></i>Sync local cache to Firebase</div>
         <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Push any locally cached records up to Firebase.</p>
@@ -1008,30 +1174,12 @@ background-image:
         </div>
         <div id="bulk-sync-status" style="margin-top:8px;font-size:13px;display:none;"></div>
       </div>
-      <div class="card">
-        <div class="card-title"><i class="ti ti-mail-cog"></i>Email configuration</div>
-        <div class="fg" style="margin-bottom:1rem;">
-          <label for="dept-email-input">Department email (shown in reminder signature)</label>
-          <div style="display:flex;gap:8px;">
-            <input type="text" id="dept-email-input" placeholder="cacfp@yourdepartment.org" style="flex:1;">
-            <button class="btn-primary green" style="height:38px;flex-shrink:0;" onclick="saveDeptEmail()"><i class="ti ti-check"></i> Save</button>
-          </div>
-          <div id="dept-email-status" style="font-size:12px;margin-top:6px;display:none;"></div>
-        </div>
-        <div class="divider"></div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:0.75rem;">Site supervisor emails &mdash; enter one per site to enable reminder emails from the Site Tracker.</p>
-        <div id="site-email-list" style="max-height:400px;overflow-y:auto;"></div>
-        <div class="btn-row" style="margin-top:1rem;">
-          <button class="btn-primary" onclick="saveSiteEmails()"><i class="ti ti-device-floppy"></i> Save site emails</button>
-        </div>
-        <div id="site-email-status" style="font-size:12px;margin-top:8px;display:none;"></div>
-      </div>
     </div>
 
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.08.21</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.08.28</div>
 
 <script>
 // ═══════════════════════════
@@ -1045,6 +1193,10 @@ function safeGet(key) {
 function safeSet(key, value) {
   try { localStorage.setItem(key, value); }
   catch(e) { _memStore[key] = value; }
+}
+// HTML-escape any user/site supplied text before injecting it into innerHTML.
+function esc(s) {
+  return String(s === null || s === undefined ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 // ═══════════════════════════
@@ -1063,6 +1215,7 @@ function hideOfflineBanner() {
 function retryConnection() {
   hideOfflineBanner();
   loadSitesFromFirebase();
+  loadEmailConfig();
   if (currentSite) loadFromFirebase(currentSite === 'MONITOR' ? 'ALL' : currentSite);
 }
 window.addEventListener('offline', () => showOfflineBanner("You're offline — data can't be loaded or saved. Please reconnect."));
@@ -1071,8 +1224,6 @@ window.addEventListener('online',  () => { hideOfflineBanner(); retryConnection(
 // ═══════════════════════════
 //  TRAINED STAFF BY SITE
 // ═══════════════════════════
-// Real staff names load from Firebase (site_info.staff) at login.
-// DEFAULT is a generic, non-PII fallback used only when a site has none on file.
 const STAFF = {
   'DEFAULT': ['Site Coordinator','Program Staff','Site Director'],
 };
@@ -1083,18 +1234,65 @@ function getSiteStaff(siteId) {
 // ═══════════════════════════
 //  DEPARTMENT & SITE EMAILS
 // ═══════════════════════════
-// Department email is set by the monitor in Settings (not stored in this file).
 const DEPT_EMAIL = '';
-// Site emails load from Firebase (site_info.email) at login — nothing hardcoded here.
 const SITE_EMAILS = {};
 
 // ═══════════════════════════
+//  DAY KEYS (weekly delivery quantities)
+// ═══════════════════════════
+const DAYS = [['mon','Monday'],['tue','Tuesday'],['wed','Wednesday'],['thu','Thursday'],['fri','Friday'],['sat','Saturday']];
+function normQty(q) {
+  const out = {};
+  DAYS.forEach(([k]) => { const v = q && q[k] !== undefined && q[k] !== '' ? parseInt(q[k]) : 0; out[k] = isNaN(v) || v < 0 ? 0 : v; });
+  return out;
+}
+function deliveryDays(q) { return DAYS.filter(([k]) => (q[k] || 0) > 0).map(([k]) => k); }
+function weeklyTotal(q) { return DAYS.reduce((a, [k]) => a + (q[k] || 0), 0); }
+function deriveDaysServing(q) {
+  const on = DAYS.filter(([k]) => (q[k] || 0) > 0);
+  if (!on.length) return 'None';
+  // Contiguous run → "Monday- Friday" (matches the import file's style); otherwise a list.
+  const idx = on.map(([k]) => DAYS.findIndex(([d]) => d === k));
+  const contiguous = idx.every((v, i) => i === 0 || v === idx[i-1] + 1);
+  if (contiguous && on.length > 1) return on[0][1] + '- ' + on[on.length-1][1];
+  return on.map(([, n]) => n).join(', ');
+}
+function qtySummary(q) {
+  return DAYS.map(([k, n]) => n.slice(0,3) + ' ' + (q[k] || 0)).join(' · ');
+}
+function fmtDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso + 'T12:00:00');
+  return isNaN(d) ? iso : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+// ═══════════════════════════
 //  SITES CONFIG — Firebase-dynamic
+//  SITE_INFO caches the full site_info document per site (contact card, quantities, locks).
 // ═══════════════════════════
 const SITES_SEED = {
   'MONITOR': { name: 'Monitor Organization', pin: '99999', active: true }
 };
 let SITES = { ...SITES_SEED };
+const SITE_INFO = {};
+
+function siteDefaults() {
+  return {
+    attendee1: '', attendee2: '', orders: '', address: '', city: '', zip: '',
+    adminContact: '', email: '', onsiteSupervisor: '', email2: '',
+    startDate: '', endDate: '', mealKind: '', operatingHours: '', operatingHoursSat: '',
+    qty: { mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0 },
+    mealServiceTime: '', daysServing: '',
+    locks: { quantity: false, schedule: false }
+  };
+}
+function absorbSiteDoc(data) {
+  if (!data.siteId || data.siteId === 'MONITOR') return;
+  SITE_INFO[data.siteId] = { ...siteDefaults(), ...data, qty: normQty(data.qty), locks: { quantity: false, schedule: false, ...(data.locks || {}) } };
+  if (data.email) SITE_EMAILS[data.siteId] = data.email;
+  const staff = (data.staff && data.staff.length) ? data.staff : [data.attendee1, data.attendee2, data.onsiteSupervisor].filter(Boolean);
+  if (staff.length) STAFF[data.siteId] = staff;
+}
 
 async function loadSitesFromFirebase() {
   const sel = document.getElementById('ls');
@@ -1117,15 +1315,13 @@ async function loadSitesFromFirebase() {
         pin:    data.pin      || data.siteId,
         active: data.active !== false
       };
-      if (data.email) SITE_EMAILS[data.siteId] = data.email;
-      if (data.staff && data.staff.length) STAFF[data.siteId] = data.staff;
+      absorbSiteDoc(data);
     });
     SITES = newSites;
     populateLoginDropdown();
     if (statusEl) statusEl.style.display = 'none';
   } catch(e) {
     console.warn('Could not load sites from Firebase:', e);
-    // Rely entirely on Firestore — no hardcoded/cached fallback list.
     SITES = { 'MONITOR': { name: 'Monitor Organization', pin: '99999', active: true } };
     if (sel) {
       sel.innerHTML = '<option value="">Disconnected — reconnect and retry</option>';
@@ -1152,9 +1348,8 @@ function populateLoginDropdown() {
   sel.disabled = false;
 }
 
-window.addEventListener('load', () => loadSitesFromFirebase());
+window.addEventListener('load', () => { loadSitesFromFirebase(); loadEmailConfig(); });
 
-// Shared helper: fill a <select> with the site list.
 function fillSiteOptions(sel, includeAll, allLabel) {
   if (!sel) return;
   sel.innerHTML = includeAll ? '<option value="ALL">' + (allLabel || 'All sites') + '</option>' : '<option value="">Select site…</option>';
@@ -1260,6 +1455,9 @@ function setSyncBanner(state, msg) {
   banner.innerHTML = '<span>' + (icons[state]||'') + '</span><span>' + msg + '</span>';
 }
 
+const SITE_TABS = ['tab-home','tab-entry','tab-records'];
+const MONITOR_TABS = ['tab-lookup','tab-tracker','tab-updatesites','tab-sitecal','tab-exports','tab-settings'];
+
 function doLogin() {
   const s = document.getElementById('ls').value;
   const p = document.getElementById('lp').value;
@@ -1274,39 +1472,32 @@ function doLogin() {
   document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   document.getElementById('f-site').value = SITES[s].name;
 
-  // Populate staff dropdowns (coordinator entry form)
+  // Populate staff dropdowns (coordinator entry form + change request form)
   const staff = getSiteStaff(s);
-  ['f-receiver','f-sig-name'].forEach(id => {
+  ['f-receiver','f-sig-name','req-by'].forEach(id => {
     const sel = document.getElementById(id);
+    if (!sel) return;
     sel.innerHTML = '<option value="">Select…</option>';
     staff.forEach(name => { const o = document.createElement('option'); o.value = name; o.textContent = name; sel.appendChild(o); });
   });
 
-  // Show tabs
   if (s === 'MONITOR') {
-    // Populate monitor site dropdowns
     fillSiteOptions(document.getElementById('summary-site'), true, 'All sites');
     fillSiteOptions(document.getElementById('lookup-site-filter'), true, 'All sites');
     fillSiteOptions(document.getElementById('reimb-site'), true, 'All sites');
     fillSiteOptions(document.getElementById('export-site-report'), true, 'All sites');
     fillSiteOptions(document.getElementById('audit-site'), false);
-
-    ['tab-lookup','tab-tracker','tab-updatesites','tab-sitecal','tab-exports','tab-settings'].forEach(id => {
-      const el = document.getElementById(id); if (el) el.style.display = 'inline-block';
-    });
-    document.getElementById('tab-entry').style.display = 'none';
-    document.getElementById('tab-records').style.display = 'none';
-    document.getElementById('tab-calendar').style.display = 'none';
+    MONITOR_TABS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'inline-block'; });
+    SITE_TABS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
     showTab('lookup');
   } else {
-    showTab('entry');
+    showTab('home');
   }
 
   initFormDefaults();
   autoFillPrevLeftover();
   setTimeout(initSigCanvas, 100);
 
-  // Load Firebase in background — non-blocking
   loadFromFirebase(s === 'MONITOR' ? 'ALL' : s);
 }
 
@@ -1316,29 +1507,25 @@ function doLogout() {
   document.getElementById('main-app').style.display = 'none';
   document.getElementById('lp').value = '';
   document.getElementById('ls').value = '';
-  ['tab-lookup','tab-tracker','tab-updatesites','tab-sitecal','tab-exports','tab-settings'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.style.display = 'none';
-  });
-  document.getElementById('tab-entry').style.display = 'inline-block';
-  document.getElementById('tab-records').style.display = 'inline-block';
-  document.getElementById('tab-calendar').style.display = 'inline-block';
+  MONITOR_TABS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  SITE_TABS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'inline-block'; });
 }
 
 // ═══════════════════════════
 //  TABS
 // ═══════════════════════════
 function showTab(t) {
-  ['entry','records','calendar','lookup','tracker','updatesites','sitecal','exports','settings'].forEach(x => {
+  ['home','entry','records','lookup','tracker','updatesites','sitecal','exports','settings'].forEach(x => {
     const pane = document.getElementById('pane-' + x);
     const tab  = document.getElementById('tab-' + x);
     if (pane) pane.style.display = x === t ? 'block' : 'none';
     if (tab)  tab.classList.toggle('active', x === t);
   });
+  if (t === 'home') { loadHome(); }
   if (t === 'records') {
     renderTable(false);
     loadFromFirebase(currentSite).then(() => renderTable(false));
   }
-  if (t === 'calendar') { loadCalendar(); }
   if (t === 'lookup') {
     const sm = document.getElementById('summary-month');
     if (sm && !sm.value) sm.value = today().slice(0,7);
@@ -1356,9 +1543,9 @@ function showTab(t) {
     });
   }
   if (t === 'exports') { populateExportSelects(); }
-  if (t === 'updatesites') { populateSiteInfoSelect(); loadAllSiteInfo(); }
+  if (t === 'updatesites') { populateSiteInfoSelect(); loadAllSiteInfo(); loadPendingRequests(); }
   if (t === 'sitecal') { loadAdminCalendar(); }
-  if (t === 'settings') { renderSiteEmailList(); }
+  if (t === 'settings') { renderSiteEmailList(); renderEmailConfig(); }
 }
 
 function refreshLookup() {
@@ -1379,14 +1566,16 @@ function populateExportSelects() {
   const pf = document.getElementById('psm-from'), pt = document.getElementById('psm-to');
   if (pf && !pf.value) pf.value = today().slice(0,7);
   if (pt && !pt.value) pt.value = today().slice(0,7);
-  // Weekly waste & leftover report
   const ws = document.getElementById('wwl-site');
   if (ws && ws.options.length <= 1) fillSiteOptions(ws, true, 'All sites');
   const ww = document.getElementById('wwl-week');
   if (ww && !ww.value) ww.value = today();
-  // Closed-dates report
   const cm = document.getElementById('closed-month');
   if (cm && !cm.value) cm.value = today().slice(0,7);
+  const qm = document.getElementById('qsc-month');
+  if (qm && !qm.value) qm.value = today().slice(0,7);
+  const qs = document.getElementById('qsc-site');
+  if (qs && qs.options.length <= 1) fillSiteOptions(qs, true, 'All sites');
 }
 
 // ═══════════════════════════
@@ -1395,6 +1584,18 @@ function populateExportSelects() {
 function today() { return new Date().toISOString().slice(0, 10); }
 function nowTime() { return new Date().toTimeString().slice(0, 5); }
 function n(id) { return parseInt(document.getElementById(id).value) || 0; }
+
+// Show the same message at the top AND bottom of the meal record form.
+function showEntryAlert(cls, html) {
+  ['entry-alert','entry-alert-bottom'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = 'flex'; el.className = 'alert ' + cls; el.innerHTML = html;
+  });
+}
+function hideEntryAlert() {
+  ['entry-alert','entry-alert-bottom'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+}
 
 function initFormDefaults() {
   pendingUid = genUID();
@@ -1470,8 +1671,7 @@ function recalc() {
 //  SAVE RECORD
 // ═══════════════════════════
 async function saveRecord() {
-  const alertEl = document.getElementById('entry-alert');
-  recalc(); // ensure hidden totals reflect current inputs before validating
+  recalc();
   const required = [
     ['f-receiver','Receiver name'],['f-del-date','Delivery date'],['f-del-time','Delivery time'],
     ['f-del-temp','Delivery temperature'],['f-recv-qty','Received quantity'],
@@ -1480,28 +1680,22 @@ async function saveRecord() {
   ];
   const missing = required.filter(([id]) => !document.getElementById(id).value.trim());
   if (missing.length) {
-    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
-    alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; Please complete: ' + missing.map(f => f[1]).join(', ') + '.';
-    window.scrollTo({ top: 0, behavior: 'smooth' }); return;
+    showEntryAlert('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; Please complete: ' + missing.map(f => f[1]).join(', ') + '.');
+    return;
   }
-  // Locked check
   if (editingUid && currentSite !== 'MONITOR') {
     const lockedRec = records.find(r => r.uid === editingUid);
     if (lockedRec && lockedRec.locked) {
-      alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
-      alertEl.innerHTML = '<i class="ti ti-lock"></i>&nbsp; This record is locked. Contact your monitor administrator to unlock it.';
-      window.scrollTo({ top: 0, behavior: 'smooth' }); return;
+      showEntryAlert('alert-danger', '<i class="ti ti-lock"></i>&nbsp; This record is locked. Contact your monitor administrator to unlock it.');
+      return;
     }
   }
-  // Duplicate check
   const dupDate = document.getElementById('f-svc-date').value;
   const dupCheck = records.find(r => r.site === currentSite && r.svcDate === dupDate && r.uid !== editingUid);
   if (dupCheck) {
-    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
-    alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; A meal record for <strong>' + dupDate + '</strong> already exists for your site. Use the <strong>Edit</strong> button in My Records to update it.';
-    window.scrollTo({ top: 0, behavior: 'smooth' }); return;
+    showEntryAlert('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; A meal record for <strong>' + dupDate + '</strong> already exists for your site. Use the <strong>Edit</strong> button in My Records to update it.');
+    return;
   }
-  // Require balanced counts before accepting the submission
   const availChk  = parseInt(document.getElementById('f-avail').value) || 0;
   const servedChk = parseInt(document.getElementById('f-total-served').value) || 0;
   const unsrvChk  = parseInt(document.getElementById('f-total-unsrv').value) || 0;
@@ -1509,14 +1703,12 @@ async function saveRecord() {
   const sumChk    = servedChk + unsrvChk + leftChk;
   if (availChk !== sumChk) {
     const diff = availChk - sumChk;
-    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
-    alertEl.innerHTML = '<i class="ti ti-alert-triangle"></i>&nbsp; <strong>Counts must balance before saving.</strong> Served + Unservable + Leftover (' + sumChk + ') must equal Available (' + availChk + '). Off by ' + Math.abs(diff) + '. Adjust the counts so they balance, then save.';
-    window.scrollTo({ top: 0, behavior: 'smooth' }); return;
+    showEntryAlert('alert-danger', '<i class="ti ti-alert-triangle"></i>&nbsp; <strong>Counts must balance before saving.</strong> Served + Unservable + Leftover (' + sumChk + ') must equal Available (' + availChk + '). Off by ' + Math.abs(diff) + '. Adjust the counts so they balance, then save.');
+    return;
   }
   if (!document.getElementById('f-sig-confirm').checked) {
-    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
-    alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; Please check the certification box to complete your e-signature.';
-    window.scrollTo({ top: 0, behavior: 'smooth' }); return;
+    showEntryAlert('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; Please check the certification box to complete your e-signature.');
+    return;
   }
 
   const now = new Date().toISOString();
@@ -1552,8 +1744,7 @@ async function saveRecord() {
         lastEditedAt: now, editCount, auditLog
       };
       save();
-      alertEl.style.display = 'flex'; alertEl.className = 'alert alert-success';
-      alertEl.innerHTML = '<i class="ti ti-circle-check"></i>&nbsp; Record updated (Edit #' + editCount + '). Signed by ' + records[idx].sigName + '.';
+      showEntryAlert('alert-success', '<i class="ti ti-circle-check"></i>&nbsp; Record updated (Edit #' + editCount + '). Signed by ' + esc(records[idx].sigName) + '.');
       setSyncBanner('loading','Saving to Firebase…'); const ok = await saveToFirebase(records[idx]); setSyncBanner(ok?'ok':'error', ok?'Saved to Firebase ✓':'Saved locally — could not reach Firebase.'); setTimeout(() => setSyncBanner('hide'), 3000);
     }
     editingUid = null;
@@ -1583,8 +1774,7 @@ async function saveRecord() {
       auditLog: [{ at: now, by: document.getElementById('f-sig-name').value, action: 'Created' }]
     };
     records.push(rec); save();
-    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-success';
-    alertEl.innerHTML = '<i class="ti ti-circle-check"></i>&nbsp; Record saved [' + uid + '] for ' + rec.svcDate + '. Signed by ' + rec.sigName + '.';
+    showEntryAlert('alert-success', '<i class="ti ti-circle-check"></i>&nbsp; Record saved [' + uid + '] for ' + rec.svcDate + '. Signed by ' + esc(rec.sigName) + '.');
     setSyncBanner('loading','Saving to Firebase…'); const ok = await saveToFirebase(rec); setSyncBanner(ok?'ok':'error', ok?'Saved to Firebase ✓':'Saved locally — could not reach Firebase.'); setTimeout(() => setSyncBanner('hide'), 3000);
   }
   clearForm();
@@ -1798,7 +1988,7 @@ function renderTable(isAdmin) {
     const anom = !!anomFlags;
     const edited = (r.editCount || 0) > 0;
     h += '<tr class="' + (anom ? 'anomaly' : '') + '" style="' + (r.isDraft ? 'opacity:0.65;font-style:italic;' : '') + '">';
-    if (isAdmin) h += '<td title="' + r.siteName + '">' + r.siteName.substring(0,16) + (r.siteName.length > 16 ? '…':'') + '</td>';
+    if (isAdmin) h += '<td title="' + esc(r.siteName) + '">' + esc(r.siteName.substring(0,16)) + (r.siteName.length > 16 ? '…':'') + '</td>';
     h += '<td>' + r.svcDate + '</td><td>' + r.availQty + '</td><td>' + r.totalServed + '</td><td>' + r.totalUnsrv + '</td><td>' + r.leftover + '</td>';
     if (isAdmin) {
       const wp = r.availQty > 0 ? r.waste / r.availQty : 0;
@@ -1809,8 +1999,8 @@ function renderTable(isAdmin) {
     }
     h += '<td><span class="pill ' + (ok ? 'pill-ok' : 'pill-warn') + '">' + (ok ? 'OK' : 'Off ' + Math.abs(bal)) + '</span></td>';
     const anomTip = anom ? anomFlags.join(' | ') : '';
-    h += '<td>' + (r.isDraft ? '<span class="pill pill-warn">Draft</span>' : anom ? '<span class="pill pill-danger" title="' + anomTip + '" style="cursor:help;">⚠ ' + anomFlags.length + ' flag' + (anomFlags.length > 1 ? 's' : '') + '</span>' : edited ? '<span class="pill pill-info">Edited</span>' : '<span class="pill pill-ok">Clean</span>') + '</td>';
-    h += '<td title="' + r.sigName + '">' + r.sigName + '</td>';
+    h += '<td>' + (r.isDraft ? '<span class="pill pill-warn">Draft</span>' : anom ? '<span class="pill pill-danger" title="' + esc(anomTip) + '" style="cursor:help;">⚠ ' + anomFlags.length + ' flag' + (anomFlags.length > 1 ? 's' : '') + '</span>' : edited ? '<span class="pill pill-info">Edited</span>' : '<span class="pill pill-ok">Clean</span>') + '</td>';
+    h += '<td title="' + esc(r.sigName) + '">' + esc(r.sigName) + '</td>';
     h += '<td><div style="display:flex;gap:3px;flex-wrap:wrap;">';
     if (!isAdmin) h += '<button class="btn-sm blue" title="Edit" onclick="editRecord(\'' + r.uid + '\')"><i class="ti ti-pencil"></i></button>';
     h += '<button class="btn-sm print-btn" title="Print" onclick="printRecord(\'' + r.uid + '\')"><i class="ti ti-printer"></i></button>';
@@ -1818,14 +2008,15 @@ function renderTable(isAdmin) {
       h += '<button class="btn-sm" title="Meal Count Sheet" style="border-color:var(--amber);color:var(--amber-dark);" onclick="exportMealCountSheet(\'' + r.uid + '\')"><i class="ti ti-file-spreadsheet"></i></button>';
       if (r.sigImage) h += '<button class="btn-sm blue" title="Download signature image" onclick="downloadSignature(\'' + r.uid + '\')"><i class="ti ti-signature"></i></button>';
       h += '<button class="btn-sm" title="Audit log" onclick="showAudit(\'' + r.uid + '\')"><i class="ti ti-history"></i></button>';
-      if (r.locked) h += '<button class="btn-sm" title="Unlock for editing" style="border-color:var(--warning-text);color:var(--warning-text);" onclick="unlockRecord(\'' + r.uid + '\')"><i class="ti ti-lock-open"></i></button>';       h += '<button class="btn-sm" title="Delete" style="border-color:#c0392b;color:#c0392b;" onclick="deleteRecord(\'' + r.uid + '\')"><i class="ti ti-trash"></i></button>';
+      if (r.locked) h += '<button class="btn-sm" title="Unlock for editing" style="border-color:var(--warning-text);color:var(--warning-text);" onclick="unlockRecord(\'' + r.uid + '\')"><i class="ti ti-lock-open"></i></button>';
+      h += '<button class="btn-sm" title="Delete" style="border-color:#c0392b;color:#c0392b;" onclick="deleteRecord(\'' + r.uid + '\')"><i class="ti ti-trash"></i></button>';
     }
     h += '</div></td></tr>';
     if (isAdmin) {
       h += '<tr id="audit-' + r.uid + '" style="display:none;"><td colspan="12" style="background:#f8f8f8;padding:8px 12px;">';
       if (r.auditLog && r.auditLog.length) {
         r.auditLog.forEach(e => {
-          h += '<div class="audit-entry"><span class="audit-ts">' + e.at.replace('T',' ').slice(0,16) + '</span><span>' + e.action + ' by ' + e.by + '</span></div>';
+          h += '<div class="audit-entry"><span class="audit-ts">' + e.at.replace('T',' ').slice(0,16) + '</span><span>' + esc(e.action) + ' by ' + esc(e.by) + '</span></div>';
         });
       } else { h += '<span style="font-size:12px;color:var(--text-soft);">No audit log available.</span>'; }
       h += '</td></tr>';
@@ -1836,16 +2027,12 @@ function renderTable(isAdmin) {
   ctr.innerHTML = h;
 }
 
-// ═══════════════════════════
-//  SIGNATURE IMAGE DOWNLOAD (admin)
-//  Saves the drawn point-of-service signature for a record as a PNG file.
-// ═══════════════════════════
 function downloadSignature(uid) {
   const r = records.find(x => x.uid === uid);
   if (!r) { alert('Record not found.'); return; }
   if (!r.sigImage) { alert('No signature image is stored for this record.'); return; }
   const a = document.createElement('a');
-  a.href = r.sigImage; // stored as a data:image/png;base64 URL
+  a.href = r.sigImage;
   a.download = 'signature_' + r.site + '_' + r.svcDate + '_' + r.uid + '.png';
   document.body.appendChild(a);
   a.click();
@@ -1915,7 +2102,6 @@ function showAudit(uid) {
 //  TRACKER VIEW MANAGEMENT
 // ═══════════════════════════
 let trackerView = 'daily';
-// Sort state for the weekly & monthly tracker tables (change: sortable trackers).
 let trackerSort = { weekly: { col: 'site', dir: 'asc' }, monthly: { col: 'site', dir: 'asc' } };
 function setTrackerSort(view, col) {
   const s = trackerSort[view];
@@ -1954,11 +2140,7 @@ function setTrackerView(v) {
   const sum = document.getElementById('tracker-summary');
   const grid = document.getElementById('tracker-grid');
   if (sum) sum.innerHTML = '';
-  // The daily view fills this container with a grid of cards; the weekly/monthly
-  // views inject a full-width <table>. If the container stays display:grid, that
-  // table becomes a single ~200px grid item — so switch it to block for tables.
   if (grid) { grid.innerHTML = ''; grid.style.display = (v === 'daily') ? 'grid' : 'block'; }
-  // Make sure each view has a date to work with, or its renderer bails out early and shows nothing.
   if (v === 'daily') {
     const td = document.getElementById('tracker-date');
     if (td && !td.value) td.value = today();
@@ -1968,7 +2150,7 @@ function setTrackerView(v) {
     if (ws && !ws.value) {
       const d = new Date();
       const dow = d.getDay();
-      d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1)); // snap back to this week's Monday
+      d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
       ws.value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
   }
@@ -1999,7 +2181,7 @@ function renderTracker() {
       ? '<label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;cursor:pointer;"><input type="checkbox" class="tracker-sel" data-site="' + k + '" data-dates=\'["' + date + '"]\' onchange="updateSelCount()" style="width:15px;height:15px;accent-color:var(--navy);"> Select to email</label>'
       : (!done && !hasEmail ? '<span style="font-size:10px;color:var(--text-soft);">No email on file</span>' : '');
     return '<div class="tracker-card ' + (done ? 'submitted' : 'missing') + '" style="display:flex;flex-direction:column;justify-content:space-between;">'
-      + '<div><div class="tracker-card-name">' + v.name + '</div>'
+      + '<div><div class="tracker-card-name">' + esc(v.name) + '</div>'
       + '<div class="tracker-card-sub">' + (done ? '✓ Submitted' : '✗ Not submitted') + '</div></div>'
       + (selBox ? '<div style="margin-top:4px;">' + selBox + '</div>' : '')
       + '</div>';
@@ -2019,7 +2201,7 @@ function renderTrackerWeekly() {
   const dow = monday.getDay();
   if (dow !== 1) { monday.setDate(monday.getDate() - (dow === 0 ? 6 : dow - 1)); }
   const weekDays = [];
-  for (let i = 0; i < 6; i++) {   // Mon–Sat (6 days)
+  for (let i = 0; i < 6; i++) {
     const d = new Date(monday); d.setDate(d.getDate() + i);
     weekDays.push(d.toISOString().slice(0,10));
   }
@@ -2030,7 +2212,6 @@ function renderTrackerWeekly() {
   });
   const dayLabels = weekDays.map(d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'numeric',day:'numeric'}));
 
-  // Build a sortable row model first, then sort, then render.
   const rows = allSites.map(([k, v]) => {
     const missingDays   = weekDays.filter(d => !submittedByDate[d].has(k));
     const submittedDays = weekDays.filter(d => submittedByDate[d].has(k));
@@ -2046,7 +2227,7 @@ function renderTrackerWeekly() {
   h += '<th class="sortable" onclick="setTrackerSort(\'weekly\',\'submitted\')">Status ' + trackerArrow('weekly','submitted') + '</th><th>Email</th></tr></thead><tbody>';
   rows.forEach(row => {
     h += '<tr>';
-    h += '<td class="site-col" title="' + row.name + '">' + row.name + '</td>';
+    h += '<td class="site-col" title="' + esc(row.name) + '">' + esc(row.name) + '</td>';
     weekDays.forEach(d => {
       const ok = submittedByDate[d].has(row.k);
       h += '<td><span class="' + (ok ? 'day-cell-ok' : 'day-cell-miss') + '">' + (ok ? '✓' : '✗') + '</span></td>';
@@ -2081,7 +2262,7 @@ function renderTrackerMonthly() {
   for (let d = 1; d <= daysInMonth; d++) {
     const dt = new Date(yr, mo-1, d);
     const dow = dt.getDay();
-    if (dow >= 1 && dow <= 6) weekdays.push(dt.toISOString().slice(0,10));  // Mon–Sat
+    if (dow >= 1 && dow <= 6) weekdays.push(dt.toISOString().slice(0,10));
   }
   const allSites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR');
   const submittedByDate = {};
@@ -2089,7 +2270,6 @@ function renderTrackerMonthly() {
     submittedByDate[d] = new Set(records.filter(r => r.svcDate === d && !r.isDraft).map(r => r.site));
   });
 
-  // Build a sortable row model first, then sort, then render.
   const rows = allSites.map(([k, v]) => {
     const submitted = weekdays.filter(d => submittedByDate[d].has(k));
     const missing   = weekdays.filter(d => !submittedByDate[d].has(k));
@@ -2114,7 +2294,7 @@ function renderTrackerMonthly() {
     const missingFmt = row.missingDays.map(d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'numeric',day:'numeric'})).join(', ');
     const rateColor = row.rate === 100 ? 'var(--success-text)' : row.rate >= 80 ? 'var(--warning-text)' : 'var(--danger-text)';
     h += '<tr>';
-    h += '<td class="site-col" title="' + row.name + '">' + row.name + '</td>';
+    h += '<td class="site-col" title="' + esc(row.name) + '">' + esc(row.name) + '</td>';
     h += '<td>' + row.expected + '</td>';
     h += '<td>' + row.submitted + '</td>';
     h += '<td style="color:' + (row.missing ? 'var(--danger-text)' : 'var(--success-text)') + ';">' + row.missing + '</td>';
@@ -2137,37 +2317,126 @@ function renderTrackerMonthly() {
 }
 
 // ═══════════════════════════
-//  EMAIL REMINDERS
+//  EMAIL — POSTMARK (via relay)
+//  The Postmark server token stays on the relay (Cloudflare Worker / Firebase Function).
+//  This page only knows the relay URL + an access key. See the Postmark Setup Guide.
+//  Config lives in Firestore: app_config/email { proxyUrl, proxyKey, fromEmail, notifyEmail, deptEmail }
 // ═══════════════════════════
-function getDeptEmail() {
-  return safeGet('cacfp_dept_email') || DEPT_EMAIL || '';
+let EMAIL_CFG = { proxyUrl: '', proxyKey: '', fromEmail: '', notifyEmail: '', deptEmail: '' };
+
+async function loadEmailConfig() {
+  try {
+    const doc = await _db.collection('app_config').doc('email').get();
+    if (doc.exists) EMAIL_CFG = { ...EMAIL_CFG, ...doc.data() };
+  } catch (e) { console.warn('email config load failed:', e); }
+  // Legacy fallback: dept email previously saved in localStorage.
+  if (!EMAIL_CFG.deptEmail) EMAIL_CFG.deptEmail = safeGet('cacfp_dept_email') || DEPT_EMAIL || '';
+}
+function getDeptEmail() { return EMAIL_CFG.deptEmail || ''; }
+function emailReady() { return !!(EMAIL_CFG.proxyUrl && EMAIL_CFG.fromEmail); }
+
+function renderEmailConfig() {
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  set('em-proxy-url', EMAIL_CFG.proxyUrl); set('em-proxy-key', EMAIL_CFG.proxyKey);
+  set('em-from', EMAIL_CFG.fromEmail); set('em-notify', EMAIL_CFG.notifyEmail); set('em-dept', EMAIL_CFG.deptEmail);
+  const s = document.getElementById('em-status');
+  if (s) { s.style.display = 'block'; s.style.color = emailReady() ? 'var(--success-text)' : 'var(--warning-text)';
+    s.innerHTML = emailReady() ? '<span class="status-dot green"></span> Postmark relay configured.' : '<span class="status-dot orange"></span> Not configured yet — reminders will fall back to opening an Outlook draft (mailto) until a relay URL and From address are saved.'; }
+}
+async function saveEmailConfig() {
+  const g = id => (document.getElementById(id).value || '').trim();
+  const cfg = { proxyUrl: g('em-proxy-url').replace(/\/+$/, ''), proxyKey: g('em-proxy-key'), fromEmail: g('em-from'), notifyEmail: g('em-notify'), deptEmail: g('em-dept'), updatedAt: new Date().toISOString() };
+  const s = document.getElementById('em-status');
+  try {
+    await _db.collection('app_config').doc('email').set(cfg, { merge: true });
+    EMAIL_CFG = { ...EMAIL_CFG, ...cfg };
+    safeSet('cacfp_dept_email', cfg.deptEmail);
+    if (s) { s.style.display = 'block'; s.style.color = 'var(--success-text)'; s.innerHTML = '<span class="status-dot green"></span> Email settings saved to Firebase.'; }
+  } catch (e) {
+    if (s) { s.style.display = 'block'; s.style.color = 'var(--danger-text)'; s.innerHTML = '<span class="status-dot red"></span> Save failed: ' + esc(e.message || e); }
+  }
+}
+
+// Core send. Returns { ok, error }. Never throws.
+async function sendEmail({ to, subject, text, html, tag, replyTo }) {
+  if (!emailReady()) return { ok: false, error: 'not_configured' };
+  const recipients = (Array.isArray(to) ? to : [to]).filter(Boolean);
+  if (!recipients.length) return { ok: false, error: 'no_recipient' };
+  try {
+    const res = await fetch(EMAIL_CFG.proxyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Session-Key': EMAIL_CFG.proxyKey || '' },
+      body: JSON.stringify({
+        From: EMAIL_CFG.fromEmail,
+        To: recipients.join(','),
+        ReplyTo: replyTo || EMAIL_CFG.deptEmail || undefined,
+        Subject: subject,
+        TextBody: text,
+        HtmlBody: html || ('<pre style="font-family:sans-serif;white-space:pre-wrap;">' + esc(text) + '</pre>'),
+        Tag: tag || 'session',
+        MessageStream: 'outbound'
+      })
+    });
+    if (!res.ok) { const t = await res.text().catch(() => ''); return { ok: false, error: 'HTTP ' + res.status + (t ? ': ' + t.slice(0, 200) : '') }; }
+    return { ok: true };
+  } catch (e) { return { ok: false, error: e.message || String(e) }; }
+}
+
+async function sendTestEmail() {
+  const s = document.getElementById('em-status');
+  await saveEmailConfig();
+  const to = EMAIL_CFG.notifyEmail || EMAIL_CFG.deptEmail || EMAIL_CFG.fromEmail;
+  if (s) { s.style.display = 'block'; s.style.color = 'var(--text-mid)'; s.innerHTML = '<span class="spinner dark"></span> Sending test to ' + esc(to) + '…'; }
+  const r = await sendEmail({ to, subject: 'SESSION test email', text: 'This is a test message from SESSION Forms for GCFB. If you received it, Postmark is connected.\n\nSent ' + new Date().toLocaleString(), tag: 'test' });
+  if (s) { s.style.color = r.ok ? 'var(--success-text)' : 'var(--danger-text)';
+    s.innerHTML = r.ok ? '<span class="status-dot green"></span> Test email sent to ' + esc(to) + '. Check the inbox (and Postmark Activity).' : '<span class="status-dot red"></span> Test failed: ' + esc(r.error) + '. See the setup guide troubleshooting section.'; }
+}
+
+// ═══════════════════════════
+//  CHANGE LOG + CHANGE NOTIFICATIONS
+//  change_log/{id}: { id, at, siteId, siteName, by, role, category, action, detail }
+//  category: quantity | schedule | calendar | request | site_info
+// ═══════════════════════════
+async function logChange(entry) {
+  const id = new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 17) + '_' + genUID().slice(0, 4);
+  const rec = { id, at: new Date().toISOString(), role: currentSite === 'MONITOR' ? 'monitor' : 'site', ...entry };
+  try { await _db.collection('change_log').doc(id).set(rec); } catch (e) { console.warn('change_log write failed:', e); }
+  return rec;
+}
+// Email the predesignated address when a site changes its calendar, quantity or schedule.
+async function notifyMonitor(category, siteId, subjectLine, bodyText) {
+  if (!EMAIL_CFG.notifyEmail) return { ok: false, error: 'no_notify_address' };
+  const siteName = (SITES[siteId] && SITES[siteId].name) || siteId;
+  return sendEmail({
+    to: EMAIL_CFG.notifyEmail,
+    subject: '[SESSION] ' + subjectLine + ' — ' + siteName,
+    text: siteName + ' (' + siteId + ')\n' + new Date().toLocaleString() + '\n\n' + bodyText + '\n\nOpen SESSION → Update Sites to review.',
+    tag: 'change-' + category
+  });
 }
 
 function refreshSendRow() {
-  // Show the "email selected" row only when there is at least one selectable checkbox.
   const row = document.getElementById('tracker-send-all-row');
   if (!row) return;
   const boxes = document.querySelectorAll('.tracker-sel');
   row.style.display = boxes.length ? 'flex' : 'none';
   const selAll = document.getElementById('tracker-select-all');
   if (selAll) selAll.checked = false;
+  const note = document.getElementById('tracker-send-note');
+  if (note) note.textContent = emailReady() ? 'Sends one reminder per checked site through Postmark.' : 'Postmark not configured — opens one Outlook draft per checked site instead.';
   updateSelCount();
 }
-
 function updateSelCount() {
   const checked = document.querySelectorAll('.tracker-sel:checked');
   const countEl = document.getElementById('tracker-sel-count');
   if (countEl) countEl.textContent = checked.length;
 }
-
 function toggleSelectAll(cb) {
   document.querySelectorAll('.tracker-sel').forEach(box => { box.checked = cb.checked; });
   updateSelCount();
 }
 
-function sendReminderEmail(siteId, dates) {
-  const email = SITE_EMAILS[siteId];
-  if (!email) { alert('No email on file for this site.'); return; }
+function reminderText(siteId, dates) {
   const siteName = (SITES[siteId] && SITES[siteId].name) || siteId;
   const dept = getDeptEmail();
   const dateList = Array.isArray(dates) ? dates : [dates];
@@ -2181,22 +2450,47 @@ function sendReminderEmail(siteId, dates) {
     'If the site was closed on any of these dates, please mark them as closed on your Availability calendar in SESSION.\n\n' +
     'Thank you,\n' +
     'Kids Cafe Program' + (dept ? '\n' + dept : '');
-  const mailto = 'mailto:' + encodeURIComponent(email) +
-    '?subject=' + encodeURIComponent(subject) +
-    '&body=' + encodeURIComponent(body);
-  window.open(mailto, '_blank');
+  return { subject, body };
 }
 
-function sendSelectedReminders() {
+async function sendReminderEmail(siteId, dates) {
+  const email = SITE_EMAILS[siteId];
+  if (!email) return { ok: false, error: 'No email on file for this site.' };
+  const { subject, body } = reminderText(siteId, dates);
+  if (emailReady()) {
+    const info = SITE_INFO[siteId] || {};
+    const to = [email, info.email2].filter(Boolean);
+    const r = await sendEmail({ to, subject, text: body, tag: 'reminder' });
+    if (r.ok) logChange({ siteId, siteName: (SITES[siteId]||{}).name || siteId, by: 'Monitor', category: 'reminder', action: 'Reminder emailed', detail: (Array.isArray(dates)?dates:[dates]).join(', ') });
+    return r;
+  }
+  // Fallback: Outlook draft via mailto.
+  const mailto = 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  window.open(mailto, '_blank');
+  return { ok: true, fallback: true };
+}
+
+async function sendSelectedReminders() {
   const checked = Array.from(document.querySelectorAll('.tracker-sel:checked'));
   if (!checked.length) { alert('Select at least one site to email.'); return; }
-  checked.forEach((box, i) => {
+  const st = document.getElementById('tracker-send-status');
+  if (st) { st.style.display = 'flex'; st.className = 'alert alert-info'; st.innerHTML = '<span class="spinner dark"></span>&nbsp; Sending ' + checked.length + ' reminder(s)…'; }
+  let ok = 0; const failed = [];
+  for (let i = 0; i < checked.length; i++) {
+    const box = checked[i];
     const siteId = box.getAttribute('data-site');
     let dates = [];
     try { dates = JSON.parse(box.getAttribute('data-dates') || '[]'); } catch(e) { dates = []; }
-    // Stagger the mailto calls slightly so multiple drafts open reliably.
-    setTimeout(() => sendReminderEmail(siteId, dates), i * 400);
-  });
+    if (!emailReady() && i > 0) await new Promise(r => setTimeout(r, 400));
+    const r = await sendReminderEmail(siteId, dates);
+    if (r.ok) ok++; else failed.push(((SITES[siteId]||{}).name || siteId) + ' (' + r.error + ')');
+    box.checked = false;
+  }
+  updateSelCount();
+  if (st) {
+    st.className = 'alert ' + (failed.length ? 'alert-warning' : 'alert-success');
+    st.innerHTML = '<i class="ti ' + (failed.length ? 'ti-alert-triangle' : 'ti-circle-check') + '"></i>&nbsp; ' + (emailReady() ? 'Sent ' : 'Opened ') + ok + ' reminder(s)' + (failed.length ? '. Failed: ' + esc(failed.join('; ')) : '.');
+  }
 }
 
 // ═══════════════════════════
@@ -2245,7 +2539,7 @@ function renderSummary() {
 }
 
 // ═══════════════════════════
-//  REIMBURSEMENT TRACKER (live)
+//  REIMBURSEMENT TRACKER (live) — now shows % of meals reimbursed per line
 // ═══════════════════════════
 const DEFAULT_SUPPER_RATE = 4.76;
 const DEFAULT_CIL_RATE = 0.32;
@@ -2267,6 +2561,7 @@ function saveReimbRates() {
 function money(v) {
   return '$' + (v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+function pct(num, den) { return den > 0 ? Math.round(num / den * 100) + '%' : '—'; }
 function monthNameUpper(month) {
   if (!month) return '';
   const [y, m] = month.split('-').map(Number);
@@ -2292,34 +2587,36 @@ function renderReimbursement() {
     ctr.innerHTML = '<div class="empty"><i class="ti ti-cash-off"></i>No reimbursable records for this month' + (site !== 'ALL' ? ' and site' : '') + '.</div>';
     return;
   }
-  // Only first meals served to children are reimbursable.
   const bySite = {};
   recs.forEach(r => {
-    if (!bySite[r.site]) bySite[r.site] = { name: r.siteName || r.site, first: 0, days: new Set() };
+    if (!bySite[r.site]) bySite[r.site] = { name: r.siteName || r.site, first: 0, served: 0, days: new Set() };
     bySite[r.site].first += (r.firstMeal || 0);
+    bySite[r.site].served += (r.totalServed || 0);
     bySite[r.site].days.add(r.svcDate);
   });
-  const rows = Object.entries(bySite).map(([k, v]) => ({ site: k, name: v.name, first: v.first, days: v.days.size, amount: v.first * rate }))
+  const rows = Object.entries(bySite).map(([k, v]) => ({ site: k, name: v.name, first: v.first, served: v.served, days: v.days.size, amount: v.first * rate }))
     .sort((a, b) => a.name.localeCompare(b.name));
   const totalFirst = rows.reduce((a, r) => a + r.first, 0);
+  const totalServed = rows.reduce((a, r) => a + r.served, 0);
   const totalAmount = rows.reduce((a, r) => a + r.amount, 0);
   let h = '<div class="table-scroll"><table class="rec-table"><thead><tr>'
-    + '<th>Site</th><th style="width:90px;">Service days</th><th style="width:110px;">First meals</th><th style="width:130px;">Est. reimbursement</th>'
+    + '<th>Site</th><th style="width:90px;">Service days</th><th style="width:100px;">Total served</th><th style="width:100px;">First meals</th><th style="width:105px;">% reimbursed</th><th style="width:130px;">Est. reimbursement</th>'
     + '</tr></thead><tbody>';
   rows.forEach(r => {
-    h += '<tr><td title="' + r.name + '">' + r.name + '</td><td>' + r.days + '</td><td>' + r.first + '</td><td>' + money(r.amount) + '</td></tr>';
+    const p = r.served > 0 ? r.first / r.served : 0;
+    const pc = p >= 0.9 ? 'var(--success-text)' : p >= 0.75 ? 'var(--warning-text)' : 'var(--danger-text)';
+    h += '<tr><td title="' + esc(r.name) + '">' + esc(r.name) + '</td><td>' + r.days + '</td><td>' + r.served + '</td><td>' + r.first + '</td>'
+      + '<td style="font-weight:600;color:' + pc + ';">' + pct(r.first, r.served) + '</td><td>' + money(r.amount) + '</td></tr>';
   });
   h += '</tbody><tfoot><tr style="font-weight:700;border-top:2px solid var(--border);">'
-    + '<td>Total</td><td></td><td>' + totalFirst + '</td><td style="color:var(--success-text);">' + money(totalAmount) + '</td>'
+    + '<td>Total</td><td></td><td>' + totalServed + '</td><td>' + totalFirst + '</td><td>' + pct(totalFirst, totalServed) + '</td><td style="color:var(--success-text);">' + money(totalAmount) + '</td>'
     + '</tr></tfoot></table></div>'
-    + '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Estimate = first meals &times; ' + money(rate) + '. Second meals and adult meals are not reimbursable. This is an estimate for planning only; the official claim uses the compliance department\'s workbook.</p>';
+    + '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Estimate = first meals &times; ' + money(rate) + '. <strong>% reimbursed</strong> = first meals &divide; total served (second and adult meals are the non-reimbursed remainder). Overall this month: <strong>' + pct(totalFirst, totalServed) + '</strong> of ' + totalServed + ' meals served are reimbursable. This is an estimate for planning only; the official claim uses the compliance department\'s workbook.</p>';
   ctr.innerHTML = h;
 }
 
 // ═══════════════════════════
 //  INITIAL ESTIMATED REIMBURSEMENT EXPORT
-//  Matches the compliance department's workbook:
-//  Real 2nds capped at MIN(2nd, 1st × 2%); reimbursement at the $4.90 multiplier.
 // ═══════════════════════════
 function exportInitialReimbursement(month) {
   if (!month) { alert('Pick a month first.'); return; }
@@ -2340,7 +2637,6 @@ function exportInitialReimbursement(month) {
   aoa.push(['INITIAL ESTIMATED REIMBURSEMENT — ' + monthNameUpper(month)]);
   aoa.push([]);
   aoa.push(['Site', 'Received', 'Available', 'Attendance', '1st Meals', '2nd Meals', 'Real 2nds', 'Reimbursable', 'Est. Reimbursement']);
-  const headerRow = aoa.length; // 1-indexed data begins next
   let tR=0,tA=0,tAt=0,t1=0,t2=0,tReal=0,tReim=0,tAmt=0;
   Object.entries(bySite).sort((a,b) => a[1].name.localeCompare(b[1].name)).forEach(([k, b]) => {
     const real2 = Math.min(b.second, Math.round(b.first * 0.02));
@@ -2352,7 +2648,6 @@ function exportInitialReimbursement(month) {
   aoa.push(['TOTAL', tR, tA, tAt, t1, t2, tReal, tReim, tAmt]);
   const ws = XLSX.utils.aoa_to_sheet(aoa);
   ws['!cols'] = [{wch:32},{wch:11},{wch:11},{wch:12},{wch:11},{wch:11},{wch:11},{wch:13},{wch:18}];
-  // Format the reimbursement column ($) and add the MIN cap note.
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Initial Reimbursement');
   XLSX.writeFile(wb, 'Initial_Estimated_Reimbursement_' + month + '.xlsx');
@@ -2364,11 +2659,11 @@ function exportInitialReimbursement(month) {
 function printRecord(uid) {
   const r = records.find(x => x.uid === uid);
   if (!r) { alert('Record not found.'); return; }
-  const fld = (label, val) => '<div class="print-field"><label>' + label + '</label><span>' + (val === 0 || val ? val : '—') + '</span></div>';
+  const fld = (label, val) => '<div class="print-field"><label>' + label + '</label><span>' + (val === 0 || val ? esc(val) : '—') + '</span></div>';
   let html =
     '<div class="print-header">'
     + '<div class="print-title">CACFP Kids Cafe — Meal Count Sheet</div>'
-    + '<div class="print-sub">' + (r.siteName || r.site) + ' &nbsp;·&nbsp; Service date: ' + (r.svcDate || '') + ' &nbsp;·&nbsp; <span class="print-id">ID ' + r.uid + '</span></div>'
+    + '<div class="print-sub">' + esc(r.siteName || r.site) + ' &nbsp;·&nbsp; Service date: ' + (r.svcDate || '') + ' &nbsp;·&nbsp; <span class="print-id">ID ' + r.uid + '</span></div>'
     + '</div>'
     + '<div class="print-section"><div class="print-section-title">Delivery</div><div class="print-grid">'
     + fld('Receiver', r.receiver) + fld('Delivery date', r.delDate) + fld('Delivery time', r.delTime)
@@ -2384,10 +2679,10 @@ function printRecord(uid) {
     + fld('Leftover', r.leftover)
     + '</div></div>';
   if (r.notes) {
-    html += '<div class="print-section"><div class="print-section-title">Notes</div><div style="font-size:12px;">' + r.notes + '</div></div>';
+    html += '<div class="print-section"><div class="print-section-title">Notes</div><div style="font-size:12px;">' + esc(r.notes) + '</div></div>';
   }
   html += '<div class="print-sig"><div class="print-sig-line">'
-    + '<div><div class="print-sig-block">' + (r.sigName || '') + '</div><div class="print-sig-label">Certified by (point of service)</div></div>'
+    + '<div><div class="print-sig-block">' + esc(r.sigName || '') + '</div><div class="print-sig-label">Certified by (point of service)</div></div>'
     + '<div><div class="print-sig-block"></div><div class="print-sig-label">Date</div></div>'
     + '</div></div>';
   const area = document.getElementById('print-area');
@@ -2402,7 +2697,7 @@ function printRecord(uid) {
 // ═══════════════════════════
 async function checkFirebaseStatus() {
   const el = document.getElementById('firebase-status');
-  if (el) el.innerHTML = '<span class="spinner" style="border-color:rgba(63,114,184,0.3);border-top-color:var(--navy);"></span> Checking…';
+  if (el) el.innerHTML = '<span class="spinner dark"></span> Checking…';
   try {
     const snap = await _db.collection('meal_records').limit(1).get();
     const snap2 = await _db.collection('site_info').get();
@@ -2410,7 +2705,7 @@ async function checkFirebaseStatus() {
     if (el) el.innerHTML = '<span class="status-dot green"></span> Connected to Firebase (project <strong>meal-tracker-ba544</strong>). '
       + snap2.size + ' site(s) on file; meal_records reachable.';
   } catch (e) {
-    if (el) el.innerHTML = '<span class="status-dot red"></span> Could not reach Firebase: ' + (e.message || e);
+    if (el) el.innerHTML = '<span class="status-dot red"></span> Could not reach Firebase: ' + esc(e.message || e);
     showOfflineBanner("Disconnected from the internet — can't reach the database. Please reconnect.");
   }
 }
@@ -2419,7 +2714,7 @@ async function syncAllToFirebase() {
   const el = document.getElementById('bulk-sync-status');
   const toSync = records.filter(r => r.uid);
   if (!toSync.length) { if (el) { el.style.display = 'block'; el.textContent = 'No local records to sync.'; } return; }
-  if (el) { el.style.display = 'block'; el.innerHTML = '<span class="spinner" style="border-color:rgba(63,114,184,0.3);border-top-color:var(--navy);"></span> Syncing ' + toSync.length + ' record(s)…'; }
+  if (el) { el.style.display = 'block'; el.innerHTML = '<span class="spinner dark"></span> Syncing ' + toSync.length + ' record(s)…'; }
   let ok = 0, fail = 0;
   for (const r of toSync) {
     try { await _db.collection('meal_records').doc(r.uid).set(r); ok++; }
@@ -2429,11 +2724,34 @@ async function syncAllToFirebase() {
     + 'Synced ' + ok + ' record(s)' + (fail ? ', ' + fail + ' failed (check connection)' : '') + '.';
 }
 
+// One-time: add the new site_info fields (with blank defaults) to every site that lacks them.
+async function initializeSiteFields() {
+  const el = document.getElementById('init-fields-status');
+  if (el) { el.style.display = 'block'; el.innerHTML = '<span class="spinner dark"></span> Checking sites…'; }
+  let updated = 0, skipped = 0, fail = 0;
+  try {
+    const snap = await _db.collection('site_info').get();
+    for (const d of snap.docs) {
+      const data = d.data();
+      if (!data.siteId || data.siteId === 'MONITOR') continue;
+      const defaults = siteDefaults();
+      const patch = {};
+      Object.keys(defaults).forEach(k => { if (data[k] === undefined) patch[k] = defaults[k]; });
+      if (data.qty && typeof data.qty === 'object') { const q = normQty(data.qty); if (JSON.stringify(q) !== JSON.stringify(data.qty)) patch.qty = q; }
+      if (!Object.keys(patch).length) { skipped++; continue; }
+      try { await _db.collection('site_info').doc(d.id).set(patch, { merge: true }); absorbSiteDoc({ ...data, ...patch }); updated++; }
+      catch (e) { fail++; }
+    }
+    if (el) el.innerHTML = '<span class="status-dot green"></span> Updated ' + updated + ' site(s), ' + skipped + ' already current' + (fail ? ', ' + fail + ' failed' : '') + '.';
+  } catch (e) {
+    if (el) el.innerHTML = '<span class="status-dot red"></span> Could not read site_info: ' + esc(e.message || e);
+  }
+}
+
 // ═══════════════════════════
 //  CSV EXPORT
 // ═══════════════════════════
 function q(v) {
-  // CSV-quote a value: wrap in quotes and escape embedded quotes.
   if (v === null || v === undefined) return '';
   const s = String(v);
   return '"' + s.replace(/"/g, '""') + '"';
@@ -2506,7 +2824,6 @@ function exportMonthlyReport(month, site) {
   if (!recs.length) { alert('No records for ' + month + (site && site !== 'ALL' ? ' at this site' : '') + '.'); return; }
   const wb = XLSX.utils.book_new();
 
-  // Sheet 1 — Sponsor Monthly Meal Count Summary by site
   const bySite = {};
   recs.forEach(r => {
     if (!bySite[r.site]) bySite[r.site] = { name: r.siteName || r.site, days: new Set(), recv:0, avail:0, first:0, second:0, adultP:0, adultNP:0, served:0, waste:0, inc:0, left:0 };
@@ -2525,7 +2842,6 @@ function exportMonthlyReport(month, site) {
   ws1['!cols'] = [{wch:30}].concat(Array(11).fill({wch:12}));
   XLSX.utils.book_append_sheet(wb, ws1, 'Monthly Summary');
 
-  // Sheet 2 — Review flags (anomalies)
   const s2 = [['REVIEW FLAGS — ' + monthNameUpper(month)], [], ['Site','Service date','Flag']];
   recs.sort((a,b)=>(a.siteName||'').localeCompare(b.siteName||'') || (a.svcDate||'').localeCompare(b.svcDate||'')).forEach(r => {
     const flags = isAnomaly(r);
@@ -2536,7 +2852,6 @@ function exportMonthlyReport(month, site) {
   ws2['!cols'] = [{wch:30},{wch:14},{wch:70}];
   XLSX.utils.book_append_sheet(wb, ws2, 'Review Flags');
 
-  // Sheet 3 — Raw daily detail
   const s3 = [['DAILY DETAIL — ' + monthNameUpper(month)], [],
     ['Site','Service date','Receiver','Received','Available','1st','2nd','Adult prog','Adult non-prog','Served','Waste','Incomplete','Leftover','Signed by']];
   recs.sort((a,b)=>(a.siteName||'').localeCompare(b.siteName||'') || (a.svcDate||'').localeCompare(b.svcDate||'')).forEach(r => {
@@ -2568,7 +2883,6 @@ function exportSiteAudit() {
   const siteName = (SITES[site] && SITES[site].name) || site;
   const wb = XLSX.utils.book_new();
 
-  // Daily Meal Details
   const d = [['DAILY MEAL DETAILS — ' + siteName], ['Range', start + ' to ' + end], [],
     ['Service date','Receiver','Received','Available','1st','2nd','Adult prog','Adult non-prog','Served','Waste','Incomplete','Leftover','Signed by']];
   let t = {recv:0,avail:0,first:0,second:0,ap:0,anp:0,served:0,waste:0,inc:0,left:0};
@@ -2584,7 +2898,6 @@ function exportSiteAudit() {
   wsD['!cols'] = [{wch:12},{wch:20}].concat(Array(11).fill({wch:11}));
   XLSX.utils.book_append_sheet(wb, wsD, 'Daily Meal Details');
 
-  // Monthly Averages & Totals
   const byMonth = {};
   recs.forEach(r => {
     const m = r.svcDate.slice(0,7);
@@ -2605,7 +2918,6 @@ function exportSiteAudit() {
   XLSX.utils.book_append_sheet(wb, wsA, 'Monthly Averages');
   XLSX.utils.book_append_sheet(wb, wsT, 'Monthly Totals');
 
-  // Site Information
   const info = [['SITE INFORMATION'], [], ['Agency name', siteName], ['Site ID', site],
     ['Report range', start + ' to ' + end], ['Records included', recs.length], ['Generated', new Date().toLocaleString()]];
   const wsI = XLSX.utils.aoa_to_sheet(info); wsI['!cols'] = [{wch:20},{wch:40}];
@@ -2617,15 +2929,11 @@ function exportSiteAudit() {
 
 // ═══════════════════════════
 //  SHARED CALENDAR / DATE HELPERS
-//  Used by the availability calendar, the per-site monthly report,
-//  and the closed-dates report — defined once here.
 // ═══════════════════════════
 function ymd(y, m, d) {
-  // m is 1-indexed month. Returns YYYY-MM-DD.
   return y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
 }
 function weekdaysInMonth(month) {
-  // month = 'YYYY-MM'. Returns all Mon–Sat dates as YYYY-MM-DD (Sundays excluded).
   const [y, m] = month.split('-').map(Number);
   const days = new Date(y, m, 0).getDate();
   const out = [];
@@ -2642,7 +2950,6 @@ function dowName(dateStr) {
   return new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long' });
 }
 async function fetchClosedDates(siteId, month) {
-  // Returns an array of YYYY-MM-DD strings the site marked closed for that month.
   try {
     const doc = await _db.collection('site_calendar').doc(calDocId(siteId, month)).get();
     if (doc.exists) {
@@ -2653,7 +2960,6 @@ async function fetchClosedDates(siteId, month) {
   return [];
 }
 function psmMonthsInRange(fromMonth, toMonth) {
-  // Inclusive list of 'YYYY-MM' from fromMonth to toMonth.
   const out = [];
   let [fy, fm] = fromMonth.split('-').map(Number);
   const [ty, tm] = toMonth.split('-').map(Number);
@@ -2665,12 +2971,7 @@ function psmMonthsInRange(fromMonth, toMonth) {
 }
 
 // ═══════════════════════════
-//  PER-SITE MONTHLY COUNT REPORT  (changes 4 & 6)
-//  Daily Meal Details now lists EVERY weekday (Mon–Sat) in range:
-//    • submitted day  → counts, Status "Submitted"
-//    • open, no entry → blanks, Status "No submission"
-//    • closed day     → blanks, Status "CLOSED" (from the site's Availability calendar)
-//  Averages & Totals still aggregate only actual submitted records.
+//  PER-SITE MONTHLY COUNT REPORT
 // ═══════════════════════════
 async function exportPerSiteMonthReport() {
   const site = document.getElementById('psm-site').value;
@@ -2681,10 +2982,9 @@ async function exportPerSiteMonthReport() {
   if (!fromM || !toM) { alert('Pick a From and To month.'); return; }
   if (fromM > toM) { alert('The From month must be on or before the To month.'); return; }
   const siteName = (SITES[site] && SITES[site].name) || site;
-  if (statusEl) { statusEl.style.display = 'block'; statusEl.innerHTML = '<span class="spinner" style="border-color:rgba(63,114,184,0.3);border-top-color:var(--navy);"></span> Building report…'; }
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.innerHTML = '<span class="spinner dark"></span> Building report…'; }
 
   const months = psmMonthsInRange(fromM, toM);
-  // Fetch closed dates per month (parallel), and index records by date for this site.
   const closedByMonth = {};
   await Promise.all(months.map(async m => { closedByMonth[m] = new Set(await fetchClosedDates(site, m)); }));
   const recByDate = {};
@@ -2692,7 +2992,6 @@ async function exportPerSiteMonthReport() {
 
   const wb = XLSX.utils.book_new();
 
-  // ── Daily Meal Details — every weekday in range ──
   const daily = [['DAILY MEAL DETAILS — ' + siteName],
     ['Range', months[0] + ' to ' + months[months.length - 1]], [],
     ['Service date','Weekday','Status','Receiver','Received','Available','1st','2nd','Adult prog','Adult non-prog','Served','Waste','Incomplete','Leftover','Signed by']];
@@ -2727,7 +3026,6 @@ async function exportPerSiteMonthReport() {
   wsD['!cols'] = [{wch:12},{wch:11},{wch:14},{wch:20}].concat(Array(11).fill({wch:11}));
   XLSX.utils.book_append_sheet(wb, wsD, 'Daily Meal Details');
 
-  // ── Monthly Averages & Totals — submitted records only ──
   const byMonth = {};
   months.forEach(m => { byMonth[m] = { days:0, first:0, second:0, served:0, avail:0, waste:0, left:0, closed: closedByMonth[m].size }; });
   Object.values(recByDate).forEach(r => {
@@ -2751,7 +3049,6 @@ async function exportPerSiteMonthReport() {
   XLSX.utils.book_append_sheet(wb, wsA, 'Monthly Averages');
   XLSX.utils.book_append_sheet(wb, wsT, 'Monthly Totals');
 
-  // ── Site Information ──
   const info = [['SITE INFORMATION'], [], ['Agency name', siteName], ['Site ID', site],
     ['Report range', months[0] + ' to ' + months[months.length - 1]],
     ['Weekdays in range (Mon–Sat)', months.reduce((a,m)=>a+weekdaysInMonth(m).length,0)],
@@ -2762,19 +3059,17 @@ async function exportPerSiteMonthReport() {
   XLSX.utils.book_append_sheet(wb, wsI, 'Site Information');
 
   XLSX.writeFile(wb, 'PerSite_Monthly_Count_' + site + '_' + fromM + '_to_' + toM + '.xlsx');
-  if (statusEl) { statusEl.innerHTML = '<span class="status-dot green"></span> Exported ' + siteName + ' for ' + months.length + ' month(s).'; }
+  if (statusEl) { statusEl.innerHTML = '<span class="status-dot green"></span> Exported ' + esc(siteName) + ' for ' + months.length + ' month(s).'; }
 }
 
 // ═══════════════════════════
-//  WEEKLY WASTE & LEFTOVER REPORT  (change 2)
-//  Mon–Sat week. Summary + Waste-by-Day + Leftover-by-Day.
+//  WEEKLY WASTE & LEFTOVER REPORT
 // ═══════════════════════════
 function exportWeeklyWasteReport() {
   const weekVal = document.getElementById('wwl-week').value;
   const siteFilter = document.getElementById('wwl-site').value;
   const statusEl = document.getElementById('wwl-status');
   if (!weekVal) { alert('Pick a date inside the week you want.'); return; }
-  // Snap to that week's Monday.
   const d = new Date(weekVal + 'T12:00:00');
   const dow = d.getDay();
   d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
@@ -2785,7 +3080,7 @@ function exportWeeklyWasteReport() {
   let recs = records.filter(r => !r.isDraft && weekDays.includes(r.svcDate) && r.site !== 'MONITOR');
   if (siteFilter && siteFilter !== 'ALL') recs = recs.filter(r => r.site === siteFilter);
   if (!recs.length) { alert('No records in that week' + (siteFilter !== 'ALL' ? ' for the selected site' : '') + '.'); return; }
-  if (statusEl) { statusEl.style.display = 'block'; statusEl.innerHTML = '<span class="spinner" style="border-color:rgba(63,114,184,0.3);border-top-color:var(--navy);"></span> Building report…'; }
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.innerHTML = '<span class="spinner dark"></span> Building report…'; }
 
   const bySite = {};
   recs.forEach(r => {
@@ -2798,7 +3093,6 @@ function exportWeeklyWasteReport() {
   const siteRows = Object.entries(bySite).sort((a,b)=>a[1].name.localeCompare(b[1].name));
   const wb = XLSX.utils.book_new();
 
-  // Summary
   const sum = [['WEEKLY WASTE & LEFTOVER SUMMARY'], ['Week of', dayLabels[0] + ' – ' + dayLabels[dayLabels.length-1]], [],
     ['Site','Total waste','Total leftover','Available','Waste %','Leftover %']];
   let gW=0,gL=0,gA=0;
@@ -2812,7 +3106,6 @@ function exportWeeklyWasteReport() {
   const wsS = XLSX.utils.aoa_to_sheet(sum); wsS['!cols'] = [{wch:30},{wch:13},{wch:14},{wch:11},{wch:10},{wch:11}];
   XLSX.utils.book_append_sheet(wb, wsS, 'Summary');
 
-  // Waste by Day
   const wHead = ['Site'].concat(dayLabels).concat(['Total']);
   const wMat = [['WASTE BY DAY — week of ' + dayLabels[0]], [], wHead];
   siteRows.forEach(([k,b]) => {
@@ -2821,7 +3114,6 @@ function exportWeeklyWasteReport() {
   const wsW = XLSX.utils.aoa_to_sheet(wMat); wsW['!cols'] = [{wch:30}].concat(Array(7).fill({wch:12}));
   XLSX.utils.book_append_sheet(wb, wsW, 'Waste by Day');
 
-  // Leftover by Day
   const lMat = [['LEFTOVER BY DAY — week of ' + dayLabels[0]], [], wHead];
   siteRows.forEach(([k,b]) => {
     lMat.push([b.name].concat(weekDays.map(dd => b.left[dd]||0)).concat([b.totLeft]));
@@ -2835,14 +3127,13 @@ function exportWeeklyWasteReport() {
 }
 
 // ═══════════════════════════
-//  SITE CLOSED-DATES REPORT  (change 7)
-//  Reads every site_calendar doc for a month; lists closed dates per site.
+//  SITE CLOSED-DATES REPORT
 // ═══════════════════════════
 async function exportClosedDatesReport() {
   const month = document.getElementById('closed-month').value;
   const statusEl = document.getElementById('closed-status');
   if (!month) { alert('Pick a month.'); return; }
-  if (statusEl) { statusEl.style.display = 'block'; statusEl.innerHTML = '<span class="spinner" style="border-color:rgba(63,114,184,0.3);border-top-color:var(--navy);"></span> Reading site calendars…'; }
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.innerHTML = '<span class="spinner dark"></span> Reading site calendars…'; }
   const allSites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR').sort((a,b)=>a[1].name.localeCompare(b[1].name));
   const expected = weekdaysInMonth(month).length;
 
@@ -2855,7 +3146,6 @@ async function exportClosedDatesReport() {
 
   const wb = XLSX.utils.book_new();
 
-  // Closed Summary
   const sum = [['SITE CLOSED-DATES SUMMARY — ' + monthNameUpper(month)],
     ['Expected service weekdays (Mon–Sat)', expected], [],
     ['Site','Closed days','Open days','Closed dates']];
@@ -2868,7 +3158,6 @@ async function exportClosedDatesReport() {
   const wsS = XLSX.utils.aoa_to_sheet(sum); wsS['!cols'] = [{wch:32},{wch:12},{wch:11},{wch:60}];
   XLSX.utils.book_append_sheet(wb, wsS, 'Closed Summary');
 
-  // Closed Dates — one row per closed date
   const rows = [['CLOSED DATES — ' + monthNameUpper(month)], [], ['Site','Closed date','Weekday']];
   perSite.forEach(s => {
     s.closed.forEach(d => rows.push([s.name, d, dowName(d)]));
@@ -2882,18 +3171,12 @@ async function exportClosedDatesReport() {
 }
 
 // ═══════════════════════════
-//  AVAILABILITY CALENDAR  (changes 5 & 6, + monitor editor)
-//  Site users mark their own Mon–Sat open/closed; monitors can edit ANY site's
-//  calendar. Both write to the same site_calendar/{site__YYYY-MM} doc, so the
-//  Per-Site Monthly Count Report and Closed-Dates Report pick up either source.
-//  Default = every weekday OPEN. Unchecking adds the date to closedDates.
-//  Site unlock requires the site PIN; monitor edits/unlocks with no PIN (override).
+//  AVAILABILITY CALENDAR  (site users on the Home tab; monitor override on Site Availability)
+//  Site edits now log to change_log and email the notification address (debounced, one
+//  email per burst of clicks).
 // ═══════════════════════════
 let calState = { siteId: null, month: null, closed: new Set(), locked: false };
 
-// The "context" tells the shared calendar core which DOM elements to drive and
-// whether it's running in monitor-override mode. Only one calendar is on screen
-// at a time, so a single active context is sufficient.
 const CAL_CTX = {
   site:  { admin: false, month: 'cal-month',  grid: 'cal-grid',  summary: 'cal-summary',  status: 'cal-status',  lockBtn: 'cal-lock-btn',  unlockBtn: 'cal-unlock-btn',  lockState: 'cal-lock-state' },
   admin: { admin: true,  month: 'acal-month', grid: 'acal-grid', summary: 'acal-summary', status: 'acal-status', lockBtn: 'acal-lock-btn', unlockBtn: 'acal-unlock-btn', lockState: 'acal-lock-state' }
@@ -2912,7 +3195,6 @@ function setCalStatus(kind, msg) {
   el.innerHTML = '<i class="ti ' + (icons[kind] || 'ti-info-circle') + '"></i> ' + msg;
 }
 
-// Shared loader — fetches the site_calendar doc for a site+month into calState.
 async function loadCalendarDoc(siteId, month) {
   calState = { siteId, month, closed: new Set(), locked: false };
   setCalStatus('', '');
@@ -2928,10 +3210,10 @@ async function loadCalendarDoc(siteId, month) {
     console.warn('Calendar load failed:', e);
     setCalStatus('warn', "Couldn't reach the database — showing defaults.");
   }
+  _calBaseline = Array.from(calState.closed).sort().join(',');
   renderCalendar();
 }
 
-// Site-user entry point (their own site).
 async function loadCalendar() {
   if (!currentSite || currentSite === 'MONITOR') return;
   calCtx = CAL_CTX.site;
@@ -2941,7 +3223,6 @@ async function loadCalendar() {
   await loadCalendarDoc(currentSite, month);
 }
 
-// Monitor entry point (any site chosen from the dropdown).
 async function loadAdminCalendar() {
   calCtx = CAL_CTX.admin;
   const siteSel = document.getElementById('acal-site');
@@ -2960,8 +3241,30 @@ async function loadAdminCalendar() {
     return;
   }
   const siteName = (SITES[siteId] && SITES[siteId].name) || siteId;
-  if (picked) { picked.style.display = 'block'; picked.innerHTML = 'Editing <strong>' + siteName + '</strong> (' + siteId + ') as monitor.'; }
+  if (picked) { picked.style.display = 'block'; picked.innerHTML = 'Editing <strong>' + esc(siteName) + '</strong> (' + esc(siteId) + ') as monitor.'; }
   await loadCalendarDoc(siteId, month);
+}
+
+// Debounced change notification for site-side calendar edits.
+let _calBaseline = '';
+let _calNotifyTimer = null;
+function scheduleCalendarNotify() {
+  if (calCtx.admin) return;
+  clearTimeout(_calNotifyTimer);
+  _calNotifyTimer = setTimeout(async () => {
+    const nowClosed = Array.from(calState.closed).sort();
+    const nowKey = nowClosed.join(',');
+    if (nowKey === _calBaseline) return;
+    const before = new Set(_calBaseline ? _calBaseline.split(',') : []);
+    const added = nowClosed.filter(d => !before.has(d));
+    const removed = Array.from(before).filter(d => !calState.closed.has(d));
+    _calBaseline = nowKey;
+    const siteId = calState.siteId;
+    const siteName = (SITES[siteId] && SITES[siteId].name) || siteId;
+    const detail = (added.length ? 'Marked CLOSED: ' + added.join(', ') : '') + (added.length && removed.length ? ' | ' : '') + (removed.length ? 'Re-opened: ' + removed.join(', ') : '');
+    await logChange({ siteId, siteName, by: 'Site user', category: 'calendar', action: 'Availability calendar updated (' + calState.month + ')', detail });
+    notifyMonitor('calendar', siteId, 'Availability calendar changed for ' + calState.month, detail + '\n\nAll closed dates this month: ' + (nowClosed.join(', ') || 'none'));
+  }, 8000);
 }
 
 async function saveCalendar(silent) {
@@ -2980,6 +3283,7 @@ async function saveCalendar(silent) {
     hideOfflineBanner();
     if (!silent) setCalStatus('ok', 'Saved');
     setTimeout(() => setCalStatus('', ''), 2500);
+    scheduleCalendarNotify();
     return true;
   } catch (e) {
     console.warn('Calendar save failed:', e);
@@ -2990,7 +3294,6 @@ async function saveCalendar(silent) {
 }
 
 function toggleCalDay(dateStr) {
-  // Monitors can edit even a locked month; site users cannot.
   if (calState.locked && !calCtx.admin) { setCalStatus('warn', 'Month is locked — unlock with your PIN to make changes.'); return; }
   if (calState.closed.has(dateStr)) calState.closed.delete(dateStr);
   else calState.closed.add(dateStr);
@@ -3004,16 +3307,17 @@ function lockCalendar() {
   renderCalendar();
   saveCalendar();
   setCalStatus('ok', calCtx.admin ? 'Month locked for this site' : 'Month locked');
+  logChange({ siteId: calState.siteId, siteName: (SITES[calState.siteId]||{}).name || calState.siteId, by: calCtx.admin ? 'Monitor' : 'Site user', category: 'calendar', action: 'Calendar month locked (' + calState.month + ')', detail: '' });
 }
 
 function unlockCalendar() {
   if (!calState.siteId) return;
   if (calCtx.admin) {
-    // Monitor override — no PIN required.
     calState.locked = false;
     renderCalendar();
     saveCalendar();
     setCalStatus('ok', 'Unlocked for this site.');
+    logChange({ siteId: calState.siteId, siteName: (SITES[calState.siteId]||{}).name || calState.siteId, by: 'Monitor', category: 'calendar', action: 'Calendar month unlocked (' + calState.month + ')', detail: 'Monitor override' });
     return;
   }
   const pin = prompt('Enter your site PIN to unlock this month for editing:');
@@ -3024,16 +3328,17 @@ function unlockCalendar() {
   renderCalendar();
   saveCalendar();
   setCalStatus('ok', 'Unlocked — you can edit again.');
+  logChange({ siteId: calState.siteId, siteName: (SITES[calState.siteId]||{}).name || calState.siteId, by: 'Site user', category: 'calendar', action: 'Calendar month unlocked (' + calState.month + ')', detail: 'Site PIN' });
 }
 
 function renderCalendar() {
   const grid = calEl('grid');
   if (!grid) return;
   const [y, m] = calState.month.split('-').map(Number);
-  const firstDow = new Date(y, m - 1, 1).getDay(); // 0=Sun
+  const firstDow = new Date(y, m - 1, 1).getDay();
   const daysInMonth = new Date(y, m, 0).getDate();
   const todayStr = today();
-  const editable = !calState.locked || calCtx.admin; // monitor overrides lock
+  const editable = !calState.locked || calCtx.admin;
 
   const dow = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   let h = '<div class="cal-head">' + dow.map(d => '<div class="cal-dow">' + d + '</div>').join('') + '</div>';
@@ -3042,7 +3347,7 @@ function renderCalendar() {
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = ymd(y, m, d);
     const wd = new Date(y, m - 1, d).getDay();
-    const isService = wd >= 1 && wd <= 6; // Mon–Sat
+    const isService = wd >= 1 && wd <= 6;
     const isToday = dateStr === todayStr;
     const todayCls = isToday ? ' cal-today' : '';
     if (!isService) {
@@ -3059,14 +3364,12 @@ function renderCalendar() {
   h += '</div>';
   grid.innerHTML = h;
 
-  // Summary line
   const weekdays = weekdaysInMonth(calState.month);
   const closedCount = weekdays.filter(d => calState.closed.has(d)).length;
   const openCount = weekdays.length - closedCount;
   const sumEl = calEl('summary');
   if (sumEl) sumEl.innerHTML = '<strong>' + openCount + '</strong> open · <strong>' + closedCount + '</strong> closed service day(s) (Mon–Sat)';
 
-  // Lock/unlock button + state
   const lockBtn = calEl('lockBtn');
   const unlockBtn = calEl('unlockBtn');
   const lockState = calEl('lockState');
@@ -3083,8 +3386,317 @@ function renderCalendar() {
 }
 
 // ═══════════════════════════
-//  SITE INFORMATION CRUD (Update Sites tab)
+//  HOME TAB — current quantity & weekly delivery schedule (site users)
+//  Reads site_info/{site} (qty, locks, dates) and site_change_requests (status=pending).
 // ═══════════════════════════
+let homePending = null;
+
+async function fetchSiteInfoDoc(siteId) {
+  try {
+    const doc = await _db.collection('site_info').doc(siteId).get();
+    if (doc.exists) { absorbSiteDoc(doc.data()); }
+  } catch (e) { console.warn('site_info fetch failed:', e); }
+  return SITE_INFO[siteId] || { ...siteDefaults(), siteId, siteName: (SITES[siteId]||{}).name || siteId };
+}
+async function fetchPendingRequest(siteId) {
+  try {
+    const snap = await _db.collection('site_change_requests').where('siteId', '==', siteId).where('status', '==', 'pending').get();
+    if (!snap.empty) return snap.docs.map(d => d.data()).sort((a,b) => (b.requestedAt||'').localeCompare(a.requestedAt||''))[0];
+  } catch (e) { console.warn('pending request fetch failed:', e); }
+  return null;
+}
+
+async function loadHome() {
+  if (!currentSite || currentSite === 'MONITOR') return;
+  const meta = document.getElementById('home-meta');
+  if (meta) meta.innerHTML = '<div class="calc-card"><span class="spinner dark"></span> Loading…</div>';
+  const [info, pending] = await Promise.all([fetchSiteInfoDoc(currentSite), fetchPendingRequest(currentSite)]);
+  homePending = pending;
+  renderHome(info);
+  loadCalendar();
+}
+
+function dayTile(k, name, qty, cls, sub) {
+  const on = qty > 0;
+  return '<div class="week-day ' + (cls || (on ? 'on' : 'off')) + '">'
+    + '<div class="week-day-name">' + name + '</div>'
+    + '<div class="week-day-qty">' + (on ? qty : 'No delivery') + '</div>'
+    + (sub !== undefined ? '<div class="week-day-sub">' + sub + '</div>' : (on ? '<div class="week-day-sub">meals</div>' : ''))
+    + '</div>';
+}
+
+function renderHome(info) {
+  const qty = normQty(info.qty);
+  const locks = info.locks || {};
+  const meta = document.getElementById('home-meta');
+  const week = document.getElementById('home-week');
+  const note = document.getElementById('home-week-note');
+  const locksEl = document.getElementById('home-locks');
+  const actions = document.getElementById('home-actions');
+  const pendEl = document.getElementById('home-pending');
+  const days = deliveryDays(qty);
+  const total = weeklyTotal(qty);
+
+  meta.innerHTML =
+    stat('Meals per week', total, days.length + ' delivery day' + (days.length === 1 ? '' : 's'))
+    + stat('Delivery days', info.daysServing || deriveDaysServing(qty))
+    + stat('Meal type', info.mealKind || '—')
+    + stat('Program dates', (info.startDate || info.endDate) ? fmtDate(info.startDate) + ' → ' + fmtDate(info.endDate) : '—')
+    + stat('Meal service time', info.mealServiceTime || '—')
+    + stat('Orders placed by', info.orders || '—');
+
+  week.innerHTML = DAYS.map(([k, name]) => {
+    // If a request is pending, tint the days that would change.
+    if (homePending && homePending.after) {
+      const after = normQty(homePending.after);
+      if (after[k] !== qty[k]) return dayTile(k, name, qty[k], 'pending', '<span class="req-diff"><span class="was">' + qty[k] + '</span><span class="now">→ ' + after[k] + '</span></span> pending');
+    }
+    return dayTile(k, name, qty[k]);
+  }).join('');
+  note.textContent = total ? 'These are your approved delivery quantities. Use "Request a change" below if enrollment or your schedule changes.' : 'No delivery quantities are on file for your site yet. Submit a request below or contact the Kids Cafe team.';
+
+  // Locks: quantity + weekly schedule (calendar has its own lock in the card below).
+  const chip = (kind, label) => {
+    const on = !!locks[kind];
+    return '<span class="lock-chip ' + (on ? 'is-locked' : '') + '"><i class="ti ' + (on ? 'ti-lock' : 'ti-lock-open') + '"></i> ' + label + ': <strong>' + (on ? 'Locked' : 'Unlocked') + '</strong> '
+      + (on ? '<button class="btn-sm" onclick="unlockSiteItem(\'' + kind + '\')"><i class="ti ti-key"></i> Unlock with PIN</button>'
+            : '<button class="btn-sm" onclick="lockSiteItem(\'' + kind + '\')"><i class="ti ti-lock"></i> Lock</button>') + '</span>';
+  };
+  locksEl.innerHTML = chip('quantity', 'Quantity') + chip('schedule', 'Weekly delivery schedule')
+    + '<span style="font-size:11px;color:var(--text-soft);">Lock an item once it\'s confirmed for the year. A locked item can\'t be changed by request until it\'s unlocked (your PIN, or the monitor).</span>';
+
+  // Pending notice (orange)
+  if (homePending) {
+    const after = normQty(homePending.after);
+    const before = normQty(homePending.before);
+    pendEl.innerHTML = '<div class="pending-box">'
+      + '<h4><i class="ti ti-hourglass-high"></i> Change request pending approval</h4>'
+      + '<div style="font-size:13px;line-height:1.55;">Submitted ' + new Date(homePending.requestedAt).toLocaleString() + (homePending.requestedBy ? ' by <strong>' + esc(homePending.requestedBy) + '</strong>' : '') + '. '
+      + 'Requested: <strong>' + esc(homePending.changes.join(' + ')) + '</strong>' + (homePending.effectiveDate ? ', effective ' + fmtDate(homePending.effectiveDate) : '') + '. The Kids Cafe team has been notified; your current quantities stay in effect until it\'s approved.'
+      + (homePending.note ? '<div style="margin-top:6px;font-size:12px;">Note: ' + esc(homePending.note) + '</div>' : '') + '</div>'
+      + '<div class="week-grid">' + DAYS.map(([k, name]) => {
+          const changed = after[k] !== before[k];
+          return '<div class="week-day ' + (changed ? 'pending' : (after[k] > 0 ? 'on' : 'off')) + '" style="' + (changed ? '' : 'opacity:0.75;') + '"><div class="week-day-name">' + name + '</div>'
+            + '<div class="week-day-qty">' + (after[k] > 0 ? after[k] : 'No delivery') + '</div>'
+            + (changed ? '<div class="week-day-sub req-diff"><span class="was">' + before[k] + '</span> → requested</div>' : '') + '</div>';
+        }).join('') + '</div>'
+      + '<div style="margin-top:10px;"><button class="btn-sm" onclick="cancelChangeRequest(\'' + homePending.id + '\')"><i class="ti ti-x"></i> Withdraw this request</button></div>'
+      + '</div>';
+    actions.innerHTML = '<button class="btn-sec" disabled title="A request is already pending"><i class="ti ti-edit"></i> Request a change</button>';
+  } else {
+    pendEl.innerHTML = '';
+    const bothLocked = locks.quantity && locks.schedule;
+    actions.innerHTML = '<button class="btn-primary" ' + (bothLocked ? 'disabled title="Quantity and schedule are both locked"' : '') + ' onclick="showRequestForm()"><i class="ti ti-edit"></i> Request a change</button>';
+  }
+}
+
+function setHomeStatus(kind, msg) {
+  const el = document.getElementById('home-status');
+  if (!el) return;
+  if (!msg) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.style.color = { ok: 'var(--success-text)', warn: 'var(--warning-text)', err: 'var(--danger-text)' }[kind] || 'var(--text-mid)';
+  el.innerHTML = msg;
+}
+
+// ── Locks on quantity / weekly schedule (site side: lock freely, unlock with PIN) ──
+async function writeSiteLock(siteId, kind, value, by, detail) {
+  const cur = (SITE_INFO[siteId] && SITE_INFO[siteId].locks) || {};
+  const locks = { quantity: !!cur.quantity, schedule: !!cur.schedule, [kind]: value };
+  await _db.collection('site_info').doc(siteId).set({ locks, updatedAt: new Date().toISOString() }, { merge: true });
+  if (!SITE_INFO[siteId]) SITE_INFO[siteId] = { ...siteDefaults(), siteId };
+  SITE_INFO[siteId].locks = locks;
+  const label = kind === 'quantity' ? 'Quantity' : 'Weekly delivery schedule';
+  await logChange({ siteId, siteName: (SITES[siteId]||{}).name || siteId, by, category: kind, action: label + (value ? ' locked' : ' unlocked'), detail: detail || '' });
+}
+async function lockSiteItem(kind) {
+  try {
+    await writeSiteLock(currentSite, kind, true, 'Site user', '');
+    setHomeStatus('ok', '<span class="status-dot green"></span> ' + (kind === 'quantity' ? 'Quantity' : 'Weekly delivery schedule') + ' locked.');
+    renderHome(SITE_INFO[currentSite]);
+  } catch (e) { setHomeStatus('err', 'Could not save the lock: ' + esc(e.message || e)); }
+}
+async function unlockSiteItem(kind) {
+  const pin = prompt('Enter your site PIN to unlock:');
+  if (pin === null) return;
+  if (pin !== ((SITES[currentSite] || {}).pin || '')) { setHomeStatus('err', 'Incorrect PIN — still locked.'); return; }
+  try {
+    await writeSiteLock(currentSite, kind, false, 'Site user', 'Site PIN');
+    setHomeStatus('ok', '<span class="status-dot green"></span> Unlocked.');
+    renderHome(SITE_INFO[currentSite]);
+  } catch (e) { setHomeStatus('err', 'Could not save: ' + esc(e.message || e)); }
+}
+
+// ── Change request form ──
+function showRequestForm() {
+  const info = SITE_INFO[currentSite] || siteDefaults();
+  const qty = normQty(info.qty);
+  const locks = info.locks || {};
+  const grid = document.getElementById('req-week');
+  grid.innerHTML = DAYS.map(([k, name]) =>
+    '<div class="week-day ' + (qty[k] > 0 ? 'on' : 'off') + '" id="req-tile-' + k + '">'
+    + '<div class="week-day-name">' + name + '</div>'
+    + '<label class="day-toggle"><input type="checkbox" id="req-on-' + k + '" ' + (qty[k] > 0 ? 'checked' : '') + ' ' + (locks.schedule ? 'disabled' : '') + ' onchange="reqToggle(\'' + k + '\')"> Deliver</label>'
+    + '<input type="number" min="0" class="qty-edit" id="req-q-' + k + '" value="' + (qty[k] || '') + '" placeholder="0" ' + (locks.quantity || qty[k] === 0 ? (locks.quantity ? 'disabled' : '') : '') + ' oninput="reqTint(\'' + k + '\')">'
+    + '</div>').join('');
+  DAYS.forEach(([k]) => reqToggle(k, true));
+  const a = document.getElementById('req-alert');
+  a.style.display = locks.quantity || locks.schedule ? 'flex' : 'none';
+  a.className = 'alert alert-warning';
+  a.innerHTML = '<i class="ti ti-lock"></i>&nbsp; ' + (locks.quantity ? 'Quantity is locked — you can only change which days you receive a delivery. ' : '') + (locks.schedule ? 'Weekly delivery schedule is locked — you can only change quantities on your existing delivery days.' : '');
+  document.getElementById('home-request-card').style.display = 'block';
+  document.getElementById('home-request-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function hideRequestForm() { document.getElementById('home-request-card').style.display = 'none'; }
+function reqToggle(k, init) {
+  const on = document.getElementById('req-on-' + k).checked;
+  const q = document.getElementById('req-q-' + k);
+  const info = SITE_INFO[currentSite] || {};
+  const qtyLocked = !!(info.locks && info.locks.quantity);
+  if (!on) { q.value = ''; q.disabled = true; }
+  else { q.disabled = qtyLocked && (normQty(info.qty)[k] > 0); if (!init && !q.value) { q.value = ''; q.disabled = false; } }
+  reqTint(k);
+}
+function reqTint(k) {
+  const info = SITE_INFO[currentSite] || {};
+  const cur = normQty(info.qty)[k];
+  const on = document.getElementById('req-on-' + k).checked;
+  const v = on ? (parseInt(document.getElementById('req-q-' + k).value) || 0) : 0;
+  const tile = document.getElementById('req-tile-' + k);
+  tile.className = 'week-day ' + (v !== cur ? 'pending' : (v > 0 ? 'on' : 'off'));
+}
+
+async function submitChangeRequest() {
+  const info = SITE_INFO[currentSite] || siteDefaults();
+  const before = normQty(info.qty);
+  const after = {};
+  DAYS.forEach(([k]) => { after[k] = document.getElementById('req-on-' + k).checked ? (parseInt(document.getElementById('req-q-' + k).value) || 0) : 0; });
+  const a = document.getElementById('req-alert');
+  const show = (cls, html) => { a.style.display = 'flex'; a.className = 'alert ' + cls; a.innerHTML = html; };
+  const beforeDays = deliveryDays(before).join(','), afterDays = deliveryDays(after).join(',');
+  const schedChanged = beforeDays !== afterDays;
+  const qtyChanged = DAYS.some(([k]) => before[k] > 0 && after[k] > 0 && before[k] !== after[k]);
+  const anyChanged = DAYS.some(([k]) => before[k] !== after[k]);
+  if (!anyChanged) { show('alert-warning', '<i class="ti ti-info-circle"></i>&nbsp; Nothing changed — adjust a day or a quantity first.'); return; }
+  const locks = info.locks || {};
+  if (locks.quantity && qtyChanged) { show('alert-danger', '<i class="ti ti-lock"></i>&nbsp; Quantity is locked. Unlock it (with your PIN) before requesting a quantity change.'); return; }
+  if (locks.schedule && schedChanged) { show('alert-danger', '<i class="ti ti-lock"></i>&nbsp; Weekly delivery schedule is locked. Unlock it before adding or removing delivery days.'); return; }
+  const missingQty = DAYS.filter(([k]) => document.getElementById('req-on-' + k).checked && after[k] === 0).map(([, n]) => n);
+  if (missingQty.length) { show('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; Enter a quantity for: ' + missingQty.join(', ') + ' (or uncheck the day).'); return; }
+  const by = document.getElementById('req-by').value;
+  if (!by) { show('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; Select who is requesting this change.'); return; }
+
+  const changes = [];
+  if (schedChanged) changes.push('schedule');
+  if (qtyChanged || (!schedChanged && anyChanged)) changes.push('quantity');
+  const id = 'REQ' + genUID();
+  const req = {
+    id, siteId: currentSite, siteName: SITES[currentSite].name, status: 'pending',
+    requestedAt: new Date().toISOString(), requestedBy: by,
+    effectiveDate: document.getElementById('req-effective').value || '',
+    note: document.getElementById('req-note').value.trim(),
+    before, after, changes,
+    beforeDays: deriveDaysServing(before), afterDays: deriveDaysServing(after)
+  };
+  try {
+    await _db.collection('site_change_requests').doc(id).set(req);
+  } catch (e) { show('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; Could not submit: ' + esc(e.message || e)); return; }
+  const diff = DAYS.filter(([k]) => before[k] !== after[k]).map(([k, n]) => n + ': ' + before[k] + ' → ' + after[k]).join('; ');
+  await logChange({ siteId: currentSite, siteName: SITES[currentSite].name, by, category: 'request', action: 'Change requested (' + changes.join(' + ') + ') [' + id + ']', detail: diff + (req.note ? ' | Note: ' + req.note : '') });
+  notifyMonitor('request', currentSite, 'Quantity/schedule change requested',
+    'Requested by: ' + by + '\nType: ' + changes.join(' + ') + (req.effectiveDate ? '\nEffective: ' + req.effectiveDate : '') + '\n\n' + diff
+    + '\n\nCurrent:   ' + qtySummary(before) + '\nRequested: ' + qtySummary(after) + (req.note ? '\n\nNote: ' + req.note : '') + '\n\nRequest ID: ' + id);
+  hideRequestForm();
+  homePending = req;
+  renderHome(info);
+  document.getElementById('req-note').value = ''; document.getElementById('req-effective').value = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function cancelChangeRequest(id) {
+  if (!confirm('Withdraw this pending request?')) return;
+  try {
+    await _db.collection('site_change_requests').doc(id).set({ status: 'withdrawn', resolvedAt: new Date().toISOString(), resolvedBy: 'Site user' }, { merge: true });
+    await logChange({ siteId: currentSite, siteName: SITES[currentSite].name, by: 'Site user', category: 'request', action: 'Change request withdrawn [' + id + ']', detail: '' });
+    homePending = null;
+    renderHome(SITE_INFO[currentSite] || siteDefaults());
+  } catch (e) { setHomeStatus('err', 'Could not withdraw: ' + esc(e.message || e)); }
+}
+
+// ═══════════════════════════
+//  MONITOR — PENDING CHANGE REQUESTS (Update Sites tab)
+// ═══════════════════════════
+let _pendingReqs = [];
+async function loadPendingRequests() {
+  const ctr = document.getElementById('pending-requests');
+  if (!ctr) return;
+  ctr.innerHTML = '<div style="font-size:13px;color:var(--text-soft);padding:8px;"><span class="spinner dark"></span> Loading…</div>';
+  try {
+    const snap = await _db.collection('site_change_requests').where('status', '==', 'pending').get();
+    _pendingReqs = snap.docs.map(d => d.data()).sort((a,b) => (a.requestedAt||'').localeCompare(b.requestedAt||''));
+  } catch (e) { ctr.innerHTML = '<div class="empty"><i class="ti ti-wifi-off"></i>Could not load requests.</div>'; return; }
+  if (!_pendingReqs.length) { ctr.innerHTML = '<div class="empty" style="padding:1.5rem;"><i class="ti ti-check"></i>No pending requests.</div>'; return; }
+  ctr.innerHTML = _pendingReqs.map(r => {
+    const before = normQty(r.before), after = normQty(r.after);
+    return '<div class="pending-box" style="animation:none;">'
+      + '<h4><i class="ti ti-hourglass-high"></i> ' + esc(r.siteName) + ' <span style="font-weight:400;opacity:0.8;">(' + esc(r.siteId) + ')</span> — ' + esc((r.changes||[]).join(' + ')) + '</h4>'
+      + '<div style="font-size:12px;line-height:1.55;">Requested ' + new Date(r.requestedAt).toLocaleString() + ' by <strong>' + esc(r.requestedBy) + '</strong>' + (r.effectiveDate ? ' · effective ' + fmtDate(r.effectiveDate) : '') + (r.note ? '<br>Note: ' + esc(r.note) : '') + '<br>Days: ' + esc(r.beforeDays || deriveDaysServing(before)) + ' → <strong>' + esc(r.afterDays || deriveDaysServing(after)) + '</strong> · Weekly total: ' + weeklyTotal(before) + ' → <strong>' + weeklyTotal(after) + '</strong></div>'
+      + '<div class="week-grid">' + DAYS.map(([k, name]) => {
+          const ch = before[k] !== after[k];
+          return '<div class="week-day ' + (ch ? 'pending' : (after[k] > 0 ? 'on' : 'off')) + '"><div class="week-day-name">' + name + '</div><div class="week-day-qty">' + (after[k] > 0 ? after[k] : '—') + '</div>' + (ch ? '<div class="week-day-sub req-diff"><span class="was">' + before[k] + '</span> → ' + after[k] + '</div>' : '') + '</div>';
+        }).join('') + '</div>'
+      + '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">'
+      + '<button class="btn-sm green" onclick="resolveRequest(\'' + r.id + '\',\'approved\')"><i class="ti ti-check"></i> Approve &amp; apply</button>'
+      + '<button class="btn-sm red" onclick="resolveRequest(\'' + r.id + '\',\'rejected\')"><i class="ti ti-x"></i> Reject</button>'
+      + '<span style="font-size:11px;color:var(--text-soft);align-self:center;">ID ' + r.id + '</span></div>'
+      + '</div>';
+  }).join('');
+}
+
+async function resolveRequest(id, status) {
+  const r = _pendingReqs.find(x => x.id === id);
+  if (!r) return;
+  let reason = '';
+  if (status === 'rejected') { reason = prompt('Reason for rejecting (sent to the site):', ''); if (reason === null) return; }
+  else if (!confirm('Approve and apply these quantities to ' + r.siteName + '?')) return;
+  const now = new Date().toISOString();
+  try {
+    if (status === 'approved') {
+      const after = normQty(r.after);
+      await _db.collection('site_info').doc(r.siteId).set({ qty: after, daysServing: deriveDaysServing(after), updatedAt: now }, { merge: true });
+      if (SITE_INFO[r.siteId]) { SITE_INFO[r.siteId].qty = after; SITE_INFO[r.siteId].daysServing = deriveDaysServing(after); }
+    }
+    await _db.collection('site_change_requests').doc(id).set({ status, resolvedAt: now, resolvedBy: 'Monitor', resolution: reason || '' }, { merge: true });
+    const diff = DAYS.filter(([k]) => normQty(r.before)[k] !== normQty(r.after)[k]).map(([k, n]) => n + ': ' + normQty(r.before)[k] + ' → ' + normQty(r.after)[k]).join('; ');
+    (r.changes || ['quantity']).forEach(cat => logChange({ siteId: r.siteId, siteName: r.siteName, by: 'Monitor', category: cat, action: (status === 'approved' ? 'Change approved & applied' : 'Change rejected') + ' [' + id + ']', detail: diff + (reason ? ' | Reason: ' + reason : '') }));
+    // Tell the site.
+    const info = SITE_INFO[r.siteId] || {};
+    const to = [info.email, info.email2].filter(Boolean);
+    if (to.length && emailReady()) {
+      sendEmail({ to, tag: 'request-' + status,
+        subject: 'SESSION: your ' + (r.changes||[]).join(' + ') + ' change was ' + status,
+        text: 'Hello ' + r.siteName + ',\n\nYour change request from ' + new Date(r.requestedAt).toLocaleDateString() + ' (' + id + ') was ' + status.toUpperCase() + '.\n\n'
+          + (status === 'approved' ? 'New weekly deliveries: ' + qtySummary(normQty(r.after)) + '\nDays: ' + deriveDaysServing(normQty(r.after)) + (r.effectiveDate ? '\nEffective: ' + r.effectiveDate : '')
+                                    : 'Your current deliveries stay as they are: ' + qtySummary(normQty(r.before)) + (reason ? '\n\nReason: ' + reason : ''))
+          + '\n\nSign in to SESSION to view your Home tab.\n\nKids Cafe Program' + (getDeptEmail() ? '\n' + getDeptEmail() : '') });
+    }
+    loadPendingRequests();
+    if (document.getElementById('si-site-select').value === r.siteId) loadSiteInfo();
+    loadAllSiteInfo();
+  } catch (e) { alert('Could not update: ' + (e.message || e)); }
+}
+
+// ═══════════════════════════
+//  SITE INFORMATION CRUD (Update Sites tab) — full contact card
+// ═══════════════════════════
+const SI_FIELDS = {
+  'si-agency-name': 'siteName', 'si-agency-number': 'agencyNumber', 'si-address': 'address', 'si-city': 'city', 'si-zip': 'zip',
+  'si-pin': 'pin', 'si-phone': 'phone', 'si-attendee1': 'attendee1', 'si-attendee2': 'attendee2', 'si-orders': 'orders',
+  'si-admin-contact': 'adminContact', 'si-email': 'email', 'si-onsite': 'onsiteSupervisor', 'si-email2': 'email2',
+  'si-start': 'startDate', 'si-end': 'endDate', 'si-meal-kind': 'mealKind', 'si-svc-time': 'mealServiceTime',
+  'si-hours': 'operatingHours', 'si-hours-sat': 'operatingHoursSat', 'si-days-serving': 'daysServing', 'si-notes': 'notes'
+};
+
 function populateSiteInfoSelect() {
   const sel = document.getElementById('si-site-select');
   if (!sel) return;
@@ -3102,20 +3714,21 @@ async function addNewSite() {
   const statusEl = document.getElementById('si-new-status');
   const id = (idEl.value || '').trim();
   const name = (nameEl.value || '').trim();
-  if (!id || !name) { if (statusEl) { statusEl.style.display='block'; statusEl.style.color='var(--danger-text)'; statusEl.textContent='Enter both an agency number and a site name.'; } return; }
-  if (SITES[id]) { if (statusEl) { statusEl.style.display='block'; statusEl.style.color='var(--danger-text)'; statusEl.textContent='A site with that ID already exists.'; } return; }
-  const rec = { siteId: id, siteName: name, agencyName: name, pin: id, email: '', staff: [], active: true, updatedAt: new Date().toISOString() };
+  const say = (ok, msg) => { if (statusEl) { statusEl.style.display='block'; statusEl.style.color = ok ? 'var(--success-text)' : 'var(--danger-text)'; statusEl.textContent = msg; } };
+  if (!id || !name) { say(false, 'Enter both an agency number and a site name.'); return; }
+  if (SITES[id]) { say(false, 'A site with that ID already exists.'); return; }
+  const rec = { ...siteDefaults(), siteId: id, siteName: name, agencyName: name, agencyNumber: id, pin: id, staff: [], active: true, updatedAt: new Date().toISOString() };
   try {
     await _db.collection('site_info').doc(id).set(rec, { merge: true });
     SITES[id] = { name, pin: id, active: true };
+    absorbSiteDoc(rec);
     populateSiteInfoSelect();
     document.getElementById('si-site-select').value = id;
     loadSiteInfo();
     idEl.value = ''; nameEl.value = '';
-    if (statusEl) { statusEl.style.display='block'; statusEl.style.color='var(--success-text)'; statusEl.textContent='Added ' + name + '. Fill in its details below and Save.'; }
-  } catch (e) {
-    if (statusEl) { statusEl.style.display='block'; statusEl.style.color='var(--danger-text)'; statusEl.textContent='Could not save to Firebase: ' + (e.message||e); }
-  }
+    say(true, 'Added ' + name + '. Fill in its details below and Save.');
+    logChange({ siteId: id, siteName: name, by: 'Monitor', category: 'site_info', action: 'Site created', detail: '' });
+  } catch (e) { say(false, 'Could not save to Firebase: ' + (e.message||e)); }
 }
 
 async function loadSiteInfo() {
@@ -3126,75 +3739,93 @@ async function loadSiteInfo() {
   let data = {};
   try {
     const doc = await _db.collection('site_info').doc(site).get();
-    if (doc.exists) data = doc.data();
+    if (doc.exists) { data = doc.data(); absorbSiteDoc(data); }
   } catch (e) { console.warn('site_info load failed:', e); }
-  document.getElementById('si-agency-name').value = data.agencyName || data.siteName || (SITES[site] && SITES[site].name) || '';
-  document.getElementById('si-agency-number').value = data.agencyNumber || data.siteId || site;
-  document.getElementById('si-pin').value = data.pin || (SITES[site] && SITES[site].pin) || '';
-  document.getElementById('si-email').value = data.email || '';
-  document.getElementById('si-phone').value = data.phone || '';
-  document.getElementById('si-staff').value = (data.staff || []).join('\n');
-  document.getElementById('si-notes').value = data.notes || '';
+  const d = { ...siteDefaults(), ...data };
+  Object.entries(SI_FIELDS).forEach(([id, key]) => {
+    const el = document.getElementById(id); if (!el) return;
+    let v = d[key];
+    if (key === 'siteName') v = d.siteName || d.agencyName || (SITES[site] && SITES[site].name) || '';
+    if (key === 'agencyNumber') v = d.agencyNumber || d.siteId || site;
+    if (key === 'pin') v = d.pin || (SITES[site] && SITES[site].pin) || '';
+    el.value = v || '';
+  });
+  const q = normQty(d.qty);
+  DAYS.forEach(([k]) => { document.getElementById('si-q-' + k).value = q[k] || ''; });
+  document.getElementById('si-lock-qty').checked = !!(d.locks && d.locks.quantity);
+  document.getElementById('si-lock-sched').checked = !!(d.locks && d.locks.schedule);
+  document.getElementById('si-staff').value = (d.staff || []).join('\n');
 }
 
 async function saveSiteInfo() {
   const site = document.getElementById('si-site-select').value;
   const statusEl = document.getElementById('si-status');
   if (!site) return;
-  const staff = document.getElementById('si-staff').value.split('\n').map(s => s.trim()).filter(Boolean);
-  const rec = {
-    siteId: site,
-    siteName: document.getElementById('si-agency-name').value.trim(),
-    agencyName: document.getElementById('si-agency-name').value.trim(),
-    agencyNumber: document.getElementById('si-agency-number').value.trim(),
-    pin: document.getElementById('si-pin').value.trim(),
-    email: document.getElementById('si-email').value.trim(),
-    phone: document.getElementById('si-phone').value.trim(),
-    staff,
-    notes: document.getElementById('si-notes').value.trim(),
-    active: true,
-    updatedAt: new Date().toISOString()
-  };
+  const g = id => (document.getElementById(id).value || '').trim();
+  const rec = { siteId: site, active: true, updatedAt: new Date().toISOString() };
+  Object.entries(SI_FIELDS).forEach(([id, key]) => { rec[key] = g(id); });
+  rec.agencyName = rec.siteName;
+  const qty = {}; DAYS.forEach(([k]) => { qty[k] = parseInt(g('si-q-' + k)) || 0; });
+  rec.qty = qty;
+  if (!rec.daysServing) rec.daysServing = deriveDaysServing(qty);
+  rec.locks = { quantity: document.getElementById('si-lock-qty').checked, schedule: document.getElementById('si-lock-sched').checked };
+  let staff = g('si-staff').split('\n').map(s => s.trim()).filter(Boolean);
+  if (!staff.length) staff = [rec.attendee1, rec.attendee2, rec.onsiteSupervisor].filter(Boolean);
+  rec.staff = staff;
+  const prev = SITE_INFO[site] || {};
   try {
     await _db.collection('site_info').doc(site).set(rec, { merge: true });
-    // Reflect changes in the in-memory maps immediately.
     SITES[site] = { name: rec.siteName || site, pin: rec.pin || site, active: true };
-    if (rec.email) SITE_EMAILS[site] = rec.email;
-    if (staff.length) STAFF[site] = staff;
+    absorbSiteDoc({ ...prev, ...rec });
     populateSiteInfoSelect();
     document.getElementById('si-site-select').value = site;
     if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = 'var(--success-text)'; statusEl.innerHTML = '<span class="status-dot green"></span> Saved to Firebase.'; }
+    // Log what changed (quantities / locks get their own categories so the change log stays useful).
+    const pq = normQty(prev.qty);
+    const qDiff = DAYS.filter(([k]) => pq[k] !== qty[k]).map(([k, n]) => n + ': ' + pq[k] + ' → ' + qty[k]).join('; ');
+    if (qDiff) logChange({ siteId: site, siteName: rec.siteName, by: 'Monitor', category: 'quantity', action: 'Quantities edited by monitor', detail: qDiff });
+    const pl = prev.locks || {};
+    ['quantity','schedule'].forEach(k => { if (!!pl[k] !== rec.locks[k]) logChange({ siteId: site, siteName: rec.siteName, by: 'Monitor', category: k, action: (k === 'quantity' ? 'Quantity' : 'Weekly delivery schedule') + (rec.locks[k] ? ' locked' : ' unlocked'), detail: 'Monitor' }); });
+    const infoKeys = Object.values(SI_FIELDS).filter(k => k !== 'pin');
+    const iDiff = infoKeys.filter(k => (prev[k] || '') !== (rec[k] || '')).map(k => k);
+    if (iDiff.length) logChange({ siteId: site, siteName: rec.siteName, by: 'Monitor', category: 'site_info', action: 'Contact card edited', detail: 'Fields: ' + iDiff.join(', ') });
     loadAllSiteInfo();
   } catch (e) {
-    if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = 'var(--danger-text)'; statusEl.innerHTML = '<span class="status-dot red"></span> Save failed: ' + (e.message || e); }
+    if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = 'var(--danger-text)'; statusEl.innerHTML = '<span class="status-dot red"></span> Save failed: ' + esc(e.message || e); }
   }
 }
 
 function clearSiteInfoForm() {
-  ['si-agency-name','si-agency-number','si-pin','si-email','si-phone','si-staff','si-notes'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
+  Object.keys(SI_FIELDS).forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  DAYS.forEach(([k]) => { document.getElementById('si-q-' + k).value = ''; });
+  document.getElementById('si-lock-qty').checked = false; document.getElementById('si-lock-sched').checked = false;
+  document.getElementById('si-staff').value = '';
   const s = document.getElementById('si-status'); if (s) s.style.display = 'none';
 }
 
 async function loadAllSiteInfo() {
   const ctr = document.getElementById('si-all-table');
   if (!ctr) return;
-  ctr.innerHTML = '<div style="font-size:13px;color:var(--text-soft);padding:8px;"><span class="spinner" style="border-color:rgba(63,114,184,0.3);border-top-color:var(--navy);"></span> Loading…</div>';
+  ctr.innerHTML = '<div style="font-size:13px;color:var(--text-soft);padding:8px;"><span class="spinner dark"></span> Loading…</div>';
   let docs = [];
   try {
     const snap = await _db.collection('site_info').get();
     docs = snap.docs.map(d => d.data()).filter(d => d.siteId && d.siteId !== 'MONITOR');
+    docs.forEach(absorbSiteDoc);
   } catch (e) {
     ctr.innerHTML = '<div class="empty"><i class="ti ti-wifi-off"></i>Could not load sites from Firebase.</div>'; return;
   }
   if (!docs.length) { ctr.innerHTML = '<div class="empty"><i class="ti ti-building"></i>No sites on file yet.</div>'; return; }
   docs.sort((a,b) => (a.siteName||a.agencyName||a.siteId).localeCompare(b.siteName||b.agencyName||b.siteId));
-  let h = '<table class="rec-table"><thead><tr><th>Site</th><th style="width:90px;">Site ID</th><th style="width:70px;">PIN</th><th>Email</th><th style="width:60px;">Staff</th><th style="width:70px;"></th></tr></thead><tbody>';
+  let h = '<table class="rec-table auto" style="min-width:1100px;"><thead><tr><th>Site</th><th>ID</th><th>PIN</th><th>Orders</th><th>Admin email</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Wk</th><th>Type</th><th>Locks</th><th></th></tr></thead><tbody>';
   docs.forEach(d => {
     const nm = d.siteName || d.agencyName || d.siteId;
-    h += '<tr><td title="' + nm + '">' + nm + '</td><td>' + d.siteId + '</td><td>' + (d.pin||'') + '</td><td title="' + (d.email||'') + '">' + (d.email||'—') + '</td><td>' + ((d.staff||[]).length) + '</td>'
-      + '<td><button class="btn-sm blue" onclick="editSiteInfoRow(\'' + d.siteId + '\')"><i class="ti ti-pencil"></i></button></td></tr>';
+    const qq = normQty(d.qty); const lk = d.locks || {};
+    h += '<tr><td title="' + esc(nm) + '" style="max-width:220px;">' + esc(nm) + '</td><td>' + esc(d.siteId) + '</td><td>' + esc(d.pin||'') + '</td><td>' + esc(d.orders||'—') + '</td><td title="' + esc(d.email||'') + '" style="max-width:200px;">' + esc(d.email||'—') + '</td>'
+      + DAYS.map(([k]) => '<td style="text-align:center;' + (qq[k] ? '' : 'color:var(--text-soft);') + '">' + (qq[k] || '—') + '</td>').join('')
+      + '<td style="text-align:center;font-weight:600;">' + weeklyTotal(qq) + '</td><td>' + esc((d.mealKind||'').replace(' Meals','') || '—') + '</td>'
+      + '<td>' + (lk.quantity ? '<span class="pill pill-warn" title="Quantity locked">Q</span> ' : '') + (lk.schedule ? '<span class="pill pill-warn" title="Schedule locked">S</span>' : '') + '</td>'
+      + '<td><button class="btn-sm blue" onclick="editSiteInfoRow(\'' + esc(d.siteId) + '\')"><i class="ti ti-pencil"></i></button></td></tr>';
   });
   h += '</tbody></table>';
   ctr.innerHTML = h;
@@ -3208,7 +3839,11 @@ function editSiteInfoRow(siteId) {
 }
 
 // ═══════════════════════════
-//  EXCEL IMPORT (site info bulk)
+//  EXCEL IMPORT (Session_Import.xlsx format)
+//  Columns: Training Attendee 1 | Training Attendee 2 | Orders | AGENCY NO | Organization Name |
+//  Address | City | ZIP | Administrator Contact | Email | On-Site Supervisor | Email2 | start date: |
+//  end date: | combination (hot/cold) or cold meals? | Site Operating Hours: | Site Operating Hours - Saturday: |
+//  Monday..Saturday | Meal Service Time: | Days Serving
 // ═══════════════════════════
 let _importRows = [];
 
@@ -3220,6 +3855,14 @@ function showImportStatus(kind, msg) {
   el.style.color = colors[kind] || 'var(--text-mid)';
   el.innerHTML = msg;
 }
+function toISODate(v) {
+  if (!v && v !== 0) return '';
+  if (v instanceof Date) return isNaN(v) ? '' : v.getFullYear() + '-' + String(v.getMonth()+1).padStart(2,'0') + '-' + String(v.getDate()).padStart(2,'0');
+  if (typeof v === 'number') { const d = XLSX.SSF.parse_date_code(v); return d ? d.y + '-' + String(d.m).padStart(2,'0') + '-' + String(d.d).padStart(2,'0') : ''; }
+  const s = String(v).trim(); if (!s) return '';
+  const d = new Date(s); return isNaN(d) ? s : d.toISOString().slice(0,10);
+}
+function normKey(k) { return String(k || '').toLowerCase().replace(/[^a-z0-9]/g, ''); }
 
 function previewImport(evt) {
   const file = evt.target.files && evt.target.files[0];
@@ -3227,38 +3870,57 @@ function previewImport(evt) {
   const reader = new FileReader();
   reader.onload = (e) => {
     try {
-      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const wb = XLSX.read(e.target.result, { type: 'array', cellDates: true });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
-      // Map template columns → our fields.
-      const pick = (row, keys) => { for (const k of keys) { for (const rk of Object.keys(row)) { if (rk.trim().toLowerCase() === k.toLowerCase()) return row[rk]; } } return ''; };
+      const pick = (row, keys) => {
+        const want = keys.map(normKey);
+        for (const rk of Object.keys(row)) { if (want.includes(normKey(rk))) return row[rk]; }
+        return '';
+      };
+      const str = v => String(v === null || v === undefined ? '' : v).trim();
+      const num = v => { const x = parseInt(String(v).replace(/[^0-9]/g, '')); return isNaN(x) ? 0 : x; };
       _importRows = rows.map(r => {
-        const id = String(pick(r, ['AGENCY NO','Agency No','Agency Number','Site ID'])).trim();
-        const name = String(pick(r, ['AGENCY NAME','Agency Name','Site Name','Site'])).trim();
-        const email = String(pick(r, ['Admin Email','Administrator Email','Email','Supervisor Email'])).trim();
-        const adminContact = String(pick(r, ['Administrator Contact','Admin Contact','Contact'])).trim();
-        const staff = [
-          pick(r, ['Training Attendee 1','Training Attendee1']),
-          pick(r, ['Training Attendee 2','Training Attendee2']),
-          pick(r, ['On-Site Supervisor','Onsite Supervisor','On Site Supervisor'])
-        ].map(s => String(s).trim()).filter(Boolean);
-        return { siteId: id, siteName: name, email, adminContact, staff };
+        const id = str(pick(r, ['AGENCY NO','Agency No','Agency Number','Site ID']));
+        const name = str(pick(r, ['Organization Name','AGENCY NAME','Agency Name','Site Name','Site']));
+        const qty = { mon: num(pick(r, ['Monday'])), tue: num(pick(r, ['Tuesday'])), wed: num(pick(r, ['Wednesday'])), thu: num(pick(r, ['Thursday'])), fri: num(pick(r, ['Friday'])), sat: num(pick(r, ['Saturday'])) };
+        const rec = {
+          siteId: id, siteName: name, agencyName: name, agencyNumber: id,
+          attendee1: str(pick(r, ['Training Attendee 1'])), attendee2: str(pick(r, ['Training Attendee 2'])),
+          orders: str(pick(r, ['Orders'])),
+          address: str(pick(r, ['Address'])), city: str(pick(r, ['City'])), zip: str(pick(r, ['ZIP','Zip'])),
+          adminContact: str(pick(r, ['Administrator Contact','Admin Contact'])),
+          email: str(pick(r, ['Email','Admin Email','Administrator Email'])),
+          onsiteSupervisor: str(pick(r, ['On-Site Supervisor','Onsite Supervisor'])),
+          email2: str(pick(r, ['Email2','Email 2','Supervisor Email'])),
+          startDate: toISODate(pick(r, ['start date:','start date'])), endDate: toISODate(pick(r, ['end date:','end date'])),
+          mealKind: str(pick(r, ['combination (hot/cold) or cold meals?','Meal Kind'])),
+          operatingHours: str(pick(r, ['Site Operating Hours:','Site Operating Hours'])),
+          operatingHoursSat: str(pick(r, ['Site Operating Hours - Saturday:','Site Operating Hours - Saturday'])),
+          qty, mealServiceTime: str(pick(r, ['Meal Service Time:','Meal Service Time'])),
+          daysServing: str(pick(r, ['Days Serving'])) || deriveDaysServing(qty)
+        };
+        rec.staff = [rec.attendee1, rec.attendee2, rec.onsiteSupervisor].filter(Boolean);
+        return rec;
       }).filter(r => r.siteId && r.siteName);
     } catch (err) {
-      showImportStatus('err', 'Could not read that file: ' + (err.message || err));
+      showImportStatus('err', 'Could not read that file: ' + esc(err.message || err));
       return;
     }
     const preview = document.getElementById('si-import-preview');
     const btn = document.getElementById('si-import-btn');
     if (!_importRows.length) {
-      if (preview) { preview.style.display = 'block'; preview.innerHTML = '<div class="alert alert-warning"><i class="ti ti-alert-triangle"></i>&nbsp; No valid rows found. Check that the file has AGENCY NO and AGENCY NAME columns.</div>'; }
+      if (preview) { preview.style.display = 'block'; preview.innerHTML = '<div class="alert alert-warning"><i class="ti ti-alert-triangle"></i>&nbsp; No valid rows found. Check that the first sheet has AGENCY NO and Organization Name columns.</div>'; }
       if (btn) btn.style.display = 'none';
       return;
     }
-    let h = '<div style="font-size:13px;color:var(--text-mid);margin-bottom:6px;">Found <strong>' + _importRows.length + '</strong> site(s):</div>';
-    h += '<div class="table-scroll"><table class="rec-table"><thead><tr><th>Site ID</th><th>Name</th><th>Email</th><th>Staff</th></tr></thead><tbody>';
-    _importRows.slice(0, 100).forEach(r => {
-      h += '<tr><td>' + r.siteId + '</td><td title="' + r.siteName + '">' + r.siteName + '</td><td title="' + r.email + '">' + (r.email||'—') + '</td><td>' + r.staff.length + '</td></tr>';
+    const newCount = _importRows.filter(r => !SITES[r.siteId]).length;
+    let h = '<div style="font-size:13px;color:var(--text-mid);margin-bottom:6px;">Found <strong>' + _importRows.length + '</strong> site(s) — ' + newCount + ' new, ' + (_importRows.length - newCount) + ' existing (will be updated; PINs, notes and locks kept).</div>';
+    h += '<div class="table-scroll"><table class="rec-table auto" style="min-width:1000px;"><thead><tr><th>ID</th><th>Organization</th><th>Orders</th><th>Email</th><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Type</th><th>Dates</th><th>Staff</th></tr></thead><tbody>';
+    _importRows.slice(0, 150).forEach(r => {
+      h += '<tr><td>' + esc(r.siteId) + '</td><td title="' + esc(r.siteName) + '" style="max-width:220px;">' + esc(r.siteName) + '</td><td>' + esc(r.orders||'—') + '</td><td title="' + esc(r.email) + '" style="max-width:180px;">' + esc(r.email||'—') + '</td>'
+        + DAYS.map(([k]) => '<td style="text-align:center;">' + (r.qty[k] || '—') + '</td>').join('')
+        + '<td>' + esc((r.mealKind||'').replace(' Meals','')) + '</td><td>' + esc(r.startDate) + ' → ' + esc(r.endDate) + '</td><td>' + r.staff.length + '</td></tr>';
     });
     h += '</tbody></table></div>';
     if (preview) { preview.style.display = 'block'; preview.innerHTML = h; }
@@ -3270,52 +3932,122 @@ function previewImport(evt) {
 
 async function runImport() {
   if (!_importRows.length) { showImportStatus('warn', 'Nothing to import — choose a file first.'); return; }
-  showImportStatus('ok', '<span class="spinner" style="border-color:rgba(63,114,184,0.3);border-top-color:var(--navy);"></span> Importing ' + _importRows.length + ' site(s)…');
+  showImportStatus('ok', '<span class="spinner dark"></span> Importing ' + _importRows.length + ' site(s)…');
   let ok = 0, fail = 0;
   for (const r of _importRows) {
+    const existing = SITE_INFO[r.siteId] || {};
     const rec = {
-      siteId: r.siteId, siteName: r.siteName, agencyName: r.siteName, agencyNumber: r.siteId,
-      pin: r.siteId, email: r.email || '', adminContact: r.adminContact || '', staff: r.staff || [],
+      ...siteDefaults(), ...r,
+      pin: existing.pin || (SITES[r.siteId] && SITES[r.siteId].pin) || r.siteId,
+      locks: existing.locks || { quantity: false, schedule: false },
+      notes: existing.notes || '',
+      phone: existing.phone || '',
       active: true, updatedAt: new Date().toISOString()
     };
     try {
       await _db.collection('site_info').doc(r.siteId).set(rec, { merge: true });
-      SITES[r.siteId] = { name: r.siteName, pin: r.siteId, active: true };
-      if (r.email) SITE_EMAILS[r.siteId] = r.email;
-      if (r.staff && r.staff.length) STAFF[r.siteId] = r.staff;
+      SITES[r.siteId] = { name: r.siteName, pin: rec.pin, active: true };
+      absorbSiteDoc(rec);
       ok++;
     } catch (e) { fail++; }
   }
   showImportStatus(fail ? 'warn' : 'ok', 'Imported ' + ok + ' site(s)' + (fail ? ', ' + fail + ' failed.' : '.'));
+  logChange({ siteId: 'ALL', siteName: 'All sites', by: 'Monitor', category: 'site_info', action: 'Excel import', detail: ok + ' site(s) imported' + (fail ? ', ' + fail + ' failed' : '') });
   populateSiteInfoSelect();
   loadAllSiteInfo();
   populateLoginDropdown();
 }
 
 // ═══════════════════════════
-//  EMAIL CONFIGURATION (Settings tab)
+//  QUANTITY, SCHEDULE & CALENDAR REPORT (+ Change Log across all users)
 // ═══════════════════════════
-function saveDeptEmail() {
-  const el = document.getElementById('dept-email-input');
-  const statusEl = document.getElementById('dept-email-status');
-  if (!el) return;
-  safeSet('cacfp_dept_email', el.value.trim());
-  if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = 'var(--success-text)'; statusEl.textContent = 'Department email saved.'; setTimeout(() => { statusEl.style.display = 'none'; }, 3000); }
+async function exportQuantityScheduleReport() {
+  const month = document.getElementById('qsc-month').value;
+  const siteFilter = document.getElementById('qsc-site').value;
+  const statusEl = document.getElementById('qsc-status');
+  if (!month) { alert('Pick a calendar month.'); return; }
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.innerHTML = '<span class="spinner dark"></span> Reading sites, calendars and change log…'; }
+
+  let sites = [];
+  try {
+    const snap = await _db.collection('site_info').get();
+    sites = snap.docs.map(d => d.data()).filter(d => d.siteId && d.siteId !== 'MONITOR');
+  } catch (e) { if (statusEl) statusEl.innerHTML = '<span class="status-dot red"></span> Could not read site_info.'; return; }
+  if (siteFilter && siteFilter !== 'ALL') sites = sites.filter(s => s.siteId === siteFilter);
+  sites.sort((a,b) => (a.siteName||a.siteId).localeCompare(b.siteName||b.siteId));
+  const wb = XLSX.utils.book_new();
+
+  // Sheet 1 — Quantities & Schedule
+  const qs = [['CURRENT DELIVERY QUANTITIES & WEEKLY SCHEDULE'], ['Generated', new Date().toLocaleString()], [],
+    ['Site','Agency no','Orders','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Weekly total','Days serving','Meal type','Start date','End date','Meal service time','Operating hours','Sat hours','Quantity locked','Schedule locked','Admin contact','Email','On-site supervisor','Email2','Attendee 1','Attendee 2','Address','City','ZIP']];
+  sites.forEach(s => {
+    const qq = normQty(s.qty); const lk = s.locks || {};
+    qs.push([s.siteName||s.siteId, s.agencyNumber||s.siteId, s.orders||'', qq.mon, qq.tue, qq.wed, qq.thu, qq.fri, qq.sat, weeklyTotal(qq), s.daysServing || deriveDaysServing(qq), s.mealKind||'', s.startDate||'', s.endDate||'', s.mealServiceTime||'', s.operatingHours||'', s.operatingHoursSat||'', lk.quantity ? 'Yes' : 'No', lk.schedule ? 'Yes' : 'No', s.adminContact||'', s.email||'', s.onsiteSupervisor||'', s.email2||'', s.attendee1||'', s.attendee2||'', s.address||'', s.city||'', s.zip||'']);
+  });
+  const wsQ = XLSX.utils.aoa_to_sheet(qs); wsQ['!cols'] = [{wch:32},{wch:10},{wch:10}].concat(Array(6).fill({wch:10})).concat([{wch:12},{wch:18},{wch:12},{wch:11},{wch:11},{wch:18},{wch:16},{wch:12},{wch:9},{wch:9},{wch:22},{wch:30},{wch:22},{wch:30},{wch:20},{wch:20},{wch:40},{wch:14},{wch:8}]);
+  XLSX.utils.book_append_sheet(wb, wsQ, 'Quantities & Schedule');
+
+  // Sheet 2 — Calendar for the month (closed dates + lock state per site)
+  const expected = weekdaysInMonth(month).length;
+  const calRows = [['AVAILABILITY CALENDAR — ' + monthNameUpper(month)], ['Expected service weekdays (Mon–Sat)', expected], [],
+    ['Site','Open days','Closed days','Month locked','Closed dates','Last updated','Updated by']];
+  await Promise.all(sites.map(async s => {
+    let data = {};
+    try { const doc = await _db.collection('site_calendar').doc(calDocId(s.siteId, month)).get(); if (doc.exists) data = doc.data(); } catch (e) {}
+    const closed = Array.isArray(data.closedDates) ? data.closedDates.slice().sort() : [];
+    s._cal = [s.siteName||s.siteId, expected - closed.length, closed.length, data.locked ? 'Yes' : 'No', closed.join(', '), data.updatedAt ? data.updatedAt.replace('T',' ').slice(0,16) : '', data.updatedBy || ''];
+  }));
+  sites.forEach(s => calRows.push(s._cal));
+  const wsC = XLSX.utils.aoa_to_sheet(calRows); wsC['!cols'] = [{wch:32},{wch:10},{wch:11},{wch:12},{wch:60},{wch:17},{wch:11}];
+  XLSX.utils.book_append_sheet(wb, wsC, 'Calendar ' + month);
+
+  // Sheet 3 — Pending requests
+  const pr = [['PENDING CHANGE REQUESTS'], [], ['Request ID','Site','Requested at','Requested by','Type','Effective','Mon','Tue','Wed','Thu','Fri','Sat','Days (requested)','Note']];
+  try {
+    const snap = await _db.collection('site_change_requests').where('status', '==', 'pending').get();
+    snap.docs.map(d => d.data()).filter(r => siteFilter === 'ALL' || r.siteId === siteFilter).sort((a,b)=>(a.requestedAt||'').localeCompare(b.requestedAt||'')).forEach(r => {
+      const a = normQty(r.after);
+      pr.push([r.id, r.siteName, (r.requestedAt||'').replace('T',' ').slice(0,16), r.requestedBy||'', (r.changes||[]).join(' + '), r.effectiveDate||'', a.mon, a.tue, a.wed, a.thu, a.fri, a.sat, r.afterDays || deriveDaysServing(a), r.note||'']);
+    });
+  } catch (e) {}
+  if (pr.length === 3) pr.push(['—','No pending requests']);
+  const wsP = XLSX.utils.aoa_to_sheet(pr); wsP['!cols'] = [{wch:13},{wch:32},{wch:17},{wch:20},{wch:20},{wch:11}].concat(Array(6).fill({wch:6})).concat([{wch:18},{wch:40}]);
+  XLSX.utils.book_append_sheet(wb, wsP, 'Pending Requests');
+
+  // Sheet 4 — Change log across all users
+  const cl = [['CHANGE LOG — ALL USERS'], ['Newest first. Categories: quantity, schedule, calendar, request, site_info, reminder'], [],
+    ['Date/time','Site','Site ID','Changed by','Role','Category','Action','Detail']];
+  let logCount = 0;
+  try {
+    const snap = await _db.collection('change_log').orderBy('at', 'desc').limit(5000).get();
+    snap.docs.map(d => d.data()).filter(e => siteFilter === 'ALL' || e.siteId === siteFilter || e.siteId === 'ALL').forEach(e => {
+      cl.push([(e.at||'').replace('T',' ').slice(0,19), e.siteName||'', e.siteId||'', e.by||'', e.role||'', e.category||'', e.action||'', e.detail||'']);
+      logCount++;
+    });
+  } catch (e) { cl.push(['Could not read change_log: ' + (e.message || e)]); }
+  if (!logCount) cl.push(['—','No changes logged yet']);
+  const wsL = XLSX.utils.aoa_to_sheet(cl); wsL['!cols'] = [{wch:20},{wch:30},{wch:9},{wch:18},{wch:9},{wch:11},{wch:44},{wch:70}];
+  XLSX.utils.book_append_sheet(wb, wsL, 'Change Log');
+
+  const label = (siteFilter && siteFilter !== 'ALL') ? siteFilter : 'AllSites';
+  XLSX.writeFile(wb, 'Quantity_Schedule_Calendar_' + label + '_' + month + '.xlsx');
+  if (statusEl) statusEl.innerHTML = '<span class="status-dot green"></span> Exported ' + sites.length + ' site(s) and ' + logCount + ' change-log entries.';
 }
 
+// ═══════════════════════════
+//  SITE EMAIL LIST (Settings tab quick edit)
+// ═══════════════════════════
 function renderSiteEmailList() {
   const ctr = document.getElementById('site-email-list');
   if (!ctr) return;
-  const deptEl = document.getElementById('dept-email-input');
-  if (deptEl && !deptEl.value) deptEl.value = getDeptEmail();
   const sites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR').sort(([,a],[,b]) => a.name.localeCompare(b.name));
   if (!sites.length) { ctr.innerHTML = '<div class="empty" style="padding:1.5rem;"><i class="ti ti-mail-off"></i>No sites loaded yet.</div>'; return; }
   let h = '';
   sites.forEach(([k, v]) => {
     const cur = SITE_EMAILS[k] || '';
     h += '<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;">'
-      + '<div style="flex:0 0 45%;font-size:13px;color:var(--text-mid);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + v.name + '">' + v.name + '</div>'
-      + '<input type="email" data-site="' + k + '" class="site-email-field" value="' + cur.replace(/"/g,'&quot;') + '" placeholder="supervisor@site.org" style="flex:1;">'
+      + '<div style="flex:0 0 45%;font-size:13px;color:var(--text-mid);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + esc(v.name) + '">' + esc(v.name) + '</div>'
+      + '<input type="email" data-site="' + esc(k) + '" class="site-email-field" value="' + esc(cur) + '" placeholder="admin@site.org" style="flex:1;">'
       + '</div>';
   });
   ctr.innerHTML = h;
@@ -3324,16 +4056,18 @@ function renderSiteEmailList() {
 async function saveSiteEmails() {
   const fields = Array.from(document.querySelectorAll('.site-email-field'));
   const statusEl = document.getElementById('site-email-status');
-  if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = 'var(--text-mid)'; statusEl.innerHTML = '<span class="spinner" style="border-color:rgba(63,114,184,0.3);border-top-color:var(--navy);"></span> Saving…'; }
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = 'var(--text-mid)'; statusEl.innerHTML = '<span class="spinner dark"></span> Saving…'; }
   let ok = 0, fail = 0;
   for (const f of fields) {
     const site = f.getAttribute('data-site');
     const email = f.value.trim();
+    if ((SITE_EMAILS[site] || '') === email) continue;
     SITE_EMAILS[site] = email;
+    if (SITE_INFO[site]) SITE_INFO[site].email = email;
     try { await _db.collection('site_info').doc(site).set({ email }, { merge: true }); ok++; }
     catch (e) { fail++; }
   }
-  if (statusEl) { statusEl.style.color = fail ? 'var(--warning-text)' : 'var(--success-text)'; statusEl.textContent = 'Saved ' + ok + ' email(s)' + (fail ? ', ' + fail + ' failed.' : '.'); }
+  if (statusEl) { statusEl.style.color = fail ? 'var(--warning-text)' : 'var(--success-text)'; statusEl.textContent = 'Saved ' + ok + ' changed email(s)' + (fail ? ', ' + fail + ' failed.' : '.'); }
 }
 
 </script>
