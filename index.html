@@ -334,8 +334,8 @@ background-image:
       <div id="login-sites-status" style="font-size:11px;color:var(--text-soft);margin-top:4px;display:none;"></div>
     </div>
     <div class="fg" style="margin-bottom:1.25rem;">
-      <label for="lp">5-digit PIN</label>
-      <input type="password" id="lp" placeholder="Enter 5-digit PIN" maxlength="5" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()">
+      <label for="lp">PIN</label>
+      <input type="password" id="lp" placeholder="Enter your site PIN" maxlength="10" inputmode="numeric" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <button class="btn-primary" style="width:100%;justify-content:center;height:44px;font-size:15px;" onclick="doLogin()">
       <i class="ti ti-login"></i> Sign in
@@ -901,10 +901,10 @@ background-image:
       <!-- Postmark email configuration -->
       <div class="card" style="border-left:3px solid var(--navy);">
         <div class="card-title"><i class="ti ti-mail-cog"></i>Email (Postmark)</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Reminders go out through <strong>Postmark</strong> from <strong>kids@clevelandfoodbank.org</strong>, to the administrator (and supervisor, when on file) of each site you tick in <strong>Site Tracker</strong>. A small Cloudflare Worker holds the Postmark server token, so it never sits in this page. The <strong>Relay URL</strong> below is that Worker's own address &mdash; it looks like <code>https://session-mail.your-subdomain.workers.dev</code>. It is <em>not</em> a Postmark address: a browser cannot talk to an SMTP host such as <code>smtp-broadcasts.postmarkapp.com</code>. Settings save to Firebase (<code>app_config/email</code>) and every monitor uses them.</p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Reminders go out through <strong>Postmark</strong> from <strong>kids@clevelandfoodbank.org</strong>, to the administrator (and supervisor, when on file) of each site you tick in <strong>Site Tracker</strong>. A small Cloudflare Worker holds the Postmark server token, so it never sits in this page. The <strong>Relay URL</strong> below is that Worker's own address &mdash; it looks like <code>https://session-mail.your-subdomain.workers.dev</code>. It is <em>not</em> a Postmark address: a browser cannot talk to an SMTP host such as <code>smtp-broadcasts.postmarkapp.com</code>. The relay URL, sender, and stream save to Firebase (<code>app_config/email</code>) for every monitor; the <strong>access key</strong> stays in this browser only, so each monitor enters it once on each computer they use.</p>
         <div class="grid2" style="margin-bottom:1rem;">
           <div class="fg full"><label for="em-proxy-url">Relay URL</label><input type="url" id="em-proxy-url" placeholder="https://session-mail.your-subdomain.workers.dev"></div>
-          <div class="fg"><label for="em-proxy-key">Relay access key <span style="font-size:11px;color:var(--text-soft);">(must match the relay's SESSION_KEY)</span></label><input type="text" id="em-proxy-key" placeholder="long random string"></div>
+          <div class="fg"><label for="em-proxy-key">Relay access key <span style="font-size:11px;color:var(--text-soft);">(must match the relay's SESSION_KEY &mdash; kept on this device only, never in Firebase)</span></label><input type="password" id="em-proxy-key" placeholder="long random string" autocomplete="off"></div>
           <div class="fg"><label for="em-from">From address <span style="font-size:11px;color:var(--text-soft);">(verified Postmark sender)</span></label><input type="email" id="em-from" placeholder="kids@clevelandfoodbank.org"></div>
           <div class="fg"><label for="em-notify">Notification recipient <span style="font-size:11px;color:var(--text-soft);">(where test emails land)</span></label><input type="email" id="em-notify" placeholder="kids@clevelandfoodbank.org"></div>
           <div class="fg"><label for="em-dept">Department email <span style="font-size:11px;color:var(--text-soft);">(shown in signatures / reply-to)</span></label><input type="email" id="em-dept" placeholder="kids@clevelandfoodbank.org"></div>
@@ -949,7 +949,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.14</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.14.2</div>
 
 <script>
 // ═══════════════════════════
@@ -1312,7 +1312,8 @@ function populateExportSelects() {
 // ═══════════════════════════
 //  FORM HELPERS
 // ═══════════════════════════
-function today() { return new Date().toISOString().slice(0, 10); }
+// Local calendar date. (toISOString() gives the UTC date, which is already "tomorrow" after 8pm in Cleveland.)
+function today() { const d = new Date(); return ymd(d.getFullYear(), d.getMonth() + 1, d.getDate()); }
 function nowTime() { return new Date().toTimeString().slice(0, 5); }
 function n(id) { return parseInt(document.getElementById(id).value) || 0; }
 
@@ -2051,24 +2052,29 @@ function renderTrackerMonthly() {
 //  EMAIL — POSTMARK (via relay)
 //  The Postmark server token stays on the relay (Cloudflare Worker: session-mail).
 //  This page only knows the relay URL + an access key.
-//  Config lives in Firestore: app_config/email { proxyUrl, proxyKey, fromEmail, notifyEmail, deptEmail, messageStream }
+//  Config lives in Firestore: app_config/email { proxyUrl, fromEmail, notifyEmail, deptEmail, messageStream }
+//  The relay access key (proxyKey) is deliberately NOT in Firestore — Firestore is readable by every
+//  visitor's browser, so a key stored there would let anyone send mail through the relay. It lives in
+//  localStorage on each monitor's device (cacfp_relay_key) and is entered once per computer.
 //  Sender is kids@clevelandfoodbank.org. Recipients are whichever sites the monitor ticks in Site Tracker:
 //  each site's administrator email, plus its on-site supervisor (email2) when one is on file.
 // ═══════════════════════════
+const RELAY_KEY_STORE = 'cacfp_relay_key';
 let EMAIL_CFG = { proxyUrl: '', proxyKey: '', fromEmail: DEPT_EMAIL, notifyEmail: DEPT_EMAIL, deptEmail: DEPT_EMAIL, messageStream: 'outbound' };
 
 async function loadEmailConfig() {
   try {
     const doc = await _db.collection('app_config').doc('email').get();
-    if (doc.exists) EMAIL_CFG = { ...EMAIL_CFG, ...doc.data() };
+    if (doc.exists) { const d = doc.data(); delete d.proxyKey; EMAIL_CFG = { ...EMAIL_CFG, ...d }; }
   } catch (e) { console.warn('email config load failed:', e); }
+  EMAIL_CFG.proxyKey = safeGet(RELAY_KEY_STORE) || '';
   // Legacy fallback: dept email previously saved in localStorage.
   if (!EMAIL_CFG.deptEmail) EMAIL_CFG.deptEmail = safeGet('cacfp_dept_email') || DEPT_EMAIL || '';
   if (!EMAIL_CFG.fromEmail) EMAIL_CFG.fromEmail = DEPT_EMAIL;
   if (!EMAIL_CFG.messageStream) EMAIL_CFG.messageStream = 'outbound';
 }
 function getDeptEmail() { return EMAIL_CFG.deptEmail || ''; }
-function emailReady() { return !!(EMAIL_CFG.proxyUrl && EMAIL_CFG.fromEmail); }
+function emailReady() { return !!(EMAIL_CFG.proxyUrl && EMAIL_CFG.proxyKey && EMAIL_CFG.fromEmail); }
 
 function renderEmailConfig() {
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
@@ -2076,14 +2082,22 @@ function renderEmailConfig() {
   set('em-from', EMAIL_CFG.fromEmail); set('em-notify', EMAIL_CFG.notifyEmail); set('em-dept', EMAIL_CFG.deptEmail);
   set('em-stream', EMAIL_CFG.messageStream || 'outbound');
   const s = document.getElementById('em-status');
-  if (s) { s.style.display = 'block'; s.style.color = emailReady() ? 'var(--success-text)' : 'var(--warning-text)';
-    s.innerHTML = emailReady() ? '<span class="status-dot green"></span> Postmark relay configured.' : '<span class="status-dot orange"></span> Not configured yet — reminders will fall back to opening an Outlook draft (mailto) until a relay URL and From address are saved.'; }
+  if (!s) return;
+  s.style.display = 'block';
+  if (emailReady()) {
+    s.style.color = 'var(--success-text)'; s.innerHTML = '<span class="status-dot green"></span> Postmark relay configured on this device.';
+  } else if (EMAIL_CFG.proxyUrl && !EMAIL_CFG.proxyKey) {
+    s.style.color = 'var(--warning-text)'; s.innerHTML = '<span class="status-dot orange"></span> The relay URL is saved, but this computer has no access key yet. Enter it above and save — until then reminders fall back to an Outlook draft (mailto).';
+  } else {
+    s.style.color = 'var(--warning-text)'; s.innerHTML = '<span class="status-dot orange"></span> Not configured yet — reminders will fall back to opening an Outlook draft (mailto) until a relay URL, access key, and From address are saved.';
+  }
 }
 
 // Returns true when the config was saved, false when it was rejected or the save failed.
 async function saveEmailConfig() {
   const g = id => (document.getElementById(id).value || '').trim();
-  const cfg = { proxyUrl: g('em-proxy-url').replace(/\/+$/, ''), proxyKey: g('em-proxy-key'), fromEmail: g('em-from') || DEPT_EMAIL, notifyEmail: g('em-notify'), deptEmail: g('em-dept'), messageStream: g('em-stream') || 'outbound', updatedAt: new Date().toISOString() };
+  const proxyKey = g('em-proxy-key');
+  const cfg = { proxyUrl: g('em-proxy-url').replace(/\/+$/, ''), fromEmail: g('em-from') || DEPT_EMAIL, notifyEmail: g('em-notify'), deptEmail: g('em-dept'), messageStream: g('em-stream') || 'outbound', updatedAt: new Date().toISOString() };
   const s = document.getElementById('em-status');
   const bad = (msg) => { if (s) { s.style.display = 'block'; s.style.color = 'var(--danger-text)'; s.innerHTML = '<span class="status-dot red"></span> ' + msg; } return false; };
   if (cfg.proxyUrl && /postmarkapp\.com/i.test(cfg.proxyUrl)) {
@@ -2093,10 +2107,12 @@ async function saveEmailConfig() {
     return bad('The Relay URL must start with https://');
   }
   try {
-    await _db.collection('app_config').doc('email').set(cfg, { merge: true });
-    EMAIL_CFG = { ...EMAIL_CFG, ...cfg };
+    // FieldValue.delete() removes a proxyKey that an earlier version of SESSION may have written to Firestore.
+    await _db.collection('app_config').doc('email').set({ ...cfg, proxyKey: firebase.firestore.FieldValue.delete() }, { merge: true });
+    safeSet(RELAY_KEY_STORE, proxyKey);
+    EMAIL_CFG = { ...EMAIL_CFG, ...cfg, proxyKey };
     safeSet('cacfp_dept_email', cfg.deptEmail);
-    if (s) { s.style.display = 'block'; s.style.color = 'var(--success-text)'; s.innerHTML = '<span class="status-dot green"></span> Email settings saved to Firebase.'; }
+    if (s) { s.style.display = 'block'; s.style.color = 'var(--success-text)'; s.innerHTML = '<span class="status-dot green"></span> Email settings saved' + (proxyKey ? ' (access key kept on this device).' : '. No access key entered on this device yet.'); }
     return true;
   } catch (e) {
     if (s) { s.style.display = 'block'; s.style.color = 'var(--danger-text)'; s.innerHTML = '<span class="status-dot red"></span> Save failed: ' + esc(e.message || e); }
