@@ -1,0 +1,24 @@
+name = "session-mail"
+main = "worker.js"
+compatibility_date = "2026-09-01"
+
+[vars]
+# Origins allowed to call this relay. SESSION runs on GitHub Pages, so this is
+# your Pages origin — scheme and host only, no path, no trailing slash.
+# Confirm yours by opening SESSION and reading the address bar; for the
+# damian-programs/session repo the origin is the value below (path /session/ is not part of it).
+# Leave this empty ONLY while testing — an empty value allows any origin.
+ALLOWED_ORIGINS = "https://damian-programs.github.io"
+
+# Verified Postmark sender. The relay stamps this on every message and ignores
+# whatever From the browser sends, so a leaked access key can't send as anyone else.
+FROM_EMAIL = "kids@clevelandfoodbank.org"
+
+# Fallback Postmark stream if SESSION doesn't send one.
+# "outbound" is the standard transactional stream. Use "broadcast" only if the
+# IT director confirms that is the only stream on this server.
+MESSAGE_STREAM = "outbound"
+
+# Secrets are NOT set here. Run these once after the first deploy:
+#   npx wrangler secret put POSTMARK_TOKEN
+#   npx wrangler secret put SESSION_KEY
