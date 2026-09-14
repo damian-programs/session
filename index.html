@@ -901,13 +901,14 @@ background-image:
       <!-- Postmark email configuration -->
       <div class="card" style="border-left:3px solid var(--navy);">
         <div class="card-title"><i class="ti ti-mail-cog"></i>Email (Postmark)</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Reminders go out through <strong>Postmark</strong>. A small relay holds the server token, so it never sits in this page. Follow the <em>Postmark Setup Guide</em>, deploy the relay, paste its URL here. Settings save to Firebase (<code>app_config/email</code>) and every monitor uses them.</p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Reminders go out through <strong>Postmark</strong> from <strong>kids@clevelandfoodbank.org</strong>, to the administrator (and supervisor, when on file) of each site you tick in <strong>Site Tracker</strong>. A small Cloudflare Worker holds the Postmark server token, so it never sits in this page. The <strong>Relay URL</strong> below is that Worker's own address &mdash; it looks like <code>https://session-mail.your-subdomain.workers.dev</code>. It is <em>not</em> a Postmark address: a browser cannot talk to an SMTP host such as <code>smtp-broadcasts.postmarkapp.com</code>. Settings save to Firebase (<code>app_config/email</code>) and every monitor uses them.</p>
         <div class="grid2" style="margin-bottom:1rem;">
           <div class="fg full"><label for="em-proxy-url">Relay URL</label><input type="url" id="em-proxy-url" placeholder="https://session-mail.your-subdomain.workers.dev"></div>
           <div class="fg"><label for="em-proxy-key">Relay access key <span style="font-size:11px;color:var(--text-soft);">(must match the relay's SESSION_KEY)</span></label><input type="text" id="em-proxy-key" placeholder="long random string"></div>
           <div class="fg"><label for="em-from">From address <span style="font-size:11px;color:var(--text-soft);">(verified Postmark sender)</span></label><input type="email" id="em-from" placeholder="kids@clevelandfoodbank.org"></div>
           <div class="fg"><label for="em-notify">Notification recipient <span style="font-size:11px;color:var(--text-soft);">(where test emails land)</span></label><input type="email" id="em-notify" placeholder="kids@clevelandfoodbank.org"></div>
           <div class="fg"><label for="em-dept">Department email <span style="font-size:11px;color:var(--text-soft);">(shown in signatures / reply-to)</span></label><input type="email" id="em-dept" placeholder="kids@clevelandfoodbank.org"></div>
+          <div class="fg"><label for="em-stream">Message stream <span style="font-size:11px;color:var(--text-soft);">(Postmark stream ID &mdash; <code>outbound</code> for transactional)</span></label><input type="text" id="em-stream" placeholder="outbound"></div>
         </div>
         <div class="btn-row" style="margin-top:0;">
           <button class="btn-primary green" onclick="saveEmailConfig()"><i class="ti ti-check"></i> Save email settings</button>
@@ -948,7 +949,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.01</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.14</div>
 
 <script>
 // ═══════════════════════════
@@ -1003,7 +1004,7 @@ function getSiteStaff(siteId) {
 // ═══════════════════════════
 //  DEPARTMENT & SITE EMAILS
 // ═══════════════════════════
-const DEPT_EMAIL = '';
+const DEPT_EMAIL = 'kids@clevelandfoodbank.org';
 const SITE_EMAILS = {};
 
 // ═══════════════════════════
@@ -2048,11 +2049,13 @@ function renderTrackerMonthly() {
 
 // ═══════════════════════════
 //  EMAIL — POSTMARK (via relay)
-//  The Postmark server token stays on the relay (Cloudflare Worker / Firebase Function).
-//  This page only knows the relay URL + an access key. See the Postmark Setup Guide.
-//  Config lives in Firestore: app_config/email { proxyUrl, proxyKey, fromEmail, notifyEmail, deptEmail }
+//  The Postmark server token stays on the relay (Cloudflare Worker: session-mail).
+//  This page only knows the relay URL + an access key.
+//  Config lives in Firestore: app_config/email { proxyUrl, proxyKey, fromEmail, notifyEmail, deptEmail, messageStream }
+//  Sender is kids@clevelandfoodbank.org. Recipients are whichever sites the monitor ticks in Site Tracker:
+//  each site's administrator email, plus its on-site supervisor (email2) when one is on file.
 // ═══════════════════════════
-let EMAIL_CFG = { proxyUrl: '', proxyKey: '', fromEmail: '', notifyEmail: '', deptEmail: '' };
+let EMAIL_CFG = { proxyUrl: '', proxyKey: '', fromEmail: DEPT_EMAIL, notifyEmail: DEPT_EMAIL, deptEmail: DEPT_EMAIL, messageStream: 'outbound' };
 
 async function loadEmailConfig() {
   try {
@@ -2061,6 +2064,8 @@ async function loadEmailConfig() {
   } catch (e) { console.warn('email config load failed:', e); }
   // Legacy fallback: dept email previously saved in localStorage.
   if (!EMAIL_CFG.deptEmail) EMAIL_CFG.deptEmail = safeGet('cacfp_dept_email') || DEPT_EMAIL || '';
+  if (!EMAIL_CFG.fromEmail) EMAIL_CFG.fromEmail = DEPT_EMAIL;
+  if (!EMAIL_CFG.messageStream) EMAIL_CFG.messageStream = 'outbound';
 }
 function getDeptEmail() { return EMAIL_CFG.deptEmail || ''; }
 function emailReady() { return !!(EMAIL_CFG.proxyUrl && EMAIL_CFG.fromEmail); }
@@ -2069,21 +2074,33 @@ function renderEmailConfig() {
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
   set('em-proxy-url', EMAIL_CFG.proxyUrl); set('em-proxy-key', EMAIL_CFG.proxyKey);
   set('em-from', EMAIL_CFG.fromEmail); set('em-notify', EMAIL_CFG.notifyEmail); set('em-dept', EMAIL_CFG.deptEmail);
+  set('em-stream', EMAIL_CFG.messageStream || 'outbound');
   const s = document.getElementById('em-status');
   if (s) { s.style.display = 'block'; s.style.color = emailReady() ? 'var(--success-text)' : 'var(--warning-text)';
     s.innerHTML = emailReady() ? '<span class="status-dot green"></span> Postmark relay configured.' : '<span class="status-dot orange"></span> Not configured yet — reminders will fall back to opening an Outlook draft (mailto) until a relay URL and From address are saved.'; }
 }
+
+// Returns true when the config was saved, false when it was rejected or the save failed.
 async function saveEmailConfig() {
   const g = id => (document.getElementById(id).value || '').trim();
-  const cfg = { proxyUrl: g('em-proxy-url').replace(/\/+$/, ''), proxyKey: g('em-proxy-key'), fromEmail: g('em-from'), notifyEmail: g('em-notify'), deptEmail: g('em-dept'), updatedAt: new Date().toISOString() };
+  const cfg = { proxyUrl: g('em-proxy-url').replace(/\/+$/, ''), proxyKey: g('em-proxy-key'), fromEmail: g('em-from') || DEPT_EMAIL, notifyEmail: g('em-notify'), deptEmail: g('em-dept'), messageStream: g('em-stream') || 'outbound', updatedAt: new Date().toISOString() };
   const s = document.getElementById('em-status');
+  const bad = (msg) => { if (s) { s.style.display = 'block'; s.style.color = 'var(--danger-text)'; s.innerHTML = '<span class="status-dot red"></span> ' + msg; } return false; };
+  if (cfg.proxyUrl && /postmarkapp\.com/i.test(cfg.proxyUrl)) {
+    return bad('That is a Postmark address, not the relay. The Relay URL is your own Cloudflare Worker — something like https://session-mail.your-subdomain.workers.dev. An SMTP host such as smtp-broadcasts.postmarkapp.com cannot be reached from a web page.');
+  }
+  if (cfg.proxyUrl && !/^https:\/\//i.test(cfg.proxyUrl)) {
+    return bad('The Relay URL must start with https://');
+  }
   try {
     await _db.collection('app_config').doc('email').set(cfg, { merge: true });
     EMAIL_CFG = { ...EMAIL_CFG, ...cfg };
     safeSet('cacfp_dept_email', cfg.deptEmail);
     if (s) { s.style.display = 'block'; s.style.color = 'var(--success-text)'; s.innerHTML = '<span class="status-dot green"></span> Email settings saved to Firebase.'; }
+    return true;
   } catch (e) {
     if (s) { s.style.display = 'block'; s.style.color = 'var(--danger-text)'; s.innerHTML = '<span class="status-dot red"></span> Save failed: ' + esc(e.message || e); }
+    return false;
   }
 }
 
@@ -2104,22 +2121,28 @@ async function sendEmail({ to, subject, text, html, tag, replyTo }) {
         TextBody: text,
         HtmlBody: html || ('<pre style="font-family:sans-serif;white-space:pre-wrap;">' + esc(text) + '</pre>'),
         Tag: tag || 'session',
-        MessageStream: 'outbound'
+        MessageStream: EMAIL_CFG.messageStream || 'outbound'
       })
     });
-    if (!res.ok) { const t = await res.text().catch(() => ''); return { ok: false, error: 'HTTP ' + res.status + (t ? ': ' + t.slice(0, 200) : '') }; }
+    if (!res.ok) {
+      // The relay answers with JSON { error, postmarkErrorCode }; surface the message, not the raw body.
+      let detail = '';
+      try { const j = await res.json(); detail = j.error || JSON.stringify(j); } catch (e) { detail = await res.text().catch(() => ''); }
+      return { ok: false, error: 'HTTP ' + res.status + (detail ? ': ' + String(detail).slice(0, 200) : '') };
+    }
     return { ok: true };
   } catch (e) { return { ok: false, error: e.message || String(e) }; }
 }
 
 async function sendTestEmail() {
   const s = document.getElementById('em-status');
-  await saveEmailConfig();
+  const saved = await saveEmailConfig();
+  if (!saved) return;
   const to = EMAIL_CFG.notifyEmail || EMAIL_CFG.deptEmail || EMAIL_CFG.fromEmail;
   if (s) { s.style.display = 'block'; s.style.color = 'var(--text-mid)'; s.innerHTML = '<span class="spinner dark"></span> Sending test to ' + esc(to) + '…'; }
   const r = await sendEmail({ to, subject: 'SESSION test email', text: 'This is a test message from SESSION Forms for GCFB. If you received it, Postmark is connected.\n\nSent ' + new Date().toLocaleString(), tag: 'test' });
   if (s) { s.style.color = r.ok ? 'var(--success-text)' : 'var(--danger-text)';
-    s.innerHTML = r.ok ? '<span class="status-dot green"></span> Test email sent to ' + esc(to) + '. Check the inbox (and Postmark Activity).' : '<span class="status-dot red"></span> Test failed: ' + esc(r.error) + '. See the setup guide troubleshooting section.'; }
+    s.innerHTML = r.ok ? '<span class="status-dot green"></span> Test email sent to ' + esc(to) + '. Check the inbox (and Postmark Activity).' : '<span class="status-dot red"></span> Test failed: ' + esc(r.error) + '.'; }
 }
 
 // ═══════════════════════════
@@ -2142,7 +2165,7 @@ function refreshSendRow() {
   const selAll = document.getElementById('tracker-select-all');
   if (selAll) selAll.checked = false;
   const note = document.getElementById('tracker-send-note');
-  if (note) note.textContent = emailReady() ? 'One reminder per checked site, through Postmark.' : 'Postmark isn\'t set up yet. This opens an Outlook draft for each checked site instead.';
+  if (note) note.textContent = emailReady() ? 'One reminder per checked site, from ' + (EMAIL_CFG.fromEmail || DEPT_EMAIL) + ' through Postmark.' : 'Postmark isn\'t set up yet. This opens an Outlook draft for each checked site instead.';
   updateSelCount();
 }
 function updateSelCount() {
@@ -2172,6 +2195,8 @@ function reminderText(siteId, dates) {
   return { subject, body };
 }
 
+// Sends one reminder for a site the monitor ticked in Site Tracker.
+// To: the site's administrator email (SITE_EMAILS) and, when present, its on-site supervisor (email2).
 async function sendReminderEmail(siteId, dates) {
   const email = SITE_EMAILS[siteId];
   if (!email) return { ok: false, error: 'No email on file for this site.' };
@@ -2180,7 +2205,7 @@ async function sendReminderEmail(siteId, dates) {
     const info = SITE_INFO[siteId] || {};
     const to = [email, info.email2].filter(Boolean);
     const r = await sendEmail({ to, subject, text: body, tag: 'reminder' });
-    if (r.ok) logChange({ siteId, siteName: (SITES[siteId]||{}).name || siteId, by: 'Monitor', category: 'reminder', action: 'Reminder emailed', detail: (Array.isArray(dates)?dates:[dates]).join(', ') });
+    if (r.ok) logChange({ siteId, siteName: (SITES[siteId]||{}).name || siteId, by: 'Monitor', category: 'reminder', action: 'Reminder emailed', detail: (Array.isArray(dates)?dates:[dates]).join(', ') + ' → ' + to.join(', ') });
     return r;
   }
   // Fallback: Outlook draft via mailto.
