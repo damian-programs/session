@@ -917,6 +917,29 @@ background-image:
         <div id="em-status" style="font-size:13px;margin-top:8px;display:none;"></div>
       </div>
 
+      <!-- Reminder email wording -->
+      <div class="card" style="border-left:3px solid var(--amber);">
+        <div class="card-title"><i class="ti ti-file-text"></i>Reminder email text</div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">This is the message sites get when you tick them in Site Tracker. Edit it here; the change saves to Firebase and applies to every monitor. Words in curly braces are filled in per site when the email is sent.</p>
+        <div class="grid2" style="margin-bottom:1rem;">
+          <div class="fg full"><label for="rt-subject">Subject</label><input type="text" id="rt-subject" oninput="previewReminderTemplate()"></div>
+          <div class="fg full"><label for="rt-body">Body</label><textarea id="rt-body" style="height:260px;font-family:'DM Mono',monospace;font-size:13px;line-height:1.5;" oninput="previewReminderTemplate()"></textarea></div>
+        </div>
+        <div style="font-size:12px;color:var(--text-mid);line-height:1.9;margin-bottom:1rem;padding:10px 14px;background:var(--cream);border-radius:var(--radius-sm);" id="rt-vars"></div>
+        <div class="btn-row" style="margin-top:0;margin-bottom:1rem;">
+          <button class="btn-primary green" onclick="saveReminderTemplate()"><i class="ti ti-check"></i> Save reminder text</button>
+          <button class="btn-sec" onclick="resetReminderTemplate()"><i class="ti ti-arrow-back-up"></i> Reset to default</button>
+        </div>
+        <div id="rt-status" style="font-size:13px;margin-bottom:1rem;display:none;"></div>
+        <div class="divider"></div>
+        <div class="filter-row" style="margin-bottom:0.75rem;">
+          <div class="fg"><label for="rt-preview-site">Preview as it would go to</label>
+            <select id="rt-preview-site" onchange="previewReminderTemplate()" style="width:280px;"><option value="">Select site&hellip;</option></select>
+          </div>
+        </div>
+        <div id="rt-preview" style="border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;background:white;"></div>
+      </div>
+
       <div class="card">
         <div class="card-title"><i class="ti ti-mail"></i>Site emails</div>
         <p style="font-size:13px;color:var(--text-mid);margin-bottom:0.75rem;">The administrator email for each site. Reminders go here. Quick fixes only; the full card is in Update Sites.</p>
@@ -949,7 +972,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.14.2</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.14.3</div>
 
 <script>
 // ═══════════════════════════
@@ -1282,7 +1305,7 @@ function showTab(t) {
   }
   if (t === 'exports') { populateExportSelects(); }
   if (t === 'updatesites') { populateSiteInfoSelect(); loadAllSiteInfo(); }
-  if (t === 'settings') { renderSiteEmailList(); renderEmailConfig(); }
+  if (t === 'settings') { renderSiteEmailList(); renderEmailConfig(); renderReminderTemplate(); }
 }
 
 function refreshLookup() {
@@ -2052,7 +2075,7 @@ function renderTrackerMonthly() {
 //  EMAIL — POSTMARK (via relay)
 //  The Postmark server token stays on the relay (Cloudflare Worker: session-mail).
 //  This page only knows the relay URL + an access key.
-//  Config lives in Firestore: app_config/email { proxyUrl, fromEmail, notifyEmail, deptEmail, messageStream }
+//  Config lives in Firestore: app_config/email { proxyUrl, fromEmail, notifyEmail, deptEmail, messageStream, reminderSubject, reminderBody }
 //  The relay access key (proxyKey) is deliberately NOT in Firestore — Firestore is readable by every
 //  visitor's browser, so a key stored there would let anyone send mail through the relay. It lives in
 //  localStorage on each monitor's device (cacfp_relay_key) and is entered once per computer.
@@ -2060,7 +2083,7 @@ function renderTrackerMonthly() {
 //  each site's administrator email, plus its on-site supervisor (email2) when one is on file.
 // ═══════════════════════════
 const RELAY_KEY_STORE = 'cacfp_relay_key';
-let EMAIL_CFG = { proxyUrl: '', proxyKey: '', fromEmail: DEPT_EMAIL, notifyEmail: DEPT_EMAIL, deptEmail: DEPT_EMAIL, messageStream: 'outbound' };
+let EMAIL_CFG = { proxyUrl: '', proxyKey: '', fromEmail: DEPT_EMAIL, notifyEmail: DEPT_EMAIL, deptEmail: DEPT_EMAIL, messageStream: 'outbound', reminderSubject: '', reminderBody: '' };
 
 async function loadEmailConfig() {
   try {
@@ -2194,21 +2217,107 @@ function toggleSelectAll(cb) {
   updateSelCount();
 }
 
-function reminderText(siteId, dates) {
+// ── Reminder email template ───────────────────────────────
+// The wording lives in Firestore (app_config/email → reminderSubject / reminderBody) so every monitor
+// sees the same text and it can be changed from Settings without touching this file.
+// Placeholders are replaced per site at send time; see TEMPLATE_VARS for the list.
+const DEFAULT_REMINDER_SUBJECT = 'CACFP Meal Count Reminder — {siteName}';
+const DEFAULT_REMINDER_BODY =
+  'Hello {contact},\n\n' +
+  'Our records show the CACFP meal count submission is still missing for the following service date(s):\n\n' +
+  '{dateList}\n\n' +
+  'Please log in to SESSION and complete the meal count sheet(s) for {dates} at your earliest convenience so we can keep the monthly claim on track.\n\n' +
+  'If the site was closed on any of these dates, please reply to this email and let the Kids Cafe team know.\n\n' +
+  'Thank you,\n' +
+  'Kids Cafe Program\n' +
+  '{dept}';
+
+const TEMPLATE_VARS = [
+  ['{siteName}', 'Site / organization name'],
+  ['{contact}',  'Administrator contact name (falls back to the site name)'],
+  ['{dates}',    'Missing dates, written out and comma-separated — "Monday, September 14, Tuesday, September 15"'],
+  ['{dateList}', 'Missing dates as a bulleted list, one per line (YYYY-MM-DD)'],
+  ['{count}',    'How many dates are missing'],
+  ['{dept}',     'Department email from Settings'],
+  ['{link}',     'Web address of SESSION']
+];
+
+function templateVars(siteId, dates) {
   const siteName = (SITES[siteId] && SITES[siteId].name) || siteId;
-  const dept = getDeptEmail();
-  const dateList = Array.isArray(dates) ? dates : [dates];
-  const prettyDates = dateList.map(d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })).join(', ');
-  const subject = 'CACFP Meal Count Reminder — ' + siteName;
-  const body =
-    'Hello ' + (((SITE_INFO[siteId]||{}).adminContact) || siteName) + ',\n\n' +
-    'Our records show the CACFP meal count submission is still missing for the following service date(s):\n\n' +
-    '  • ' + dateList.join('\n  • ') + '\n\n' +
-    'Please log in to SESSION and complete the meal count sheet(s) for ' + prettyDates + ' at your earliest convenience so we can keep the monthly claim on track.\n\n' +
-    'If the site was closed on any of these dates, please reply to this email and let the Kids Cafe team know.\n\n' +
-    'Thank you,\n' +
-    'Kids Cafe Program' + (dept ? '\n' + dept : '');
-  return { subject, body };
+  const info = SITE_INFO[siteId] || {};
+  const dateList = (Array.isArray(dates) ? dates : [dates]).filter(Boolean);
+  const pretty = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  return {
+    '{siteName}': siteName,
+    '{contact}':  info.adminContact || siteName,
+    '{dates}':    dateList.map(pretty).join(', '),
+    '{dateList}': dateList.map(d => '  • ' + d).join('\n'),
+    '{count}':    String(dateList.length),
+    '{dept}':     getDeptEmail(),
+    '{link}':     (location.origin && location.origin !== 'null') ? location.origin + location.pathname : 'https://damian-programs.github.io/session/'
+  };
+}
+function fillTemplate(tpl, vars) {
+  let out = String(tpl || '');
+  Object.entries(vars).forEach(([k, v]) => { out = out.split(k).join(v); });
+  return out.replace(/\n{3,}/g, '\n\n').trim();
+}
+function reminderText(siteId, dates) {
+  const vars = templateVars(siteId, dates);
+  return {
+    subject: fillTemplate(EMAIL_CFG.reminderSubject || DEFAULT_REMINDER_SUBJECT, vars).replace(/\s+/g, ' '),
+    body:    fillTemplate(EMAIL_CFG.reminderBody    || DEFAULT_REMINDER_BODY,    vars)
+  };
+}
+
+// ── Settings: edit the template ───────────────────────────
+function renderReminderTemplate() {
+  const subj = document.getElementById('rt-subject'), body = document.getElementById('rt-body');
+  if (subj) subj.value = EMAIL_CFG.reminderSubject || DEFAULT_REMINDER_SUBJECT;
+  if (body) body.value = EMAIL_CFG.reminderBody || DEFAULT_REMINDER_BODY;
+  const legend = document.getElementById('rt-vars');
+  if (legend) legend.innerHTML = TEMPLATE_VARS.map(([k, d]) => '<code style="background:rgba(63,114,184,0.12);padding:1px 5px;border-radius:3px;font-family:DM Mono,monospace;font-size:11px;">' + esc(k) + '</code> ' + esc(d)).join('<br>');
+  const sel = document.getElementById('rt-preview-site');
+  if (sel && sel.options.length <= 1) fillSiteOptions(sel, false);
+  previewReminderTemplate();
+}
+function previewReminderTemplate() {
+  const out = document.getElementById('rt-preview');
+  if (!out) return;
+  const sel = document.getElementById('rt-preview-site');
+  const siteId = (sel && sel.value) || Object.keys(SITES).find(k => k !== 'MONITOR') || 'EXAMPLE';
+  const d1 = new Date(); d1.setDate(d1.getDate() - 1);
+  const d2 = new Date(); d2.setDate(d2.getDate() - 2);
+  const dates = [ymd(d2.getFullYear(), d2.getMonth() + 1, d2.getDate()), ymd(d1.getFullYear(), d1.getMonth() + 1, d1.getDate())];
+  const vars = templateVars(siteId, dates);
+  const subj = fillTemplate((document.getElementById('rt-subject') || {}).value || DEFAULT_REMINDER_SUBJECT, vars).replace(/\s+/g, ' ');
+  const body = fillTemplate((document.getElementById('rt-body') || {}).value || DEFAULT_REMINDER_BODY, vars);
+  const info = SITE_INFO[siteId] || {};
+  const to = [SITE_EMAILS[siteId], info.email2].filter(Boolean).join(', ') || '(no email on file)';
+  out.innerHTML = '<div style="font-size:11px;color:var(--text-soft);margin-bottom:6px;">From: ' + esc(EMAIL_CFG.fromEmail || DEPT_EMAIL) + ' &nbsp;·&nbsp; To: ' + esc(to) + '</div>'
+    + '<div style="font-weight:600;margin-bottom:8px;">' + esc(subj) + '</div>'
+    + '<pre style="font-family:DM Sans,sans-serif;font-size:13px;white-space:pre-wrap;margin:0;line-height:1.5;">' + esc(body) + '</pre>';
+}
+async function saveReminderTemplate() {
+  const s = document.getElementById('rt-status');
+  const subject = (document.getElementById('rt-subject').value || '').trim();
+  const body = (document.getElementById('rt-body').value || '').replace(/\r\n/g, '\n').trim();
+  const say = (ok, msg) => { if (s) { s.style.display = 'block'; s.style.color = ok ? 'var(--success-text)' : 'var(--danger-text)'; s.innerHTML = '<span class="status-dot ' + (ok ? 'green' : 'red') + '"></span> ' + msg; } };
+  if (!subject || !body) { say(false, 'Subject and body can\'t be empty. Use Reset to default if you want the original text back.'); return; }
+  if (!/\{dates\}|\{dateList\}/.test(body)) { say(false, 'The body needs {dates} or {dateList} somewhere, or the site won\'t know which days are missing.'); return; }
+  try {
+    await _db.collection('app_config').doc('email').set({ reminderSubject: subject, reminderBody: body, updatedAt: new Date().toISOString() }, { merge: true });
+    EMAIL_CFG.reminderSubject = subject; EMAIL_CFG.reminderBody = body;
+    say(true, 'Reminder text saved. Every monitor will use it from now on.');
+    logChange({ siteId: 'ALL', siteName: 'All sites', by: 'Monitor', category: 'settings', action: 'Reminder email text changed', detail: '' });
+  } catch (e) { say(false, 'Save failed: ' + esc(e.message || e)); }
+}
+async function resetReminderTemplate() {
+  if (!confirm('Put the reminder subject and body back to the original wording?')) return;
+  document.getElementById('rt-subject').value = DEFAULT_REMINDER_SUBJECT;
+  document.getElementById('rt-body').value = DEFAULT_REMINDER_BODY;
+  await saveReminderTemplate();
+  previewReminderTemplate();
 }
 
 // Sends one reminder for a site the monitor ticked in Site Tracker.
