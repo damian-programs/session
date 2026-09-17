@@ -977,6 +977,20 @@ background-image:
         </div>
       </div>
 
+      <!-- Admin PIN -->
+      <div class="card" style="border-left:3px solid #c0392b;">
+        <div class="card-title"><i class="ti ti-shield-lock"></i>Admin PIN</div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">The PIN used to sign in as <strong>Monitor Organization</strong>. It lives in Firestore (<code>site_info/MONITOR</code>) now, not in the app's source file, so it can be changed here without redeploying. Anyone who reaches this tab is already signed in as Monitor &mdash; treat this the same as any shared password, and note that Firestore's rules here allow open read/write, so this isn't hardened against someone reading the database directly.</p>
+        <div class="grid2" style="margin-bottom:1rem;">
+          <div class="fg"><label for="admin-pin-new">New admin PIN</label><input type="password" id="admin-pin-new" maxlength="10" inputmode="numeric" autocomplete="new-password" placeholder="At least 4 characters"></div>
+          <div class="fg"><label for="admin-pin-confirm">Confirm new PIN</label><input type="password" id="admin-pin-confirm" maxlength="10" inputmode="numeric" autocomplete="new-password"></div>
+        </div>
+        <div class="btn-row" style="margin-top:0;">
+          <button class="btn-primary" style="background:#c0392b;" onclick="changeAdminPin()"><i class="ti ti-shield-lock"></i> Change admin PIN</button>
+        </div>
+        <div id="admin-pin-status" style="margin-top:8px;font-size:13px;display:none;"></div>
+      </div>
+
       <!-- Postmark email configuration -->
       <div class="card" style="border-left:3px solid var(--navy);">
         <div class="card-title"><i class="ti ti-mail-cog"></i>Email (Postmark)</div>
@@ -1151,7 +1165,13 @@ async function loadSitesFromFirebase() {
     const newSites = { 'MONITOR': { name: 'Monitor Organization', pin: '99999', active: true } };
     snap.docs.forEach(d => {
       const data = d.data();
-      if (!data.siteId || data.siteId === 'MONITOR') return;
+      if (!data.siteId) return;
+      if (data.siteId === 'MONITOR') {
+        // The admin PIN lives in Firestore (site_info/MONITOR) once set from Settings → Admin PIN;
+        // 99999 above is only the fallback until it's been changed for the first time.
+        if (data.pin) newSites.MONITOR.pin = data.pin;
+        return;
+      }
       newSites[data.siteId] = {
         name:   data.siteName || data.agencyName || data.siteId,
         pin:    data.pin      || data.siteId,
@@ -2734,6 +2754,31 @@ function printRecord(uid) {
 // ═══════════════════════════
 //  FIREBASE STATUS / SYNC
 // ═══════════════════════════
+// ═══════════════════════════
+//  ADMIN PIN (Settings tab) — stored in Firestore site_info/MONITOR, not hardcoded.
+//  loadSitesFromFirebase() reads it back into SITES.MONITOR.pin on every load, falling back to
+//  the 99999 default only when that document has no pin set yet.
+// ═══════════════════════════
+async function changeAdminPin() {
+  const a = document.getElementById('admin-pin-new');
+  const b = document.getElementById('admin-pin-confirm');
+  const el = document.getElementById('admin-pin-status');
+  const say = (ok, msg) => { if (el) { el.style.display = 'block'; el.style.color = ok ? 'var(--success-text)' : 'var(--danger-text)'; el.innerHTML = (ok ? '<span class="status-dot green"></span> ' : '<span class="status-dot red"></span> ') + msg; } };
+  const pin = (a.value || '').trim();
+  const confirmPin = (b.value || '').trim();
+  if (!pin) { say(false, 'Enter a new PIN.'); return; }
+  if (pin.length < 4) { say(false, 'Use at least 4 characters.'); return; }
+  if (pin !== confirmPin) { say(false, 'The two PINs don\'t match.'); return; }
+  if (!confirm('Change the admin PIN? Every monitor will need the new PIN to sign in from now on.')) return;
+  try {
+    await _db.collection('site_info').doc('MONITOR').set({ siteId: 'MONITOR', pin, updatedAt: new Date().toISOString() }, { merge: true });
+    SITES.MONITOR = { ...(SITES.MONITOR || { name: 'Monitor Organization', active: true }), pin };
+    a.value = ''; b.value = '';
+    say(true, 'Admin PIN changed. Use the new PIN next time you sign in.');
+    logChange({ siteId: 'MONITOR', siteName: 'Monitor Organization', by: 'Monitor', category: 'settings', action: 'Admin PIN changed', detail: '' });
+  } catch (e) { say(false, 'Save failed: ' + esc(e.message || e)); }
+}
+
 async function checkFirebaseStatus() {
   const el = document.getElementById('firebase-status');
   if (el) el.innerHTML = '<span class="spinner dark"></span> Checking…';
