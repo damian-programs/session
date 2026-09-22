@@ -1526,9 +1526,12 @@ function initFormDefaults() {
 
 function autoFillPrevLeftover() {
   if (!currentSite || currentSite === 'MONITOR') return;
-  const siteRecs = records.filter(r => r.site === currentSite).sort((a, b) => b.svcDate.localeCompare(a.svcDate));
-  if (siteRecs.length) {
-    const last = siteRecs[0];
+  const siteRecs = records.filter(r => r.site === currentSite && !r.isDraft).sort((a, b) => b.svcDate.localeCompare(a.svcDate));
+  if (!siteRecs.length) return;
+  const last = siteRecs[0];
+  const delDate = document.getElementById('f-del-date').value || today();
+  const gapDays = Math.round((new Date(delDate + 'T12:00:00') - new Date(last.svcDate + 'T12:00:00')) / 86400000);
+  if (gapDays >= 0 && gapDays <= 2) {
     document.getElementById('f-prev-left').value = last.leftover || 0;
     recalc();
   }
