@@ -479,6 +479,7 @@ background-image:
         </div>
         <div class="divider"></div>
         <div class="fg">
+          <label for="f-leftover">Leftover qty <span style="font-size:11px;color:var(--text-soft);">(carried to next service)</span></label>
           <label for="f-leftover">Leftover qty <span style="font-size:11px;color:var(--text-soft);">(REQUIRED: Even if zero, value carried to next service)</span></label>
           <input type="number" id="f-leftover" min="0" placeholder="Remaining usable meals" oninput="recalc()">
         </div>
@@ -1592,40 +1593,6 @@ function recalc() {
 // ═══════════════════════════
 //  SAVE RECORD
 // ═══════════════════════════
-// ═══════════════════════════
-//  ONE ENTRY PER DATE (per site)
-//  Serve date: one entry per day.
-//  Delivery date: only one entry per day can carry a received quantity. Other service days fed by
-//  the same delivery reuse its date with Received = 0; their meals come in as Previous leftover.
-//  Checks this device's copy first, then Firestore, so an entry made on another device is caught.
-//  Returns an HTML sentence describing the clash, or '' when the dates are clear.
-// ═══════════════════════════
-async function findDateClash(ownUid, delDate, svcDate, recvQty) {
-  const mine   = r => r.site === currentSite && r.uid !== ownUid;
-  const svcHit = r => !!svcDate && r.svcDate === svcDate;
-  const delHit = r => !!delDate && recvQty > 0 && r.delDate === delDate && (r.recvQty || 0) > 0;
-  const hits = records.filter(r => mine(r) && (svcHit(r) || delHit(r)));
-  if (!hits.length) {
-    try {
-      const q = (field, val) => _db.collection('meal_records').where('site', '==', currentSite).where(field, '==', val).get();
-      const snaps = await Promise.all([
-        svcDate ? q('svcDate', svcDate) : null,
-        (delDate && recvQty > 0) ? q('delDate', delDate) : null
-      ]);
-      snaps.forEach(s => { if (s) s.docs.forEach(d => { const r = d.data(); if (mine(r) && (svcHit(r) || delHit(r))) hits.push(r); }); });
-    } catch (e) {
-      console.warn('Duplicate-date check could not reach Firestore; checked this device only:', e);
-    }
-  }
-  const svc = hits.find(svcHit), del = hits.find(delHit);
-  const parts = [];
-  if (svc) parts.push('there is already an entry for serve date <strong>' + esc(svcDate) + '</strong>');
-  if (del) parts.push('the delivery received on <strong>' + esc(delDate) + '</strong> is already logged on the record for serve date ' + esc(del.svcDate || '—') + '. If this service day is using that same delivery, set <strong>Received quantity</strong> to 0 and enter the carried-over meals as <strong>Previous leftover</strong>');
-  if (!parts.length) return '';
-  const s = parts.join('. Also, ');
-  return s.charAt(0).toUpperCase() + s.slice(1) + '.';
-}
-
 async function saveRecord() {
   recalc();
   const required = [
@@ -1646,9 +1613,10 @@ async function saveRecord() {
       return;
     }
   }
-  const clash = await findDateClash(editingUid || pendingUid, document.getElementById('f-del-date').value, document.getElementById('f-svc-date').value, n('f-recv-qty'));
-  if (clash) {
-    showEntryAlert('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; Record not saved. ' + clash + ' To change an existing entry, use the <strong>Edit</strong> button in My Records.');
+  const dupDate = document.getElementById('f-svc-date').value;
+  const dupCheck = records.find(r => r.site === currentSite && r.svcDate === dupDate && r.uid !== editingUid);
+  if (dupCheck) {
+    showEntryAlert('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; A meal record for <strong>' + dupDate + '</strong> already exists for your site. Use the <strong>Edit</strong> button in My Records to update it.');
     return;
   }
   const availChk  = parseInt(document.getElementById('f-avail').value) || 0;
@@ -1728,17 +1696,7 @@ async function saveRecord() {
       isDraft: false, locked: true, sigImage: getSigDataURL(), createdAt: now, lastEditedAt: now, editCount: 0,
       auditLog: [{ at: now, by: document.getElementById('f-sig-name').value, action: 'Created' }]
     };
-    const draftIdx = records.findIndex(r => r.uid === uid);
-    if (draftIdx !== -1) {
-      // Finishing a draft straight from the form: replace it instead of adding a second copy.
-      const d = records[draftIdx];
-      rec.createdAt = d.createdAt || rec.createdAt;
-      rec.auditLog = (d.auditLog || []).concat(rec.auditLog);
-      records[draftIdx] = rec;
-    } else {
-      records.push(rec);
-    }
-    save();
+    records.push(rec); save();
     showEntryAlert('alert-success', '<i class="ti ti-circle-check"></i>&nbsp; Record saved [' + uid + '] for ' + rec.svcDate + '. Signed by ' + esc(rec.sigName) + '.');
     setSyncBanner('loading','Saving to Firebase…'); const ok = await saveToFirebase(rec); setSyncBanner(ok?'ok':'error', ok?'Saved to Firebase ✓':'Saved locally — could not reach Firebase.'); setTimeout(() => setSyncBanner('hide'), 3000);
   }
@@ -1784,22 +1742,9 @@ function editRecord(uid) {
 // ═══════════════════════════
 //  DRAFT SAVE
 // ═══════════════════════════
-async function saveDraft() {
+function saveDraft() {
   const statusEl = document.getElementById('draft-status');
   const uid = editingUid || pendingUid || genUID();
-
-  // Same one-entry-per-date rules as the final save (see findDateClash).
-  const clash = await findDateClash(uid, document.getElementById('f-del-date').value, document.getElementById('f-svc-date').value, n('f-recv-qty'));
-  if (clash) {
-    showEntryAlert('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; Draft not saved. ' + clash + ' To change an existing entry, use the <strong>Edit</strong> button in My Records.');
-    statusEl.textContent = 'Draft not saved. There is already an entry for that date.';
-    statusEl.style.color = 'var(--danger-text)';
-    setTimeout(() => { statusEl.textContent = ''; statusEl.style.color = ''; }, 6000);
-    return;
-  }
-
-
-  
   const now = new Date().toISOString();
   const existing = records.find(r => r.uid === uid);
   const draft = {
@@ -1835,9 +1780,8 @@ async function saveDraft() {
     document.getElementById('f-record-id').textContent = uid;
     records.push(draft);
   }
-  save();
+save();
   saveToFirebase(draft);
-  ['entry-alert','entry-alert-bottom'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   statusEl.textContent = 'Draft saved at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   setTimeout(() => { statusEl.textContent = ''; }, 5000);
   setTimeout(() => showTab('records'), 800);
