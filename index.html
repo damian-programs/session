@@ -395,7 +395,7 @@ background-image:
           </div>
           <div class="fg">
             <label for="f-del-temp">Delivery temp (&deg;F)</label>
-            <input type="number" id="f-del-temp" step="0.1" placeholder="e.g. 165.0" oninput="checkTemp()">
+            <input type="number" id="f-del-temp" step="0.1" placeholder="e.g. 38.0" oninput="checkTemp()">
           </div>
           <div class="fg">
             <label for="f-recv-qty">Received quantity</label>
@@ -435,6 +435,11 @@ background-image:
             <label for="f-prev-left">Previous leftover qty</label>
             <input type="number" id="f-prev-left" class="int-only" min="0" step="1" inputmode="numeric" placeholder="From prior service" oninput="this.dataset.auto='';recalc()">
           </div>
+        </div>
+        <!-- Temp-log reminder (sits between Meal type / Previous leftover and Available qty) -->
+        <div class="alert alert-warning" style="margin-top:1rem;">
+          <i class="ti ti-temperature"></i>
+          <span><strong>Remember:</strong> Log milk temps in the temp log. For hot meals, also log the heated protein temp in the temp log.</span>
         </div>
         <div class="divider"></div>
         <div class="fg" style="margin-bottom:1rem;">
@@ -1069,7 +1074,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.23.8</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.24.3</div>
 
 <script>
 // ═══════════════════════════
@@ -1569,19 +1574,22 @@ function autoFillPrevLeftover() {
   recalc();
 }
 
+// Sites receive refrigerated meals only, so the safe delivery range is 32–41°F.
+// Below 32°F: frozen or a typo. Above 41°F: too warm. Both warn; neither blocks saving.
 function checkTemp() {
   const temp = parseFloat(document.getElementById('f-del-temp').value);
   const alertEl = document.getElementById('temp-alert');
   if (isNaN(temp)) { alertEl.style.display = 'none'; return; }
-  if (temp < 135 && temp > 41) {
-    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-danger';
-    alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; <strong>Temperature out of safe range.</strong> Hot food must be ≥135°F; cold food must be ≤41°F. Current: ' + temp + '°F.';
-  } else if (temp <= 41) {
-    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-info';
-    alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; Cold food temperature (' + temp + '°F) - within safe range (32-41°F).';
+  alertEl.style.display = 'flex';
+  if (temp > 41) {
+    alertEl.className = 'alert alert-danger';
+    alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; <strong>Temperature out of safe range.</strong> Refrigerated meals must arrive at 32-41°F. Current: ' + temp + '°F.';
+  } else if (temp < 32) {
+    alertEl.className = 'alert alert-warning';
+    alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; <strong>Below 32°F.</strong> Refrigerated meals should arrive at 32-41°F. Current: ' + temp + '°F. The food may be frozen. Please double-check.';
   } else {
-    alertEl.style.display = 'flex'; alertEl.className = 'alert alert-success';
-    alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; Hot food temperature (' + temp + '°F) - within safe range (≥135°F).';
+    alertEl.className = 'alert alert-success';
+    alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; Refrigerated temperature (' + temp + '°F) - within safe range (32-41°F).';
   }
 }
 
