@@ -500,7 +500,7 @@ background-image:
       <div class="card">
         <div class="card-title"><i class="ti ti-pen"></i>E-signature</div>
         <div id="locked-banner" class="alert alert-warning" style="display:none;margin-bottom:1rem;">
-          <i class="ti ti-lock"></i>&nbsp; This record is certified. Edits must be re-signed and are recorded in the change log.
+          <i class="ti ti-lock"></i>&nbsp; This record is certified. Edits must be re-signed and are recorded in the record's history.
         </div>
         <div class="esig-box">
           <div class="fg">
@@ -543,14 +543,6 @@ background-image:
           </div>
         </div>
         <div id="my-records"></div>
-      </div>
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
-          <div class="card-title" style="margin-bottom:0;"><i class="ti ti-history"></i>Change log</div>
-          <button class="btn-sec" onclick="renderChangeLog(false)" style="font-size:12px;height:34px;"><i class="ti ti-refresh"></i> Refresh</button>
-        </div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Every save, edit, and draft deletion for your site, newest first, with what changed.</p>
-        <div id="my-changelog"></div>
       </div>
     </div>
 
@@ -601,19 +593,6 @@ background-image:
         <div id="all-records"></div>
       </div>
 
-      <!-- Change log (meal records, all sites) -->
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
-          <div class="card-title" style="margin-bottom:0;"><i class="ti ti-history"></i>Change log</div>
-          <button class="btn-sec" onclick="renderChangeLog(true)" style="font-size:12px;height:34px;"><i class="ti ti-refresh"></i> Refresh</button>
-        </div>
-        <div class="filter-row" style="margin-bottom:1rem;">
-          <div class="fg"><label for="changelog-site">Filter by site</label>
-            <select id="changelog-site" onchange="renderChangeLog(true)" style="width:260px;"><option value="ALL">All sites</option></select>
-          </div>
-        </div>
-        <div id="all-changelog"></div>
-      </div>
 
       <!-- Reimbursement Estimate (live) — kept at the bottom of Site Lookup -->
       <div class="card" style="border-left:3px solid var(--amber);">
@@ -1090,7 +1069,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.23.5</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.23.6</div>
 
 <script>
 // ═══════════════════════════
@@ -1381,7 +1360,6 @@ function doLogin() {
     fillSiteOptions(document.getElementById('reimb-site'), true, 'All sites');
     fillSiteOptions(document.getElementById('export-site-report'), true, 'All sites');
     fillSiteOptions(document.getElementById('audit-site'), false);
-    fillSiteOptions(document.getElementById('changelog-site'), true, 'All sites');
     MONITOR_TABS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'inline-block'; });
     SITE_TABS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
     showTab('lookup');
@@ -1396,6 +1374,7 @@ function doLogin() {
   setTimeout(initSigCanvas, 100);
 
   loadFromFirebase(s === 'MONITOR' ? 'ALL' : s).then(() => autoFillPrevLeftover());
+  window.scrollTo(0, 0);
 }
 
 function doLogout() {
@@ -1406,6 +1385,7 @@ function doLogout() {
   document.getElementById('ls').value = '';
   MONITOR_TABS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   SITE_TABS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'inline-block'; });
+  window.scrollTo(0, 0);
 }
 
 // ═══════════════════════════
@@ -1421,14 +1401,12 @@ function showTab(t) {
   if (t === 'records') {
     renderTable(false);
     loadFromFirebase(currentSite).then(() => renderTable(false));
-    renderChangeLog(false);
   }
   if (t === 'lookup') {
     const sm = document.getElementById('summary-month');
     if (sm && !sm.value) sm.value = today().slice(0,7);
     renderReimbursement(); renderSummary(); renderTable(true);
     loadFromFirebase('ALL').then(() => { renderReimbursement(); renderSummary(); renderTable(true); });
-    renderChangeLog(true);
   }
   if (t === 'tracker') {
     const tdate = document.getElementById('tracker-date');
@@ -1446,7 +1424,6 @@ function showTab(t) {
 }
 
 function refreshLookup() {
-  renderChangeLog(true);
   loadFromFirebase('ALL').then(() => { renderReimbursement(); renderSummary(); renderTable(true); });
 }
 
@@ -1672,7 +1649,7 @@ function badIntFields() {
 //  RECORD CHANGE LOG
 //  Every save, edit, draft change and deletion is written two places: the record's own auditLog
 //  (shown by the history button in My Records and Site Lookup) and the change_log collection
-//  (shown in the Change log cards, and the only place a deleted draft is still recorded).
+//  (not shown in the app; kept in Firestore as the only record of a deleted draft).
 // ═══════════════════════════
 const RECORD_FIELD_LABELS = {
   receiver: 'Receiver', delDate: 'Delivery date', delTime: 'Delivery time', delTemp: 'Delivery temp (°F)',
@@ -1815,7 +1792,7 @@ async function saveRecord() {
 // ═══════════════════════════
 //  EDIT RECORD
 //  Sites can edit any of their own records, certified or not. Every edit has to be re-signed
-//  (certification box), and the field-by-field changes go to the record's history and the change log.
+//  (certification box), and the field-by-field changes go to the record's history.
 // ═══════════════════════════
 function editRecord(uid) {
   const r = records.find(x => x.uid === uid);
@@ -1848,7 +1825,7 @@ function editRecord(uid) {
   banner.style.display = 'flex';
   banner.innerHTML = '<i class="ti ti-pencil"></i>&nbsp; ' + (r.isDraft
     ? 'Finishing draft <strong>' + uid + '</strong> for ' + fmtDate(r.svcDate) + '. Sign and check the certification box to save it.'
-    : 'Editing record <strong>' + uid + '</strong> from ' + fmtDate(r.svcDate) + '. Re-sign and check the certification box to save. Every change is recorded in the change log.');
+    : 'Editing record <strong>' + uid + '</strong> from ' + fmtDate(r.svcDate) + '. Re-sign and check the certification box to save. Every change is recorded in the record\'s history.');
   document.getElementById('save-btn').innerHTML = '<i class="ti ti-device-floppy"></i> ' + (r.isDraft ? 'Save record' : 'Update record');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -2080,7 +2057,7 @@ function renderTable(isAdmin) {
   });
   h += '</tbody></table></div>';
   if (isAdmin) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">⚠ Waste % = waste ÷ available (red &gt; 30%) · Left % = leftover ÷ available (red &gt; 40%). Flags also cover served &lt; 30% of available and balance mismatches. Hover a flag count for details. Click any column header to sort. The history button shows every change made to a record.</p>';
-  else h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Use the pencil to edit a record or finish a draft. Every edit must be re-signed and is recorded in the history (clock button) and the change log below. Unsaved drafts can be deleted; certified records can\'t.</p>';
+  else h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Use the pencil to edit a record or finish a draft. Every edit must be re-signed and is recorded in its history — click the clock button to see it. Unsaved drafts can be deleted; certified records can\'t.</p>';
   ctr.innerHTML = h;
 }
 
@@ -2114,48 +2091,6 @@ async function deleteRecord(uid) {
   if (editingUid === uid || pendingUid === uid) clearForm();
   logRecordChange(r, isMonitor ? 'Record deleted by monitor' : 'Draft deleted', [], isMonitor ? 'Monitor' : 'Site user');
   renderTable(isMonitor);
-  renderChangeLog(isMonitor);
-}
-
-// ═══════════════════════════
-//  CHANGE LOG CARDS (My Records for sites, Site Lookup for monitors)
-//  Reads change_log entries with category 'meal_record'. Single-field queries only, so no
-//  Firestore composite index is needed; sorting happens here.
-// ═══════════════════════════
-async function renderChangeLog(isAdmin) {
-  const ctr = document.getElementById(isAdmin ? 'all-changelog' : 'my-changelog');
-  if (!ctr || !currentSite) return;
-  ctr.innerHTML = '<div style="font-size:13px;color:var(--text-soft);padding:8px;"><span class="spinner dark"></span> Loading…</div>';
-  let entries = [];
-  try {
-    const ref = isAdmin
-      ? _db.collection('change_log').where('category', '==', 'meal_record')
-      : _db.collection('change_log').where('siteId', '==', currentSite);
-    const snap = await ref.get();
-    entries = snap.docs.map(d => d.data()).filter(e => e.category === 'meal_record');
-  } catch (e) {
-    ctr.innerHTML = '<div class="empty"><i class="ti ti-wifi-off"></i>Could not load the change log.</div>'; return;
-  }
-  if (isAdmin) {
-    const f = document.getElementById('changelog-site');
-    if (f && f.value && f.value !== 'ALL') entries = entries.filter(e => e.siteId === f.value);
-  }
-  entries.sort((a, b) => (b.at || '').localeCompare(a.at || ''));
-  const total = entries.length;
-  entries = entries.slice(0, 200);
-  if (!entries.length) { ctr.innerHTML = '<div class="empty"><i class="ti ti-history"></i>No changes logged yet.</div>'; return; }
-  let h = '<div class="table-scroll"><table class="rec-table auto" style="min-width:' + (isAdmin ? 820 : 680) + 'px;"><thead><tr><th>When</th>' + (isAdmin ? '<th>Site</th>' : '') + '<th>Serve date</th><th>Action</th><th>By</th><th>Details</th></tr></thead><tbody>';
-  entries.forEach(e => {
-    const details = (e.changes && e.changes.length)
-      ? e.changes.map(c => esc(c.label) + ': ' + esc(c.from) + ' &rarr; ' + esc(c.to)).join('<br>')
-      : '<span style="color:var(--text-soft);">—</span>';
-    h += '<tr><td>' + esc(fmtStamp(e.at)) + '</td>' + (isAdmin ? '<td title="' + esc(e.siteName) + '" style="max-width:200px;">' + esc(e.siteName) + '</td>' : '')
-      + '<td>' + esc(fmtDate(e.svcDate)) + '</td><td>' + esc(e.action) + '</td><td>' + esc(e.by) + '</td>'
-      + '<td style="white-space:normal;font-size:11px;line-height:1.5;">' + details + '</td></tr>';
-  });
-  h += '</tbody></table></div>';
-  if (total > entries.length) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Showing the newest ' + entries.length + ' of ' + total + ' entries.</p>';
-  ctr.innerHTML = h;
 }
 
 // ══════════════════════════════
