@@ -282,6 +282,8 @@ background-image:
 .tracker-table tr:hover td { background:var(--cream); }
 .day-cell-ok   { background:var(--success-bg); color:var(--success-text); border-radius:4px; padding:2px 5px; font-size:10px; font-weight:600; }
 .day-cell-miss { background:var(--danger-bg);  color:var(--danger-text);  border-radius:4px; padding:2px 5px; font-size:10px; font-weight:600; }
+.day-cell-na   { background:#fff3bf; color:#9a7400; border:1px solid #f2d66b; border-radius:4px; padding:1px 7px; font-size:11px; font-weight:700; display:inline-block; }
+.tracker-card.na { background:#fffae0; border-color:#f2d66b; color:#8a6a00; }
 
 /* RESPONSIVE */
 @media (max-width: 500px) {
@@ -397,7 +399,7 @@ background-image:
           </div>
           <div class="fg">
             <label for="f-recv-qty">Received quantity</label>
-            <input type="number" id="f-recv-qty" min="0" placeholder="# of meals" oninput="recalc()">
+            <input type="number" id="f-recv-qty" class="int-only" min="0" step="1" inputmode="numeric" placeholder="# of meals" oninput="recalc()">
           </div>
         </div>
         <div id="temp-alert" style="display:none;margin-top:0.75rem;"></div>
@@ -431,7 +433,7 @@ background-image:
           </div>
           <div class="fg">
             <label for="f-prev-left">Previous leftover qty</label>
-            <input type="number" id="f-prev-left" min="0" placeholder="From prior service" oninput="this.dataset.auto='';recalc()">
+            <input type="number" id="f-prev-left" class="int-only" min="0" step="1" inputmode="numeric" placeholder="From prior service" oninput="this.dataset.auto='';recalc()">
           </div>
         </div>
         <div class="divider"></div>
@@ -444,7 +446,7 @@ background-image:
           <div class="fg">
             <label for="f-first">First meal qty</label>
             <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-              <input type="number" id="f-first" min="0" placeholder="0" oninput="recalc()"
+              <input type="number" id="f-first" class="int-only" min="0" step="1" inputmode="numeric" placeholder="0" oninput="recalc()"
                 style="text-align:center;font-size:32px;font-weight:700;height:80px;border-radius:16px;width:100%;border:2.5px solid var(--border);">
               <button type="button" class="counter-btn counter-plus" onclick="adjustCount('f-first',1)">+</button>
               <button type="button" class="counter-btn counter-minus" onclick="adjustCount('f-first',-1)">&minus;</button>
@@ -453,14 +455,14 @@ background-image:
           <div class="fg">
             <label for="f-second">Second meal qty</label>
             <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-              <input type="number" id="f-second" min="0" placeholder="0" oninput="recalc()"
+              <input type="number" id="f-second" class="int-only" min="0" step="1" inputmode="numeric" placeholder="0" oninput="recalc()"
                 style="text-align:center;font-size:32px;font-weight:700;height:80px;border-radius:16px;width:100%;border:2.5px solid var(--border);">
               <button type="button" class="counter-btn counter-plus" onclick="adjustCount('f-second',1)">+</button>
               <button type="button" class="counter-btn counter-minus" onclick="adjustCount('f-second',-1)">&minus;</button>
             </div>
           </div>
-          <div class="fg"><label for="f-adult-prog">Adult program qty</label><input type="number" id="f-adult-prog" min="0" placeholder="Program staff" oninput="recalc()"></div>
-          <div class="fg"><label for="f-adult-nonprog">Adult non-program qty</label><input type="number" id="f-adult-nonprog" min="0" placeholder="Non-program adults" oninput="recalc()"></div>
+          <div class="fg"><label for="f-adult-prog">Adult program qty</label><input type="number" id="f-adult-prog" class="int-only" min="0" step="1" inputmode="numeric" placeholder="Program staff" oninput="recalc()"></div>
+          <div class="fg"><label for="f-adult-nonprog">Adult non-program qty</label><input type="number" id="f-adult-nonprog" class="int-only" min="0" step="1" inputmode="numeric" placeholder="Non-program adults" oninput="recalc()"></div>
         </div>
         <div class="fg" style="margin-bottom:1rem;">
           <label>Total served qty <span style="font-size:11px;color:var(--text-soft);">(auto-calculated)</span></label>
@@ -469,8 +471,8 @@ background-image:
         </div>
         <div class="divider"></div>
         <div class="grid2" style="margin-bottom:0.75rem;">
-          <div class="fg"><label for="f-waste">Waste qty</label><input type="number" id="f-waste" min="0" placeholder="Disposed / spoiled" oninput="recalc()"></div>
-          <div class="fg"><label for="f-incomplete">Incomplete qty</label><input type="number" id="f-incomplete" min="0" placeholder="Missing components" oninput="recalc()"></div>
+          <div class="fg"><label for="f-waste">Waste qty</label><input type="number" id="f-waste" class="int-only" min="0" step="1" inputmode="numeric" placeholder="Disposed / spoiled" oninput="recalc()"></div>
+          <div class="fg"><label for="f-incomplete">Incomplete qty</label><input type="number" id="f-incomplete" class="int-only" min="0" step="1" inputmode="numeric" placeholder="Missing components" oninput="recalc()"></div>
         </div>
         <div class="fg" style="margin-bottom:1rem;">
           <label>Total unservable qty <span style="font-size:11px;color:var(--text-soft);">(waste + incomplete)</span></label>
@@ -480,7 +482,7 @@ background-image:
         <div class="divider"></div>
         <div class="fg">
           <label for="f-leftover">Leftover qty <span style="font-size:11px;color:var(--text-soft);">(REQUIRED: Even if zero, value carried to next service)</span></label>
-          <input type="number" id="f-leftover" min="0" placeholder="Remaining usable meals" oninput="recalc()">
+          <input type="number" id="f-leftover" class="int-only" min="0" step="1" inputmode="numeric" placeholder="Remaining usable meals" oninput="recalc()">
         </div>
         <div class="calc-row">
           <div class="calc-card"><div class="calc-label">Available</div><div class="calc-val" id="s-avail">&mdash;</div></div>
@@ -498,7 +500,7 @@ background-image:
       <div class="card">
         <div class="card-title"><i class="ti ti-pen"></i>E-signature</div>
         <div id="locked-banner" class="alert alert-warning" style="display:none;margin-bottom:1rem;">
-          <i class="ti ti-lock"></i>&nbsp; This record is certified and <strong>locked</strong>. A monitor can unlock it.
+          <i class="ti ti-lock"></i>&nbsp; This record is certified. Edits must be re-signed and are recorded in the change log.
         </div>
         <div class="esig-box">
           <div class="fg">
@@ -541,6 +543,14 @@ background-image:
           </div>
         </div>
         <div id="my-records"></div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+          <div class="card-title" style="margin-bottom:0;"><i class="ti ti-history"></i>Change log</div>
+          <button class="btn-sec" onclick="renderChangeLog(false)" style="font-size:12px;height:34px;"><i class="ti ti-refresh"></i> Refresh</button>
+        </div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Every save, edit, and draft deletion for your site, newest first, with what changed.</p>
+        <div id="my-changelog"></div>
       </div>
     </div>
 
@@ -589,6 +599,20 @@ background-image:
           </div>
         </div>
         <div id="all-records"></div>
+      </div>
+
+      <!-- Change log (meal records, all sites) -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+          <div class="card-title" style="margin-bottom:0;"><i class="ti ti-history"></i>Change log</div>
+          <button class="btn-sec" onclick="renderChangeLog(true)" style="font-size:12px;height:34px;"><i class="ti ti-refresh"></i> Refresh</button>
+        </div>
+        <div class="filter-row" style="margin-bottom:1rem;">
+          <div class="fg"><label for="changelog-site">Filter by site</label>
+            <select id="changelog-site" onchange="renderChangeLog(true)" style="width:260px;"><option value="ALL">All sites</option></select>
+          </div>
+        </div>
+        <div id="all-changelog"></div>
       </div>
 
       <!-- Reimbursement Estimate (live) — kept at the bottom of Site Lookup -->
@@ -1055,7 +1079,7 @@ background-image:
 
       <div class="card">
         <div class="card-title"><i class="ti ti-cloud-upload"></i>Sync local cache to Firebase</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Push records cached on this device up to Firebase.</p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Upload any records this device saved while it couldn't reach Firebase. (This also happens on its own the next time records load.)</p>
         <div class="btn-row">
           <button class="btn-sec" onclick="syncAllToFirebase()"><i class="ti ti-cloud-upload"></i> Sync all local records</button>
         </div>
@@ -1066,7 +1090,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.23.2</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.23.5</div>
 
 <script>
 // ═══════════════════════════
@@ -1265,7 +1289,9 @@ async function loadFromFirebase(site) {
     const snap = await ref.get();
     const fresh = snap.docs.map(d => d.data());
     const freshUIDs = new Set(fresh.map(r => r.uid));
-    const localOnly = records.filter(r => !freshUIDs.has(r.uid) && (site === 'ALL' || r.site === site));
+    // Cached records Firestore no longer has are dropped (deleted or replaced elsewhere). Only records
+    // this device saved but couldn't upload (_pendingSync) are kept, and they're retried below.
+    const localOnly = records.filter(r => !freshUIDs.has(r.uid) && r._pendingSync && (site === 'ALL' || r.site === site));
     if (site === 'ALL') {
       records = [...fresh, ...localOnly];
     } else {
@@ -1274,6 +1300,7 @@ async function loadFromFirebase(site) {
     }
     saveLocal();
     hideOfflineBanner();
+    for (const r of localOnly) await saveToFirebase(r);
     setSyncBanner('ok', 'Synced with Firebase ✓');
     setTimeout(() => setSyncBanner('hide'), 2500);
   } catch (e) {
@@ -1284,13 +1311,18 @@ async function loadFromFirebase(site) {
   }
 }
 
+// _pendingSync marks a record saved on this device that hasn't reached Firestore yet. It's local-only:
+// stripped before upload and cleared once the upload succeeds.
 async function saveToFirebase(rec) {
   try {
-    await _db.collection('meal_records').doc(rec.uid).set(rec);
+    const { _pendingSync, ...clean } = rec;
+    await _db.collection('meal_records').doc(rec.uid).set(clean);
+    if (rec._pendingSync) { delete rec._pendingSync; saveLocal(); }
     hideOfflineBanner();
     return true;
   } catch (e) {
     console.warn('Firebase save failed:', e);
+    rec._pendingSync = true; saveLocal();
     showOfflineBanner('Disconnected — your entry was saved on this device but not yet uploaded. Reconnect to sync.');
     return false;
   }
@@ -1331,7 +1363,7 @@ function doLogin() {
   document.getElementById('login-page').style.display = 'none';
   document.getElementById('main-app').style.display = 'block';
   document.getElementById('hdr-site').textContent = SITES[s].name;
-  document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  document.getElementById('hdr-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long' }) + ', ' + fmtDate(today());
   document.getElementById('f-site').value = SITES[s].name;
 
   // Populate staff dropdowns on the meal record form
@@ -1349,6 +1381,7 @@ function doLogin() {
     fillSiteOptions(document.getElementById('reimb-site'), true, 'All sites');
     fillSiteOptions(document.getElementById('export-site-report'), true, 'All sites');
     fillSiteOptions(document.getElementById('audit-site'), false);
+    fillSiteOptions(document.getElementById('changelog-site'), true, 'All sites');
     MONITOR_TABS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'inline-block'; });
     SITE_TABS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
     showTab('lookup');
@@ -1388,12 +1421,14 @@ function showTab(t) {
   if (t === 'records') {
     renderTable(false);
     loadFromFirebase(currentSite).then(() => renderTable(false));
+    renderChangeLog(false);
   }
   if (t === 'lookup') {
     const sm = document.getElementById('summary-month');
     if (sm && !sm.value) sm.value = today().slice(0,7);
     renderReimbursement(); renderSummary(); renderTable(true);
     loadFromFirebase('ALL').then(() => { renderReimbursement(); renderSummary(); renderTable(true); });
+    renderChangeLog(true);
   }
   if (t === 'tracker') {
     const tdate = document.getElementById('tracker-date');
@@ -1411,6 +1446,7 @@ function showTab(t) {
 }
 
 function refreshLookup() {
+  renderChangeLog(true);
   loadFromFirebase('ALL').then(() => { renderReimbursement(); renderSummary(); renderTable(true); });
 }
 
@@ -1601,32 +1637,100 @@ function recalc() {
 }
 
 // ═══════════════════════════
+//  COUNT FIELDS — whole, non-negative numbers only
+//  Minus, plus, decimal point, comma and "e" are blocked as they're typed; anything pasted in is
+//  cleaned up; and saves re-check every count field, since a browser reports unreadable text in a
+//  number box as blank.
+// ═══════════════════════════
+const INT_FIELDS = [
+  ['f-recv-qty','Received quantity'],['f-prev-left','Previous leftover qty'],
+  ['f-first','First meal qty'],['f-second','Second meal qty'],
+  ['f-adult-prog','Adult program qty'],['f-adult-nonprog','Adult non-program qty'],
+  ['f-waste','Waste qty'],['f-incomplete','Incomplete qty'],['f-leftover','Leftover qty']
+];
+document.addEventListener('keydown', e => {
+  const el = e.target;
+  if (el && el.classList && el.classList.contains('int-only') && ['-','+','.',',','e','E'].includes(e.key)) e.preventDefault();
+});
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (!el || !el.classList || !el.classList.contains('int-only') || el.value === '') return;
+  if (!/^\d+$/.test(el.value)) { const v = Math.floor(Math.abs(parseFloat(el.value))); el.value = isNaN(v) ? '' : String(v); }
+}, true);
+// Returns the labels of any count fields that aren't a whole number of 0 or more.
+function badIntFields() {
+  return INT_FIELDS.filter(([id]) => {
+    const el = document.getElementById(id);
+    if (!el) return false;
+    if (el.validity && el.validity.badInput) return true;
+    const v = el.value.trim();
+    return v !== '' && !/^\d+$/.test(v);
+  }).map(f => f[1]);
+}
+
+// ═══════════════════════════
+//  RECORD CHANGE LOG
+//  Every save, edit, draft change and deletion is written two places: the record's own auditLog
+//  (shown by the history button in My Records and Site Lookup) and the change_log collection
+//  (shown in the Change log cards, and the only place a deleted draft is still recorded).
+// ═══════════════════════════
+const RECORD_FIELD_LABELS = {
+  receiver: 'Receiver', delDate: 'Delivery date', delTime: 'Delivery time', delTemp: 'Delivery temp (°F)',
+  recvQty: 'Received qty', svcDate: 'Serve date', svcTime: 'Serve time', prevLeftover: 'Previous leftover',
+  firstMeal: 'First meals', secondMeal: 'Second meals', adultProg: 'Adult program', adultNonProg: 'Adult non-program',
+  waste: 'Waste', incomplete: 'Incomplete', leftover: 'Leftover', sigName: 'Signed by'
+};
+function recordFieldText(key, v) {
+  if (v === null || v === undefined || v === '') return '—';
+  return (key === 'delDate' || key === 'svcDate') ? fmtDate(v) : String(v);
+}
+function recordDiff(before, after) {
+  return Object.keys(RECORD_FIELD_LABELS)
+    .filter(k => String(before[k] ?? '') !== String(after[k] ?? ''))
+    .map(k => ({ field: k, label: RECORD_FIELD_LABELS[k], from: recordFieldText(k, before[k]), to: recordFieldText(k, after[k]) }));
+}
+function changesText(changes) {
+  return (changes || []).map(c => c.label + ': ' + c.from + ' → ' + c.to).join('; ');
+}
+function logRecordChange(rec, action, changes, by) {
+  return logChange({
+    siteId: rec.site, siteName: rec.siteName || rec.site, by: by || 'Site user',
+    category: 'meal_record', action, recordUid: rec.uid, svcDate: rec.svcDate || '',
+    changes: changes || [], detail: changesText(changes)
+  });
+}
+
+// ═══════════════════════════
 //  SAVE RECORD
 // ═══════════════════════════
 async function saveRecord() {
   recalc();
+  // A draft saved from this same form and then finished here is completed, not treated as a second record.
+  if (!editingUid && pendingUid && records.some(r => r.uid === pendingUid && r.isDraft)) editingUid = pendingUid;
+
   const required = [
     ['f-receiver','Receiver name'],['f-del-date','Delivery date'],['f-del-time','Delivery time'],
     ['f-del-temp','Delivery temperature'],['f-recv-qty','Received quantity'],
     ['f-svc-date','Serve date'],['f-svc-time','Serve time'],
     ['f-first','First meal qty'],['f-leftover','Leftover qty'],['f-sig-name','Signature name']
   ];
+  const bad = badIntFields();
+  if (bad.length) {
+    showEntryAlert('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; Counts must be whole numbers of 0 or more. Check: ' + bad.join(', ') + '.');
+    return;
+  }
   const missing = required.filter(([id]) => !document.getElementById(id).value.trim());
   if (missing.length) {
     showEntryAlert('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; Please complete: ' + missing.map(f => f[1]).join(', ') + '.');
     return;
   }
-  if (editingUid && currentSite !== 'MONITOR') {
-    const lockedRec = records.find(r => r.uid === editingUid);
-    if (lockedRec && lockedRec.locked) {
-      showEntryAlert('alert-danger', '<i class="ti ti-lock"></i>&nbsp; This record is locked. Contact your monitor administrator to unlock it.');
-      return;
-    }
-  }
+  // One record per site per serve date. (Delivery dates may repeat: one delivery can cover more than one service.)
   const dupDate = document.getElementById('f-svc-date').value;
-  const dupCheck = records.find(r => r.site === currentSite && r.svcDate === dupDate && r.uid !== editingUid);
-  if (dupCheck) {
-    showEntryAlert('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; A meal record for <strong>' + dupDate + '</strong> already exists for your site. Use the <strong>Edit</strong> button in My Records to update it.');
+  const dup = records.find(r => r.site === currentSite && r.svcDate === dupDate && r.uid !== editingUid);
+  if (dup) {
+    showEntryAlert('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; ' + (dup.isDraft
+      ? 'There\'s already a <strong>draft</strong> for <strong>' + fmtDate(dupDate) + '</strong>. Open it from <strong>My Records</strong> with <strong>Edit</strong> to finish it, or delete the draft there first.'
+      : 'A meal record for <strong>' + fmtDate(dupDate) + '</strong> already exists for your site. Use the <strong>Edit</strong> button in My Records to update it.'));
     return;
   }
   const availChk  = parseInt(document.getElementById('f-avail').value) || 0;
@@ -1645,107 +1749,107 @@ async function saveRecord() {
   }
 
   const now = new Date().toISOString();
-  const avail  = availChk;
-  const served = servedChk;
-  const unsrv  = unsrvChk;
+  const signer = document.getElementById('f-sig-name').value;
+  const fields = {
+    receiver: document.getElementById('f-receiver').value,
+    delDate: document.getElementById('f-del-date').value,
+    delTime: document.getElementById('f-del-time').value,
+    delTemp: document.getElementById('f-del-temp').value,
+    recvQty: n('f-recv-qty'),
+    svcDate: document.getElementById('f-svc-date').value,
+    svcTime: document.getElementById('f-svc-time').value,
+    mealType: document.getElementById('f-meal-type').value,
+    prevLeftover: n('f-prev-left'), availQty: availChk,
+    firstMeal: n('f-first'), secondMeal: n('f-second'),
+    adultProg: n('f-adult-prog'), adultNonProg: n('f-adult-nonprog'),
+    totalServed: servedChk, waste: n('f-waste'), incomplete: n('f-incomplete'),
+    totalUnsrv: unsrvChk, leftover: n('f-leftover'),
+    sigName: signer, sigCertified: true,
+    notes: document.getElementById('f-notes').value
+  };
+  const newSig = getSigDataURL();
 
   if (editingUid) {
     const idx = records.findIndex(r => r.uid === editingUid);
     if (idx !== -1) {
       const orig = records[idx];
-      const editCount = (orig.editCount || 0) + 1;
-      const auditLog = orig.auditLog || [];
-      auditLog.push({ at: now, by: document.getElementById('f-sig-name').value, action: 'Edit #' + editCount });
-      records[idx] = {
-        ...orig,
-        isDraft: false,
-        receiver: document.getElementById('f-receiver').value,
-        delDate: document.getElementById('f-del-date').value,
-        delTime: document.getElementById('f-del-time').value,
-        delTemp: document.getElementById('f-del-temp').value,
-        recvQty: n('f-recv-qty'),
-        svcDate: document.getElementById('f-svc-date').value,
-        svcTime: document.getElementById('f-svc-time').value,
-        mealType: document.getElementById('f-meal-type').value,
-        prevLeftover: n('f-prev-left'), availQty: avail,
-        firstMeal: n('f-first'), secondMeal: n('f-second'),
-        adultProg: n('f-adult-prog'), adultNonProg: n('f-adult-nonprog'),
-        totalServed: served, waste: n('f-waste'), incomplete: n('f-incomplete'),
-        totalUnsrv: unsrv, leftover: n('f-leftover'),
-        sigName: document.getElementById('f-sig-name').value, sigCertified: true,
-        notes: document.getElementById('f-notes').value,
-        lastEditedAt: now, editCount, auditLog
+      const wasDraft = !!orig.isDraft;
+      const editCount = (orig.editCount || 0) + (wasDraft ? 0 : 1);
+      const next = {
+        ...orig, ...fields,
+        isDraft: false, locked: true,
+        sigImage: newSig || orig.sigImage || null,
+        certifiedAt: now, lastEditedAt: now, editCount
       };
+      const changes = recordDiff(orig, next);
+      if (newSig && orig.sigImage) changes.push({ field: 'sigImage', label: 'Drawn signature', from: 'on file', to: 'redrawn' });
+      else if (newSig) changes.push({ field: 'sigImage', label: 'Drawn signature', from: '—', to: 'added' });
+      const action = wasDraft ? 'Draft completed and certified' : 'Edit #' + editCount + ' (re-certified)';
+      next.auditLog = (orig.auditLog || []).concat([{ at: now, by: signer, action, changes }]);
+      records[idx] = next;
       save();
-      showEntryAlert('alert-success', '<i class="ti ti-circle-check"></i>&nbsp; Record updated (Edit #' + editCount + '). Signed by ' + esc(records[idx].sigName) + '.');
-      setSyncBanner('loading','Saving to Firebase…'); const ok = await saveToFirebase(records[idx]); setSyncBanner(ok?'ok':'error', ok?'Saved to Firebase ✓':'Saved locally — could not reach Firebase.'); setTimeout(() => setSyncBanner('hide'), 3000);
+      logRecordChange(next, action, changes, signer);
+      showEntryAlert('alert-success', '<i class="ti ti-circle-check"></i>&nbsp; ' + (wasDraft ? 'Draft completed and certified' : 'Record updated (Edit #' + editCount + ')') + '. ' + changes.length + ' change' + (changes.length === 1 ? '' : 's') + ' logged. Signed by ' + esc(signer) + '.');
+      setSyncBanner('loading','Saving to Firebase…'); const ok = await saveToFirebase(next); setSyncBanner(ok?'ok':'error', ok?'Saved to Firebase ✓':'Saved locally — could not reach Firebase.'); setTimeout(() => setSyncBanner('hide'), 3000);
     }
     editingUid = null;
-    clearForm();
+    clearForm(); clearSig();
     setTimeout(() => showTab('records'), 800);
     return;
-  } else {
-    const uid = pendingUid || genUID();
-    const rec = {
-      uid, site: currentSite, siteName: SITES[currentSite].name,
-      receiver: document.getElementById('f-receiver').value,
-      delDate: document.getElementById('f-del-date').value,
-      delTime: document.getElementById('f-del-time').value,
-      delTemp: document.getElementById('f-del-temp').value,
-      recvQty: n('f-recv-qty'),
-      svcDate: document.getElementById('f-svc-date').value,
-      svcTime: document.getElementById('f-svc-time').value,
-      mealType: document.getElementById('f-meal-type').value,
-      prevLeftover: n('f-prev-left'), availQty: avail,
-      firstMeal: n('f-first'), secondMeal: n('f-second'),
-      adultProg: n('f-adult-prog'), adultNonProg: n('f-adult-nonprog'),
-      totalServed: served, waste: n('f-waste'), incomplete: n('f-incomplete'),
-      totalUnsrv: unsrv, leftover: n('f-leftover'),
-      sigName: document.getElementById('f-sig-name').value, sigCertified: true,
-      notes: document.getElementById('f-notes').value,
-      isDraft: false, locked: true, sigImage: getSigDataURL(), createdAt: now, lastEditedAt: now, editCount: 0,
-      auditLog: [{ at: now, by: document.getElementById('f-sig-name').value, action: 'Created' }]
-    };
-    records.push(rec); save();
-    showEntryAlert('alert-success', '<i class="ti ti-circle-check"></i>&nbsp; Record saved [' + uid + '] for ' + rec.svcDate + '. Signed by ' + esc(rec.sigName) + '.');
-    setSyncBanner('loading','Saving to Firebase…'); const ok = await saveToFirebase(rec); setSyncBanner(ok?'ok':'error', ok?'Saved to Firebase ✓':'Saved locally — could not reach Firebase.'); setTimeout(() => setSyncBanner('hide'), 3000);
   }
-  clearForm();
+
+  const uid = pendingUid || genUID();
+  const rec = {
+    uid, site: currentSite, siteName: SITES[currentSite].name, ...fields,
+    isDraft: false, locked: true, sigImage: newSig, createdAt: now, certifiedAt: now, lastEditedAt: now, editCount: 0,
+    auditLog: [{ at: now, by: signer, action: 'Created and certified', changes: [] }]
+  };
+  records.push(rec); save();
+  logRecordChange(rec, 'Created and certified', [], signer);
+  showEntryAlert('alert-success', '<i class="ti ti-circle-check"></i>&nbsp; Record saved [' + uid + '] for ' + fmtDate(rec.svcDate) + '. Signed by ' + esc(rec.sigName) + '.');
+  setSyncBanner('loading','Saving to Firebase…'); const ok = await saveToFirebase(rec); setSyncBanner(ok?'ok':'error', ok?'Saved to Firebase ✓':'Saved locally — could not reach Firebase.'); setTimeout(() => setSyncBanner('hide'), 3000);
+  clearForm(); clearSig();
   setTimeout(() => showTab('records'), 800);
 }
 
 // ═══════════════════════════
 //  EDIT RECORD
+//  Sites can edit any of their own records, certified or not. Every edit has to be re-signed
+//  (certification box), and the field-by-field changes go to the record's history and the change log.
 // ═══════════════════════════
 function editRecord(uid) {
   const r = records.find(x => x.uid === uid);
   if (!r) return;
-  editingUid = uid;
+  if (currentSite !== 'MONITOR' && r.site !== currentSite) return;
   showTab('entry');
+  clearForm(); clearSig();
+  editingUid = uid;
+  ['entry-alert','entry-alert-bottom'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  const setVal = (id, v) => { document.getElementById(id).value = (v === null || v === undefined) ? '' : v; };
+  // A name that's no longer on the site's trained-personnel list is added back so the dropdown doesn't go blank.
+  const setName = (id, v) => {
+    const sel = document.getElementById(id);
+    if (v && ![...sel.options].some(o => o.value === v)) { const o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o); }
+    sel.value = v || '';
+  };
   document.getElementById('f-record-id').textContent = uid;
-  document.getElementById('f-receiver').value    = r.receiver || '';
-  document.getElementById('f-del-date').value    = r.delDate || '';
-  document.getElementById('f-del-time').value    = r.delTime || '';
-  document.getElementById('f-del-temp').value    = r.delTemp || '';
-  document.getElementById('f-recv-qty').value    = r.recvQty || '';
-  document.getElementById('f-svc-date').value    = r.svcDate || '';
-  document.getElementById('f-svc-time').value    = r.svcTime || '';
-  document.getElementById('f-prev-left').value   = r.prevLeftover || '';
-  document.getElementById('f-first').value       = r.firstMeal || '';
-  document.getElementById('f-second').value      = r.secondMeal || '';
-  document.getElementById('f-adult-prog').value  = r.adultProg || '';
-  document.getElementById('f-adult-nonprog').value = r.adultNonProg || '';
-  document.getElementById('f-waste').value       = r.waste || '';
-  document.getElementById('f-incomplete').value  = r.incomplete || '';
-  document.getElementById('f-leftover').value    = r.leftover || '';
-  document.getElementById('f-sig-name').value    = r.sigName || '';
-  document.getElementById('f-notes').value       = r.notes || '';
+  setName('f-receiver', r.receiver);
+  setVal('f-del-date', r.delDate); setVal('f-del-time', r.delTime); setVal('f-del-temp', r.delTemp);
+  setVal('f-recv-qty', r.recvQty); setVal('f-svc-date', r.svcDate); setVal('f-svc-time', r.svcTime);
+  setVal('f-prev-left', r.prevLeftover); document.getElementById('f-prev-left').dataset.auto = '';
+  setVal('f-first', r.firstMeal); setVal('f-second', r.secondMeal);
+  setVal('f-adult-prog', r.adultProg); setVal('f-adult-nonprog', r.adultNonProg);
+  setVal('f-waste', r.waste); setVal('f-incomplete', r.incomplete); setVal('f-leftover', r.leftover);
+  setName('f-sig-name', r.sigName);
+  setVal('f-notes', r.notes);
   document.getElementById('f-sig-confirm').checked = false;
   checkTemp(); recalc();
   const banner = document.getElementById('edit-banner');
   banner.style.display = 'flex';
-  banner.innerHTML = '<i class="ti ti-pencil"></i>&nbsp; Editing record <strong>' + uid + '</strong> from ' + r.svcDate + ' — changes will overwrite the original.';
-  document.getElementById('save-btn').innerHTML = '<i class="ti ti-device-floppy"></i> Update record';
+  banner.innerHTML = '<i class="ti ti-pencil"></i>&nbsp; ' + (r.isDraft
+    ? 'Finishing draft <strong>' + uid + '</strong> for ' + fmtDate(r.svcDate) + '. Sign and check the certification box to save it.'
+    : 'Editing record <strong>' + uid + '</strong> from ' + fmtDate(r.svcDate) + '. Re-sign and check the certification box to save. Every change is recorded in the change log.');
+  document.getElementById('save-btn').innerHTML = '<i class="ti ti-device-floppy"></i> ' + (r.isDraft ? 'Save record' : 'Update record');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1754,21 +1858,20 @@ function editRecord(uid) {
 // ═══════════════════════════
 function saveDraft() {
   const statusEl = document.getElementById('draft-status');
-  // One record per site per serve date, drafts included: block a draft when that date is already taken
-  // by any other record (draft or finished). Re-saving the same draft (same uid) is still allowed.
-  const draftDate = document.getElementById('f-svc-date').value;
-  const sameDay = records.find(r => r.site === currentSite && r.svcDate === draftDate && r.uid !== (editingUid || pendingUid));
-  if (sameDay) {
-    const what = sameDay.isDraft ? 'A draft' : 'A finished record';
-    const msg = what + ' for <strong>' + esc(draftDate) + '</strong> already exists for your site. Open it from <strong>My Records</strong> with <strong>Edit</strong> instead of starting a new one.';
-    showEntryAlert('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; ' + msg);
-    statusEl.innerHTML = '<span style="color:var(--danger-text);">' + msg + '</span>';
+  const editingRec = editingUid ? records.find(r => r.uid === editingUid) : null;
+  if (editingRec && !editingRec.isDraft) {
+    statusEl.innerHTML = '<span style="color:var(--danger-text);">This record is already certified. Use <strong>Update record</strong> at the bottom to save changes.</span>';
     return;
   }
-  statusEl.innerHTML = '';
+  const bad = badIntFields();
+  if (bad.length) {
+    statusEl.innerHTML = '<span style="color:var(--danger-text);">Counts must be whole numbers of 0 or more. Check: ' + esc(bad.join(', ')) + '.</span>';
+    return;
+  }
   const uid = editingUid || pendingUid || genUID();
   const now = new Date().toISOString();
   const existing = records.find(r => r.uid === uid);
+  const by = document.getElementById('f-sig-name').value || document.getElementById('f-receiver').value || 'Site user';
   const draft = {
     ...(existing || {}),
     uid,
@@ -1791,9 +1894,11 @@ function saveDraft() {
     notes: document.getElementById('f-notes').value,
     createdAt: existing ? existing.createdAt : now,
     lastEditedAt: now,
-    editCount: existing ? (existing.editCount || 0) : 0,
-    auditLog: existing ? existing.auditLog : [{ at: now, by: 'System', action: 'Draft created' }]
+    editCount: existing ? (existing.editCount || 0) : 0
   };
+  const changes = existing ? recordDiff(existing, draft) : [];
+  const action = existing ? 'Draft updated' : 'Draft saved';
+  draft.auditLog = (existing && existing.auditLog ? existing.auditLog : []).concat([{ at: now, by, action, changes }]);
   if (existing) {
     const idx = records.findIndex(r => r.uid === uid);
     records[idx] = draft;
@@ -1802,8 +1907,9 @@ function saveDraft() {
     document.getElementById('f-record-id').textContent = uid;
     records.push(draft);
   }
-save();
+  save();
   saveToFirebase(draft);
+  logRecordChange(draft, action, changes, by);
   statusEl.textContent = 'Draft saved at ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   setTimeout(() => { statusEl.textContent = ''; }, 5000);
   setTimeout(() => showTab('records'), 800);
@@ -1869,6 +1975,13 @@ function sortArrow(col) {
   return adminSort.dir === 'asc' ? '&#9650;' : '&#9660;';
 }
 
+function auditEntryHtml(e) {
+  const ch = (e.changes && e.changes.length)
+    ? '<div style="color:var(--text-soft);margin-top:2px;">' + e.changes.map(c => esc(c.label) + ': ' + esc(c.from) + ' &rarr; ' + esc(c.to)).join('<br>') + '</div>'
+    : '';
+  return '<div class="audit-entry"><span class="audit-ts">' + esc(fmtStamp(e.at)) + '</span><span>' + esc(e.action) + ' by ' + esc(e.by) + ch + '</span></div>';
+}
+
 function renderTable(isAdmin) {
   let myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
   if (isAdmin) {
@@ -1904,7 +2017,7 @@ function renderTable(isAdmin) {
       return (b.svcDate || '').localeCompare(a.svcDate || '');
     });
   } else {
-    sorted = [...myRecs].sort((a, b) => b.svcDate.localeCompare(a.svcDate));
+    sorted = [...myRecs].sort((a, b) => (b.svcDate || '').localeCompare(a.svcDate || ''));
   }
 
   let h = '<div class="table-scroll"><table class="rec-table"><thead><tr>';
@@ -1922,19 +2035,21 @@ function renderTable(isAdmin) {
     h += '<th style="cursor:pointer;" onclick="setAdminSort(\'sig\')">Signed by ' + sortArrow('sig') + '</th>';
     h += '<th style="width:150px;"></th></tr></thead><tbody>';
   } else {
-    h += '<th style="width:90px;">Date</th><th style="width:60px;">Avail</th><th style="width:60px;">Served</th><th style="width:60px;">Unsrv</th><th style="width:60px;">Left</th><th style="width:80px;">Balance</th><th style="width:90px;">Status</th><th>Signed by</th><th style="width:120px;"></th></tr></thead><tbody>';
+    h += '<th style="width:90px;">Date</th><th style="width:60px;">Avail</th><th style="width:60px;">Served</th><th style="width:60px;">Unsrv</th><th style="width:60px;">Left</th><th style="width:80px;">Balance</th><th style="width:90px;">Status</th><th>Signed by</th><th style="width:130px;"></th></tr></thead><tbody>';
   }
+  const colCount = isAdmin ? 12 : 9;
 
   sorted.forEach(r => {
-    const sum = r.totalServed + r.totalUnsrv + r.leftover;
-    const bal = r.availQty - sum;
+    const sum = (r.totalServed||0) + (r.totalUnsrv||0) + (r.leftover||0);
+    const bal = (r.availQty||0) - sum;
     const ok = bal === 0;
     const anomFlags = isAnomaly(r);
     const anom = !!anomFlags;
     const edited = (r.editCount || 0) > 0;
+    const siteName = r.siteName || r.site || '';
     h += '<tr class="' + (anom ? 'anomaly' : '') + '" style="' + (r.isDraft ? 'opacity:0.65;font-style:italic;' : '') + '">';
-    if (isAdmin) h += '<td title="' + esc(r.siteName) + '">' + esc(r.siteName.substring(0,16)) + (r.siteName.length > 16 ? '…':'') + '</td>';
-    h += '<td>' + r.svcDate + '</td><td>' + r.availQty + '</td><td>' + r.totalServed + '</td><td>' + r.totalUnsrv + '</td><td>' + r.leftover + '</td>';
+    if (isAdmin) h += '<td title="' + esc(siteName) + '">' + esc(siteName.substring(0,16)) + (siteName.length > 16 ? '…':'') + '</td>';
+    h += '<td>' + fmtDate(r.svcDate) + '</td><td>' + (r.availQty||0) + '</td><td>' + (r.totalServed||0) + '</td><td>' + (r.totalUnsrv||0) + '</td><td>' + (r.leftover||0) + '</td>';
     if (isAdmin) {
       const wp = r.availQty > 0 ? r.waste / r.availQty : 0;
       const lp = r.availQty > 0 ? r.leftover / r.availQty : 0;
@@ -1947,28 +2062,25 @@ function renderTable(isAdmin) {
     h += '<td>' + (r.isDraft ? '<span class="pill pill-warn">Draft</span>' : anom ? '<span class="pill pill-danger" title="' + esc(anomTip) + '" style="cursor:help;">⚠ ' + anomFlags.length + ' flag' + (anomFlags.length > 1 ? 's' : '') + '</span>' : edited ? '<span class="pill pill-info">Edited</span>' : '<span class="pill pill-ok">Clean</span>') + '</td>';
     h += '<td title="' + esc(r.sigName) + '">' + esc(r.sigName) + '</td>';
     h += '<td><div style="display:flex;gap:3px;flex-wrap:wrap;">';
-    if (!isAdmin) h += '<button class="btn-sm blue" title="Edit" onclick="editRecord(\'' + r.uid + '\')"><i class="ti ti-pencil"></i></button>';
+    if (!isAdmin) h += '<button class="btn-sm blue" title="' + (r.isDraft ? 'Finish draft' : 'Edit') + '" onclick="editRecord(\'' + r.uid + '\')"><i class="ti ti-pencil"></i></button>';
     h += '<button class="btn-sm print-btn" title="Print" onclick="printRecord(\'' + r.uid + '\')"><i class="ti ti-printer"></i></button>';
+    h += '<button class="btn-sm" title="History" onclick="showAudit(\'' + r.uid + '\')"><i class="ti ti-history"></i></button>';
     if (isAdmin) {
       h += '<button class="btn-sm" title="Meal Count Sheet" style="border-color:var(--amber);color:var(--amber-dark);" onclick="exportMealCountSheet(\'' + r.uid + '\')"><i class="ti ti-file-spreadsheet"></i></button>';
       if (r.sigImage) h += '<button class="btn-sm blue" title="Download signature image" onclick="downloadSignature(\'' + r.uid + '\')"><i class="ti ti-signature"></i></button>';
-      h += '<button class="btn-sm" title="Audit log" onclick="showAudit(\'' + r.uid + '\')"><i class="ti ti-history"></i></button>';
-      if (r.locked) h += '<button class="btn-sm" title="Unlock for editing" style="border-color:var(--warning-text);color:var(--warning-text);" onclick="unlockRecord(\'' + r.uid + '\')"><i class="ti ti-lock-open"></i></button>';
       h += '<button class="btn-sm" title="Delete" style="border-color:#c0392b;color:#c0392b;" onclick="deleteRecord(\'' + r.uid + '\')"><i class="ti ti-trash"></i></button>';
+    } else if (r.isDraft && !r.sigCertified) {
+      h += '<button class="btn-sm red" title="Delete this unsaved draft" onclick="deleteRecord(\'' + r.uid + '\')"><i class="ti ti-trash"></i></button>';
     }
     h += '</div></td></tr>';
-    if (isAdmin) {
-      h += '<tr id="audit-' + r.uid + '" style="display:none;"><td colspan="12" style="background:#f8f8f8;padding:8px 12px;">';
-      if (r.auditLog && r.auditLog.length) {
-        r.auditLog.forEach(e => {
-          h += '<div class="audit-entry"><span class="audit-ts">' + e.at.replace('T',' ').slice(0,16) + '</span><span>' + esc(e.action) + ' by ' + esc(e.by) + '</span></div>';
-        });
-      } else { h += '<span style="font-size:12px;color:var(--text-soft);">No audit log available.</span>'; }
-      h += '</td></tr>';
-    }
+    h += '<tr id="audit-' + r.uid + '" style="display:none;"><td colspan="' + colCount + '" style="background:#f8f8f8;padding:8px 12px;white-space:normal;">';
+    if (r.auditLog && r.auditLog.length) h += r.auditLog.slice().reverse().map(auditEntryHtml).join('');
+    else h += '<span style="font-size:12px;color:var(--text-soft);">No history recorded for this record.</span>';
+    h += '</td></tr>';
   });
   h += '</tbody></table></div>';
-  if (isAdmin) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">⚠ Waste % = waste ÷ available (red &gt; 30%) · Left % = leftover ÷ available (red &gt; 40%). Flags also cover served &lt; 30% of available and balance mismatches. Hover a flag count for details. Click any column header to sort.</p>';
+  if (isAdmin) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">⚠ Waste % = waste ÷ available (red &gt; 30%) · Left % = leftover ÷ available (red &gt; 40%). Flags also cover served &lt; 30% of available and balance mismatches. Hover a flag count for details. Click any column header to sort. The history button shows every change made to a record.</p>';
+  else h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Use the pencil to edit a record or finish a draft. Every edit must be re-signed and is recorded in the history (clock button) and the change log below. Unsaved drafts can be deleted; certified records can\'t.</p>';
   ctr.innerHTML = h;
 }
 
@@ -1984,12 +2096,66 @@ function downloadSignature(uid) {
   document.body.removeChild(a);
 }
 
+// Monitors can delete any record. Site users can delete only their own unsaved drafts —
+// never a record that has been certified and signed.
 async function deleteRecord(uid) {
-  if (!confirm('Delete this record? This cannot be undone.')) return;
-  records = records.filter(r => r.uid !== uid);
+  const r = records.find(x => x.uid === uid);
+  if (!r) return;
+  const isMonitor = currentSite === 'MONITOR';
+  if (!isMonitor) {
+    if (r.site !== currentSite) return;
+    if (!r.isDraft || r.sigCertified) { alert('This record has been certified and signed, so it can\'t be deleted. Use Edit to correct it.'); return; }
+  }
+  if (!confirm(isMonitor ? 'Delete this record? This cannot be undone.' : 'Delete the unsaved draft for ' + fmtDate(r.svcDate) + '? This cannot be undone.')) return;
+  try { await _db.collection('meal_records').doc(uid).delete(); }
+  catch (e) { console.warn('Firebase delete failed:', e); alert('Could not delete — check your connection and try again.'); return; }
+  records = records.filter(x => x.uid !== uid);
   saveLocal();
-  try { await _db.collection('meal_records').doc(uid).delete(); } catch(e) { console.warn('Firebase delete failed:', e); }
-  renderTable(true);
+  if (editingUid === uid || pendingUid === uid) clearForm();
+  logRecordChange(r, isMonitor ? 'Record deleted by monitor' : 'Draft deleted', [], isMonitor ? 'Monitor' : 'Site user');
+  renderTable(isMonitor);
+  renderChangeLog(isMonitor);
+}
+
+// ═══════════════════════════
+//  CHANGE LOG CARDS (My Records for sites, Site Lookup for monitors)
+//  Reads change_log entries with category 'meal_record'. Single-field queries only, so no
+//  Firestore composite index is needed; sorting happens here.
+// ═══════════════════════════
+async function renderChangeLog(isAdmin) {
+  const ctr = document.getElementById(isAdmin ? 'all-changelog' : 'my-changelog');
+  if (!ctr || !currentSite) return;
+  ctr.innerHTML = '<div style="font-size:13px;color:var(--text-soft);padding:8px;"><span class="spinner dark"></span> Loading…</div>';
+  let entries = [];
+  try {
+    const ref = isAdmin
+      ? _db.collection('change_log').where('category', '==', 'meal_record')
+      : _db.collection('change_log').where('siteId', '==', currentSite);
+    const snap = await ref.get();
+    entries = snap.docs.map(d => d.data()).filter(e => e.category === 'meal_record');
+  } catch (e) {
+    ctr.innerHTML = '<div class="empty"><i class="ti ti-wifi-off"></i>Could not load the change log.</div>'; return;
+  }
+  if (isAdmin) {
+    const f = document.getElementById('changelog-site');
+    if (f && f.value && f.value !== 'ALL') entries = entries.filter(e => e.siteId === f.value);
+  }
+  entries.sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+  const total = entries.length;
+  entries = entries.slice(0, 200);
+  if (!entries.length) { ctr.innerHTML = '<div class="empty"><i class="ti ti-history"></i>No changes logged yet.</div>'; return; }
+  let h = '<div class="table-scroll"><table class="rec-table auto" style="min-width:' + (isAdmin ? 820 : 680) + 'px;"><thead><tr><th>When</th>' + (isAdmin ? '<th>Site</th>' : '') + '<th>Serve date</th><th>Action</th><th>By</th><th>Details</th></tr></thead><tbody>';
+  entries.forEach(e => {
+    const details = (e.changes && e.changes.length)
+      ? e.changes.map(c => esc(c.label) + ': ' + esc(c.from) + ' &rarr; ' + esc(c.to)).join('<br>')
+      : '<span style="color:var(--text-soft);">—</span>';
+    h += '<tr><td>' + esc(fmtStamp(e.at)) + '</td>' + (isAdmin ? '<td title="' + esc(e.siteName) + '" style="max-width:200px;">' + esc(e.siteName) + '</td>' : '')
+      + '<td>' + esc(fmtDate(e.svcDate)) + '</td><td>' + esc(e.action) + '</td><td>' + esc(e.by) + '</td>'
+      + '<td style="white-space:normal;font-size:11px;line-height:1.5;">' + details + '</td></tr>';
+  });
+  h += '</tbody></table></div>';
+  if (total > entries.length) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Showing the newest ' + entries.length + ' of ' + total + ' entries.</p>';
+  ctr.innerHTML = h;
 }
 
 // ══════════════════════════════
@@ -2108,6 +2274,10 @@ function setTrackerView(v) {
   if (v === 'monthly') renderTrackerMonthly();
 }
 
+// Saturdays are N/A in every tracker view: never counted as expected or missing, never emailed about,
+// and shown as a yellow "–" unless the site happened to submit that day (then a green ✓).
+function isSaturday(iso) { return new Date(iso + 'T12:00:00').getDay() === 6; }
+
 // ── Daily ─────────────────────────────────────────────────
 function renderTracker() {
   const date = document.getElementById('tracker-date').value;
@@ -2117,10 +2287,18 @@ function renderTracker() {
   const grid = document.getElementById('tracker-grid');
   const summary = document.getElementById('tracker-summary');
   if (grid) grid.style.display = 'grid';
-  const missing = allSites.filter(([k]) => !submitted.has(k));
-  summary.innerHTML = '<strong>' + submitted.size + '</strong> of <strong>' + allSites.length + '</strong> sites submitted for ' + date + '. <span style="color:var(--danger-text);">' + missing.length + ' missing.</span>';
+  const sat = isSaturday(date);
+  if (sat) {
+    summary.innerHTML = '<span class="day-cell-na">–</span>&nbsp; ' + fmtDate(date) + ' is a Saturday — marked <strong>N/A</strong>. ' + submitted.size + ' site(s) submitted anyway.';
+  } else {
+    const missing = allSites.filter(([k]) => !submitted.has(k));
+    summary.innerHTML = '<strong>' + submitted.size + '</strong> of <strong>' + allSites.length + '</strong> sites submitted for ' + fmtDate(date) + '. <span style="color:var(--danger-text);">' + missing.length + ' missing.</span>';
+  }
   grid.innerHTML = allSites.map(([k, v]) => {
-  const done = submitted.has(k);
+    const done = submitted.has(k);
+    if (sat && !done) {
+      return '<div class="tracker-card na"><div class="tracker-card-name">' + esc(v.name) + '</div><div class="tracker-card-sub"><span class="day-cell-na">–</span> N/A (Saturday)</div></div>';
+    }
     const hasEmail = !!SITE_EMAILS[k];
     const selBox = (!done && hasEmail)
       ? '<label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;cursor:pointer;"><input type="checkbox" class="tracker-sel" data-site="' + k + '" data-dates=\'["' + date + '"]\' onchange="updateSelCount()" style="width:15px;height:15px;accent-color:var(--navy);"> Select to email</label>'
@@ -2134,7 +2312,7 @@ function renderTracker() {
   refreshSendRow();
 }
 
-// ── Weekly (Monday–Saturday) ──────────────────────────────
+// ── Weekly (Monday–Saturday shown; Saturday is N/A) ───────
 function renderTrackerWeekly() {
   const startVal = document.getElementById('tracker-week-start').value;
   if (!startVal) return;
@@ -2148,18 +2326,19 @@ function renderTrackerWeekly() {
   const weekDays = [];
   for (let i = 0; i < 6; i++) {
     const d = new Date(monday); d.setDate(d.getDate() + i);
-    weekDays.push(d.toISOString().slice(0,10));
+    weekDays.push(ymd(d.getFullYear(), d.getMonth() + 1, d.getDate()));
   }
+  const expectedDays = weekDays.filter(d => !isSaturday(d));
   const allSites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR');
   const submittedByDate = {};
   weekDays.forEach(d => {
     submittedByDate[d] = new Set(records.filter(r => r.svcDate === d && !r.isDraft).map(r => r.site));
   });
-  const dayLabels = weekDays.map(d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'numeric',day:'numeric'}));
+  const dayLabels = weekDays.map(fmtDayLabel);
 
   const rows = allSites.map(([k, v]) => {
-    const missingDays   = weekDays.filter(d => !submittedByDate[d].has(k));
-    const submittedDays = weekDays.filter(d => submittedByDate[d].has(k));
+    const missingDays   = expectedDays.filter(d => !submittedByDate[d].has(k));
+    const submittedDays = expectedDays.filter(d => submittedByDate[d].has(k));
     return { k, name: v.name, missingDays, submitted: submittedDays.length,
              missing: missingDays.length, allOk: missingDays.length === 0, hasEmail: !!SITE_EMAILS[k] };
   });
@@ -2175,9 +2354,10 @@ function renderTrackerWeekly() {
     h += '<td class="site-col" title="' + esc(row.name) + '">' + esc(row.name) + '</td>';
     weekDays.forEach(d => {
       const ok = submittedByDate[d].has(row.k);
-      h += '<td><span class="' + (ok ? 'day-cell-ok' : 'day-cell-miss') + '">' + (ok ? '✓' : '✗') + '</span></td>';
+      if (isSaturday(d) && !ok) h += '<td><span class="day-cell-na" title="Saturday — N/A">–</span></td>';
+      else h += '<td><span class="' + (ok ? 'day-cell-ok' : 'day-cell-miss') + '">' + (ok ? '✓' : '✗') + '</span></td>';
     });
-    h += '<td><span class="pill ' + (row.allOk ? 'pill-ok' : 'pill-danger') + '">' + row.submitted + '/' + weekDays.length + '</span></td>';
+    h += '<td><span class="pill ' + (row.allOk ? 'pill-ok' : 'pill-danger') + '">' + row.submitted + '/' + expectedDays.length + '</span></td>';
     if (!row.allOk && row.hasEmail) {
       h += '<td><input type="checkbox" class="tracker-sel" data-site="' + row.k + '" data-dates=\'' + JSON.stringify(row.missingDays) + '\' onchange="updateSelCount()" style="width:16px;height:16px;accent-color:var(--navy);cursor:pointer;" title="Select to email"></td>';
     } else if (!row.allOk) {
@@ -2189,11 +2369,11 @@ function renderTrackerWeekly() {
   });
   h += '</tbody></table></div>';
   trackerGrid.innerHTML = h;
-  trackerSum.innerHTML = 'Week of ' + dayLabels[0] + ' — <strong>' + totalMissing + '</strong> site(s) with missing submissions.';
+  trackerSum.innerHTML = 'Week of ' + dayLabels[0] + ' — <strong>' + totalMissing + '</strong> site(s) with missing submissions. Saturday is N/A (<span class="day-cell-na">–</span>).';
   refreshSendRow();
 }
 
-// ── Monthly (Monday–Saturday) ─────────────────────────────
+// ── Monthly (Monday–Friday expected; Saturdays N/A) ───────
 function renderTrackerMonthly() {
   const month = document.getElementById('tracker-month').value;
   if (!month) return;
@@ -2204,10 +2384,11 @@ function renderTrackerMonthly() {
   const [yr, mo] = month.split('-').map(Number);
   const daysInMonth = new Date(yr, mo, 0).getDate();
   const weekdays = [];
+  let saturdays = 0;
   for (let d = 1; d <= daysInMonth; d++) {
-    const dt = new Date(yr, mo-1, d);
-    const dow = dt.getDay();
-    if (dow >= 1 && dow <= 6) weekdays.push(dt.toISOString().slice(0,10));
+    const dow = new Date(yr, mo-1, d).getDay();
+    if (dow >= 1 && dow <= 5) weekdays.push(ymd(yr, mo, d));
+    else if (dow === 6) saturdays++;
   }
   const allSites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR');
   const submittedByDate = {};
@@ -2236,7 +2417,7 @@ function renderTrackerMonthly() {
     + '<th style="text-align:left;">Missing dates</th><th>Email</th>'
     + '</tr></thead><tbody>';
   rows.forEach(row => {
-    const missingFmt = row.missingDays.map(d => new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'numeric',day:'numeric'})).join(', ');
+    const missingFmt = row.missingDays.map(fmtDate).join(', ');
     const rateColor = row.rate === 100 ? 'var(--success-text)' : row.rate >= 80 ? 'var(--warning-text)' : 'var(--danger-text)';
     h += '<tr>';
     h += '<td class="site-col" title="' + esc(row.name) + '">' + esc(row.name) + '</td>';
@@ -2257,7 +2438,7 @@ function renderTrackerMonthly() {
   h += '</tbody></table></div>';
   trackerGrid.innerHTML = h;
   const monthLabel = new Date(yr, mo-1, 1).toLocaleString('en-US',{month:'long',year:'numeric'});
-  trackerSum.innerHTML = monthLabel + ' — <strong>' + totalMissing + '</strong> site(s) with missing submissions out of ' + weekdays.length + ' expected service days.';
+  trackerSum.innerHTML = monthLabel + ' — <strong>' + totalMissing + '</strong> site(s) with missing submissions out of ' + weekdays.length + ' expected service days (Mon–Fri). ' + saturdays + ' Saturday(s) marked N/A (<span class="day-cell-na">–</span>).';
   refreshSendRow();
 }
 
@@ -2426,7 +2607,7 @@ const TEMPLATE_VARS = [
   ['{siteName}', 'Site / organization name'],
   ['{contact}',  'Administrator contact name (falls back to the site name)'],
   ['{dates}',    'Missing dates, written out and comma-separated — "Monday, September 14, Tuesday, September 15"'],
-  ['{dateList}', 'Missing dates as a bulleted list, one per line (YYYY-MM-DD)'],
+  ['{dateList}', 'Missing dates as a bulleted list, one per line (MM/DD/YY)'],
   ['{count}',    'How many dates are missing'],
   ['{dept}',     'Department email from Settings'],
   ['{link}',     'Web address of SESSION']
@@ -2441,7 +2622,7 @@ function templateVars(siteId, dates) {
     '{siteName}': siteName,
     '{contact}':  info.adminContact || siteName,
     '{dates}':    dateList.map(pretty).join(', '),
-    '{dateList}': dateList.map(d => '  • ' + d).join('\n'),
+    '{dateList}': dateList.map(d => '  • ' + fmtDate(d)).join('\n'),
     '{count}':    String(dateList.length),
     '{dept}':     getDeptEmail(),
     '{link}':     (location.origin && location.origin !== 'null') ? location.origin + location.pathname : 'https://damian-programs.github.io/session/'
@@ -2748,14 +2929,14 @@ function printRecord(uid) {
   let html =
     '<div class="print-header">'
     + '<div class="print-title">CACFP Kids Cafe — Meal Count Sheet</div>'
-    + '<div class="print-sub">' + esc(r.siteName || r.site) + ' &nbsp;·&nbsp; Service date: ' + (r.svcDate || '') + ' &nbsp;·&nbsp; <span class="print-id">ID ' + r.uid + '</span></div>'
+    + '<div class="print-sub">' + esc(r.siteName || r.site) + ' &nbsp;·&nbsp; Service date: ' + fmtDate(r.svcDate) + ' &nbsp;·&nbsp; <span class="print-id">ID ' + r.uid + '</span></div>'
     + '</div>'
     + '<div class="print-section"><div class="print-section-title">Delivery</div><div class="print-grid">'
-    + fld('Receiver', r.receiver) + fld('Delivery date', r.delDate) + fld('Delivery time', r.delTime)
+    + fld('Receiver', r.receiver) + fld('Delivery date', fmtDate(r.delDate)) + fld('Delivery time', r.delTime)
     + fld('Delivery temp (°F)', r.delTemp) + fld('Received qty', r.recvQty) + fld('Meal type', r.mealType)
     + '</div></div>'
     + '<div class="print-section"><div class="print-section-title">Meal service</div><div class="print-grid">'
-    + fld('Serve date', r.svcDate) + fld('Serve time', r.svcTime)
+    + fld('Serve date', fmtDate(r.svcDate)) + fld('Serve time', r.svcTime)
     + fld('Previous leftover', r.prevLeftover) + fld('Available qty', r.availQty)
     + fld('First meals', r.firstMeal) + fld('Second meals', r.secondMeal)
     + fld('Adult program', r.adultProg) + fld('Adult non-program', r.adultNonProg)
@@ -2822,13 +3003,12 @@ async function checkFirebaseStatus() {
 
 async function syncAllToFirebase() {
   const el = document.getElementById('bulk-sync-status');
-  const toSync = records.filter(r => r.uid);
-  if (!toSync.length) { if (el) { el.style.display = 'block'; el.textContent = 'No local records to sync.'; } return; }
+  const toSync = records.filter(r => r.uid && r._pendingSync);
+  if (!toSync.length) { if (el) { el.style.display = 'block'; el.textContent = 'Nothing waiting to upload on this device.'; } return; }
   if (el) { el.style.display = 'block'; el.innerHTML = '<span class="spinner dark"></span> Syncing ' + toSync.length + ' record(s)…'; }
   let ok = 0, fail = 0;
   for (const r of toSync) {
-    try { await _db.collection('meal_records').doc(r.uid).set(r); ok++; }
-    catch (e) { fail++; }
+    if (await saveToFirebase(r)) ok++; else fail++;
   }
   if (el) el.innerHTML = (fail === 0 ? '<span class="status-dot green"></span> ' : '<span class="status-dot red"></span> ')
     + 'Synced ' + ok + ' record(s)' + (fail ? ', ' + fail + ' failed (check connection)' : '') + '.';
@@ -2880,7 +3060,7 @@ function exportCSV(isAdmin) {
   ];
   let csv = cols.map(c => q(c[1])).join(',') + '\n';
   recs.sort((a,b) => (b.svcDate||'').localeCompare(a.svcDate||'')).forEach(r => {
-    csv += cols.map(c => q(r[c[0]])).join(',') + '\n';
+    csv += cols.map(c => q((c[0] === 'svcDate' || c[0] === 'delDate') ? fmtDate(r[c[0]]) : r[c[0]])).join(',') + '\n';
   });
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const a = document.createElement('a');
@@ -2965,7 +3145,7 @@ function exportMealCountSheet(uid) {
   const row5 = emptyRow();
   row5[0] = "Supervisor's Name:"; row5[3] = r.receiver || '';
   row5[8] = 'Delivery Time:'; row5[11] = r.delTime || '';
-  row5[14] = 'Date:'; row5[15] = r.delDate || '';
+  row5[14] = 'Date:'; row5[15] = fmtDate(r.delDate);
   aoa.push(row5);
 
   // Row 6 — meals available sentence (A6:P6) + redundant total (Q6)
@@ -3027,7 +3207,7 @@ function exportMealCountSheet(uid) {
   // Row 28 — signer name (A28:H28) / "Signature" label (I28) / date (M28:R28) / "Date" label (S28)
   const row28 = emptyRow();
   row28[0] = r.sigName || ''; row28[8] = 'Signature';
-  row28[12] = r.svcDate || ''; row28[18] = 'Date';
+  row28[12] = fmtDate(r.svcDate); row28[18] = 'Date';
   aoa.push(row28);
 
   // Row 29 — footer (A29:T29)
@@ -3079,7 +3259,7 @@ function exportMonthlyReport(month, site) {
   const s2 = [['REVIEW FLAGS — ' + monthNameUpper(month)], [], ['Site','Service date','Flag']];
   recs.sort((a,b)=>(a.siteName||'').localeCompare(b.siteName||'') || (a.svcDate||'').localeCompare(b.svcDate||'')).forEach(r => {
     const flags = isAnomaly(r);
-    if (flags) flags.forEach(f => s2.push([r.siteName || r.site, r.svcDate, f]));
+    if (flags) flags.forEach(f => s2.push([r.siteName || r.site, fmtDate(r.svcDate), f]));
   });
   if (s2.length === 3) s2.push(['—','—','No anomalies flagged this month']);
   const ws2 = XLSX.utils.aoa_to_sheet(s2);
@@ -3089,7 +3269,7 @@ function exportMonthlyReport(month, site) {
   const s3 = [['DAILY DETAIL — ' + monthNameUpper(month)], [],
     ['Site','Service date','Receiver','Received','Available','1st','2nd','Adult prog','Adult non-prog','Served','Waste','Incomplete','Leftover','Signed by']];
   recs.sort((a,b)=>(a.siteName||'').localeCompare(b.siteName||'') || (a.svcDate||'').localeCompare(b.svcDate||'')).forEach(r => {
-    s3.push([r.siteName||r.site, r.svcDate, r.receiver||'', r.recvQty||0, r.availQty||0, r.firstMeal||0, r.secondMeal||0,
+    s3.push([r.siteName||r.site, fmtDate(r.svcDate), r.receiver||'', r.recvQty||0, r.availQty||0, r.firstMeal||0, r.secondMeal||0,
       r.adultProg||0, r.adultNonProg||0, r.totalServed||0, r.waste||0, r.incomplete||0, r.leftover||0, r.sigName||'']);
   });
   const ws3 = XLSX.utils.aoa_to_sheet(s3);
@@ -3117,11 +3297,11 @@ function exportSiteAudit() {
   const siteName = (SITES[site] && SITES[site].name) || site;
   const wb = XLSX.utils.book_new();
 
-  const d = [['DAILY MEAL DETAILS — ' + siteName], ['Range', start + ' to ' + end], [],
+  const d = [['DAILY MEAL DETAILS — ' + siteName], ['Range', fmtDate(start) + ' to ' + fmtDate(end)], [],
     ['Service date','Receiver','Received','Available','1st','2nd','Adult prog','Adult non-prog','Served','Waste','Incomplete','Leftover','Signed by']];
   let t = {recv:0,avail:0,first:0,second:0,ap:0,anp:0,served:0,waste:0,inc:0,left:0};
   recs.forEach(r => {
-    d.push([r.svcDate, r.receiver||'', r.recvQty||0, r.availQty||0, r.firstMeal||0, r.secondMeal||0,
+    d.push([fmtDate(r.svcDate), r.receiver||'', r.recvQty||0, r.availQty||0, r.firstMeal||0, r.secondMeal||0,
       r.adultProg||0, r.adultNonProg||0, r.totalServed||0, r.waste||0, r.incomplete||0, r.leftover||0, r.sigName||'']);
     t.recv+=(r.recvQty||0); t.avail+=(r.availQty||0); t.first+=(r.firstMeal||0); t.second+=(r.secondMeal||0);
     t.ap+=(r.adultProg||0); t.anp+=(r.adultNonProg||0); t.served+=(r.totalServed||0);
@@ -3153,7 +3333,7 @@ function exportSiteAudit() {
   XLSX.utils.book_append_sheet(wb, wsT, 'Monthly Totals');
 
   const info = siteInfoSheetRows(site).concat([[],
-    ['Report range', start + ' to ' + end], ['Records included', recs.length], ['Generated', new Date().toLocaleString()]]);
+    ['Report range', fmtDate(start) + ' to ' + fmtDate(end)], ['Records included', recs.length], ['Generated', fmtStamp(new Date().toISOString())]]);
   const wsI = XLSX.utils.aoa_to_sheet(info); wsI['!cols'] = [{wch:20},{wch:40}];
   XLSX.utils.book_append_sheet(wb, wsI, 'Site Information');
 
@@ -3166,6 +3346,22 @@ function exportSiteAudit() {
 // ═══════════════════════════
 function ymd(y, m, d) {
   return y + '-' + String(m).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+}
+// DISPLAY FORMAT — every date a person sees is MM/DD/YY. Stored values (Firestore, sorting,
+// comparisons, file names) stay YYYY-MM-DD; only convert at the point of display.
+function fmtDate(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
+  return m ? m[2] + '/' + m[3] + '/' + m[1].slice(2) : (iso || '');
+}
+// An ISO timestamp (e.g. audit log) → "MM/DD/YY HH:MM" in local time.
+function fmtStamp(iso) {
+  const d = new Date(iso);
+  if (!iso || isNaN(d)) return iso || '';
+  return fmtDate(ymd(d.getFullYear(), d.getMonth() + 1, d.getDate())) + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+// "Mon 09/21/26" — used for day column headers.
+function fmtDayLabel(iso) {
+  return new Date(iso + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }) + ' ' + fmtDate(iso);
 }
 function weekdaysInMonth(month) {
   const [y, m] = month.split('-').map(Number);
@@ -3222,13 +3418,13 @@ function exportPerSiteMonthReport() {
       const wd = dowName(dateStr);
       if (r) {
         anySubmitted = true;
-        daily.push([dateStr, wd, 'Submitted', r.receiver||'', r.recvQty||0, r.availQty||0, r.totalServed||0, r.firstMeal||0, r.secondMeal||0,
+        daily.push([fmtDate(dateStr), wd, 'Submitted', r.receiver||'', r.recvQty||0, r.availQty||0, r.totalServed||0, r.firstMeal||0, r.secondMeal||0,
           r.adultProg||0, r.adultNonProg||0, r.totalServed||0, r.waste||0, r.incomplete||0, r.leftover||0, r.sigName||'']);
         t.recv+=(r.recvQty||0); t.avail+=(r.availQty||0); t.first+=(r.firstMeal||0); t.second+=(r.secondMeal||0);
         t.ap+=(r.adultProg||0); t.anp+=(r.adultNonProg||0); t.served+=(r.totalServed||0);
         t.waste+=(r.waste||0); t.inc+=(r.incomplete||0); t.left+=(r.leftover||0);
       } else {
-        daily.push([dateStr, wd, 'No submission', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        daily.push([fmtDate(dateStr), wd, 'No submission', '', '', '', '', '', '', '', '', '', '', '', '', '']);
       }
     });
   });
@@ -3270,7 +3466,7 @@ function exportPerSiteMonthReport() {
     ['Report range', months[0] + ' to ' + months[months.length - 1]],
     ['Weekdays in range (Mon–Sat)', months.reduce((a,m)=>a+weekdaysInMonth(m).length,0)],
     ['Submitted service days', Object.keys(recByDate).length],
-    ['Generated', new Date().toLocaleString()]]);
+    ['Generated', fmtStamp(new Date().toISOString())]]);
   const wsI = XLSX.utils.aoa_to_sheet(info); wsI['!cols'] = [{wch:28},{wch:40}];
   XLSX.utils.book_append_sheet(wb, wsI, 'Site Information');
 
@@ -3291,7 +3487,7 @@ function exportWeeklyWasteReport() {
   d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
   const weekDays = [];
   for (let i = 0; i < 6; i++) { const x = new Date(d); x.setDate(x.getDate() + i); weekDays.push(x.toISOString().slice(0,10)); }
-  const dayLabels = weekDays.map(x => new Date(x+'T12:00:00').toLocaleDateString('en-US',{weekday:'short',month:'numeric',day:'numeric'}));
+  const dayLabels = weekDays.map(fmtDayLabel);
 
   let recs = records.filter(r => !r.isDraft && weekDays.includes(r.svcDate) && r.site !== 'MONITOR');
   if (siteFilter && siteFilter !== 'ALL') recs = recs.filter(r => r.site === siteFilter);
