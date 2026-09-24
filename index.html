@@ -1108,7 +1108,7 @@ function retryConnection() {
   loadEmailConfig();
   if (currentSite) loadFromFirebase(currentSite === 'MONITOR' ? 'ALL' : currentSite);
 }
-window.addEventListener('offline', () => showOfflineBanner("You're offline — data can't be loaded or saved. Please reconnect."));
+window.addEventListener('offline', () => showOfflineBanner("You're offline... Data can't be loaded or saved. Please reconnect."));
 window.addEventListener('online',  () => { hideOfflineBanner(); retryConnection(); });
 
 // ═══════════════════════════
@@ -1189,11 +1189,11 @@ async function loadSitesFromFirebase() {
     console.warn('Could not load sites from Firebase:', e);
     SITES = { 'MONITOR': { name: 'Monitor Organization', pin: '99999', active: true } };
     if (sel) {
-      sel.innerHTML = '<option value="">Disconnected — reconnect and retry</option>';
+      sel.innerHTML = '<option value="">Disconnected... Reconnect and retry</option>';
       sel.disabled = true;
     }
     if (statusEl) { statusEl.style.display = 'block'; statusEl.textContent = 'Can\'t reach the database. Check your connection and try again.'; }
-    showOfflineBanner("Disconnected from the internet — the site list can't load. Please reconnect.");
+    showOfflineBanner("Disconnected from the internet... The site list can't load. Please reconnect.");
   }
 }
 
@@ -1286,7 +1286,7 @@ async function loadFromFirebase(site) {
     console.warn('Firebase load failed:', e);
     setSyncBanner('warn', 'Could not reach the database');
     setTimeout(() => setSyncBanner('hide'), 4000);
-    showOfflineBanner("Disconnected from the internet — records can't be loaded. Please reconnect.");
+    showOfflineBanner("Disconnected from the internet... Records can't be loaded. Please reconnect.");
   }
 }
 
@@ -1302,7 +1302,7 @@ async function saveToFirebase(rec) {
   } catch (e) {
     console.warn('Firebase save failed:', e);
     rec._pendingSync = true; saveLocal();
-    showOfflineBanner('Disconnected — your entry was saved on this device but not yet uploaded. Reconnect to sync.');
+    showOfflineBanner('Disconnected... Your entry was saved on this device but not yet uploaded. Reconnect to sync.');
     return false;
   }
 }
@@ -1578,10 +1578,10 @@ function checkTemp() {
     alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; <strong>Temperature out of safe range.</strong> Hot food must be ≥135°F; cold food must be ≤41°F. Current: ' + temp + '°F.';
   } else if (temp <= 41) {
     alertEl.style.display = 'flex'; alertEl.className = 'alert alert-info';
-    alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; Cold food temperature (' + temp + '°F) — within safe range (≤41°F).';
+    alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; Cold food temperature (' + temp + '°F) - within safe range (32-41°F).';
   } else {
     alertEl.style.display = 'flex'; alertEl.className = 'alert alert-success';
-    alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; Hot food temperature (' + temp + '°F) — within safe range (≥135°F).';
+    alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; Hot food temperature (' + temp + '°F) - within safe range (≥135°F).';
   }
 }
 
@@ -2086,7 +2086,7 @@ function renderTable(isAdmin) {
   });
   h += '</tbody></table></div>';
   if (isAdmin) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">⚠ Waste % = waste ÷ available (red &gt; 30%) · Left % = leftover ÷ available (red &gt; 40%). Flags also cover served &lt; 30% of available and balance mismatches. Hover a flag count for details. Click any column header to sort. The history button shows every change made to a record.</p>';
-  else h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Use the pencil to edit a record or finish a draft. Every edit must be re-signed and is recorded in its history — click the clock button to see it. Unsaved drafts can be deleted; certified records can\'t.</p>';
+  else h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Use the pencil to edit a record or finish a draft. Every edit must be re-signed and is recorded in its history. Click the clock button to see the version history. Unsaved drafts can be deleted; certified records can\'t.</p>';
   ctr.innerHTML = h;
 }
 
