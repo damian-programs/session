@@ -1069,7 +1069,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.23.6</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.23.8</div>
 
 <script>
 // ═══════════════════════════
@@ -1520,6 +1520,9 @@ function populateExportSelects() {
 function today() { const d = new Date(); return ymd(d.getFullYear(), d.getMonth() + 1, d.getDate()); }
 function nowTime() { return new Date().toTimeString().slice(0, 5); }
 function n(id) { return parseInt(document.getElementById(id).value) || 0; }
+// Like n(), but an empty field stays empty ('') instead of becoming 0. Drafts use this so a reopened
+// draft looks the way it was left, and the previous-leftover autofill can tell "never filled" from a typed 0.
+function nb(id) { const v = document.getElementById(id).value.trim(); return v === '' ? '' : (parseInt(v) || 0); }
 
 // Show the same message at the top AND bottom of the meal record form.
 function showEntryAlert(cls, html) {
@@ -1537,11 +1540,16 @@ function initFormDefaults() {
   document.getElementById('f-svc-date').value = today();
 }
 
-// Fills "Previous leftover" from the site's most recent submitted record BEFORE the serve date,
+// Fills "Previous leftover" (new records and drafts being finished) from the site's most recent submitted record BEFORE the serve date,
 // if that record is 1–3 days earlier (3 covers Friday → Monday). Re-runs when the serve date changes
 // and after Firebase finishes loading. Never overwrites a number someone typed in.
 function autoFillPrevLeftover() {
-  if (!currentSite || currentSite === 'MONITOR' || editingUid) return;
+  if (!currentSite || currentSite === 'MONITOR') return;
+  // Certified records never change on their own. Drafts being finished still get the autofill.
+  if (editingUid) {
+    const open = records.find(r => r.uid === editingUid);
+    if (!open || !open.isDraft) return;
+  }
   const el = document.getElementById('f-prev-left');
   if (!el) return;
   if (el.value !== '' && el.dataset.auto !== '1') return;
@@ -1754,7 +1762,7 @@ async function saveRecord() {
       const editCount = (orig.editCount || 0) + (wasDraft ? 0 : 1);
       const next = {
         ...orig, ...fields,
-        isDraft: false, locked: true,
+        isDraft: false, locked: true, prevLeftoverAuto: null,
         sigImage: newSig || orig.sigImage || null,
         certifiedAt: now, lastEditedAt: now, editCount
       };
@@ -1813,7 +1821,10 @@ function editRecord(uid) {
   setName('f-receiver', r.receiver);
   setVal('f-del-date', r.delDate); setVal('f-del-time', r.delTime); setVal('f-del-temp', r.delTemp);
   setVal('f-recv-qty', r.recvQty); setVal('f-svc-date', r.svcDate); setVal('f-svc-time', r.svcTime);
-  setVal('f-prev-left', r.prevLeftover); document.getElementById('f-prev-left').dataset.auto = '';
+  setVal('f-prev-left', r.prevLeftover);
+  // Drafts saved before this version stored a blank as 0 and have no flag; treat that 0 as not typed.
+  const legacyZero = r.isDraft && r.prevLeftoverAuto === undefined && (r.prevLeftover === 0 || r.prevLeftover === '0');
+  document.getElementById('f-prev-left').dataset.auto = (r.isDraft && (r.prevLeftoverAuto || legacyZero)) ? '1' : '';
   setVal('f-first', r.firstMeal); setVal('f-second', r.secondMeal);
   setVal('f-adult-prog', r.adultProg); setVal('f-adult-nonprog', r.adultNonProg);
   setVal('f-waste', r.waste); setVal('f-incomplete', r.incomplete); setVal('f-leftover', r.leftover);
@@ -1821,12 +1832,29 @@ function editRecord(uid) {
   setVal('f-notes', r.notes);
   document.getElementById('f-sig-confirm').checked = false;
   checkTemp(); recalc();
+  if (r.isDraft) autoFillPrevLeftover();
   const banner = document.getElementById('edit-banner');
   banner.style.display = 'flex';
-  banner.innerHTML = '<i class="ti ti-pencil"></i>&nbsp; ' + (r.isDraft
+  banner.style.flexWrap = 'wrap';
+  banner.style.alignItems = 'center';
+  banner.innerHTML = '<span style="flex:1 1 280px;"><i class="ti ti-pencil"></i>&nbsp; ' + (r.isDraft
     ? 'Finishing draft <strong>' + uid + '</strong> for ' + fmtDate(r.svcDate) + '. Sign and check the certification box to save it.'
-    : 'Editing record <strong>' + uid + '</strong> from ' + fmtDate(r.svcDate) + '. Re-sign and check the certification box to save. Every change is recorded in the record\'s history.');
+    : 'Editing record <strong>' + uid + '</strong> from ' + fmtDate(r.svcDate) + '. Re-sign and check the certification box to save. Every change is recorded in the record\'s history.')
+    + '</span><button type="button" class="btn-sec" onclick="cancelEdit()" style="height:34px;font-size:13px;margin-left:auto;border-color:var(--danger-text);color:var(--danger-text);flex-shrink:0;"><i class="ti ti-x"></i> Stop editing &amp; reset form</button>';
   document.getElementById('save-btn').innerHTML = '<i class="ti ti-device-floppy"></i> ' + (r.isDraft ? 'Save record' : 'Update record');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Leaves edit mode without saving: the saved record (or draft) stays exactly as it was,
+// and the form goes back to a blank new entry.
+function cancelEdit() {
+  if (!editingUid) { clearForm(); return; }
+  const r = records.find(x => x.uid === editingUid);
+  const what = (r && r.isDraft) ? 'the draft' : 'the saved record';
+  if (!confirm('Stop editing? Anything you changed here will be discarded — ' + what + ' stays as it was.')) return;
+  clearForm(); clearSig();
+  ['entry-alert','entry-alert-bottom'].forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+  const ds = document.getElementById('draft-status'); if (ds) ds.textContent = '';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -1859,15 +1887,16 @@ function saveDraft() {
     delDate: document.getElementById('f-del-date').value,
     delTime: document.getElementById('f-del-time').value,
     delTemp: document.getElementById('f-del-temp').value,
-    recvQty: n('f-recv-qty'),
+    recvQty: nb('f-recv-qty'),
     svcDate: document.getElementById('f-svc-date').value,
     svcTime: document.getElementById('f-svc-time').value,
     mealType: document.getElementById('f-meal-type').value,
-    prevLeftover: n('f-prev-left'),
-    firstMeal: n('f-first'), secondMeal: n('f-second'),
-    adultProg: n('f-adult-prog'), adultNonProg: n('f-adult-nonprog'),
-    waste: n('f-waste'), incomplete: n('f-incomplete'),
-    leftover: n('f-leftover'),
+    prevLeftover: nb('f-prev-left'),
+    prevLeftoverAuto: document.getElementById('f-prev-left').dataset.auto === '1',
+    firstMeal: nb('f-first'), secondMeal: nb('f-second'),
+    adultProg: nb('f-adult-prog'), adultNonProg: nb('f-adult-nonprog'),
+    waste: nb('f-waste'), incomplete: nb('f-incomplete'),
+    leftover: nb('f-leftover'),
     notes: document.getElementById('f-notes').value,
     createdAt: existing ? existing.createdAt : now,
     lastEditedAt: now,
