@@ -395,7 +395,7 @@ background-image:
           </div>
           <div class="fg">
             <label for="f-del-temp">Delivery temp (&deg;F)</label>
-            <input type="number" id="f-del-temp" step="0.1" placeholder="e.g. 38.0" oninput="checkTemp()">
+            <input type="text" id="f-del-temp" autocomplete="off" placeholder="e.g. 38.0, or SS for shelf-stable" oninput="checkTemp()">
           </div>
           <div class="fg">
             <label for="f-recv-qty">Received quantity</label>
@@ -714,8 +714,8 @@ background-image:
 
           <div class="card-title" style="margin-top:0.5rem;"><i class="ti ti-id"></i>Organization</div>
           <div class="grid2" style="margin-bottom:1rem;">
-            <div class="fg"><label for="si-agency-name">Organization name</label><input type="text" id="si-agency-name" placeholder="e.g. 3MB Afterschool"></div>
-            <div class="fg"><label for="si-agency-number">Agency no</label><input type="text" id="si-agency-number" placeholder="e.g. 11778"></div>
+            <div class="fg"><label for="si-agency-name">Organization name</label><input type="text" id="si-agency-name" placeholder="e.g. Cleveland Public Library"></div>
+            <div class="fg"><label for="si-agency-number">Agency no</label><input type="text" id="si-agency-number" placeholder="e.g. 55555"></div>
             <div class="fg full"><label for="si-address">Address</label><input type="text" id="si-address" placeholder="Street address"></div>
             <div class="fg"><label for="si-city">City</label><input type="text" id="si-city" placeholder="Cleveland"></div>
             <div class="fg"><label for="si-zip">ZIP</label><input type="text" id="si-zip" placeholder="44110"></div>
@@ -1074,7 +1074,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.24.3</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.25.1</div>
 
 <script>
 // ═══════════════════════════
@@ -1137,7 +1137,7 @@ const SITE_EMAILS = {};
 //  SITE_INFO caches the full site_info document per site (contact card).
 // ═══════════════════════════
 const SITES_SEED = {
-  'MONITOR': { name: 'Monitor Organization', pin: '99999', active: true }
+  'MONITOR': { name: 'Monitor Organization', pin: '91999', active: true }
 };
 let SITES = { ...SITES_SEED };
 const SITE_INFO = {};
@@ -1574,13 +1574,31 @@ function autoFillPrevLeftover() {
   recalc();
 }
 
-// Sites receive refrigerated meals only, so the safe delivery range is 32–41°F.
+// "SS" (any case) means cold shelf-stable meals that don't need a delivery temp. Stored as "SS".
+function isShelfStable(v) { return /^ss$/i.test(String(v || '').trim()); }
+function normTemp(v) { const s = String(v || '').trim(); return isShelfStable(s) ? 'SS' : s; }
+// A temp entry is valid when it's blank, "SS", or a plain number.
+function tempValid(v) { const s = String(v || '').trim(); return s === '' || isShelfStable(s) || (/^-?\d*\.?\d+$/.test(s)); }
+
+// "Refrigerated deliveries should be 32–41°F; SS marks a shelf-stable delivery with no temp required."
 // Below 32°F: frozen or a typo. Above 41°F: too warm. Both warn; neither blocks saving.
+// "SS" = shelf-stable, no temp required.
 function checkTemp() {
-  const temp = parseFloat(document.getElementById('f-del-temp').value);
+  const raw = document.getElementById('f-del-temp').value.trim();
   const alertEl = document.getElementById('temp-alert');
-  if (isNaN(temp)) { alertEl.style.display = 'none'; return; }
+  if (raw === '') { alertEl.style.display = 'none'; return; }
   alertEl.style.display = 'flex';
+  if (isShelfStable(raw)) {
+    alertEl.className = 'alert alert-info';
+    alertEl.innerHTML = '<i class="ti ti-package"></i>&nbsp; <strong>Shelf-stable meals.</strong> No delivery temperature required. Saved as "SS".';
+    return;
+  }
+  if (!tempValid(raw)) {
+    alertEl.className = 'alert alert-danger';
+    alertEl.innerHTML = '<i class="ti ti-alert-circle"></i>&nbsp; Enter a temperature in &deg;F (e.g. 38.0), or <strong>SS</strong> for shelf-stable meals.';
+    return;
+  }
+  const temp = parseFloat(raw);
   if (temp > 41) {
     alertEl.className = 'alert alert-danger';
     alertEl.innerHTML = '<i class="ti ti-temperature"></i>&nbsp; <strong>Temperature out of safe range.</strong> Refrigerated meals must arrive at 32-41°F. Current: ' + temp + '°F.';
@@ -1717,6 +1735,10 @@ async function saveRecord() {
     showEntryAlert('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; Please complete: ' + missing.map(f => f[1]).join(', ') + '.');
     return;
   }
+    if (!tempValid(document.getElementById('f-del-temp').value)) {
+    showEntryAlert('alert-danger', '<i class="ti ti-alert-circle"></i>&nbsp; Delivery temp must be a number in &deg;F, or <strong>SS</strong> for shelf-stable meals.');
+    return;
+  }
   // One record per site per serve date. (Delivery dates may repeat: one delivery can cover more than one service.)
   const dupDate = document.getElementById('f-svc-date').value;
   const dup = records.find(r => r.site === currentSite && r.svcDate === dupDate && r.uid !== editingUid);
@@ -1747,7 +1769,7 @@ async function saveRecord() {
     receiver: document.getElementById('f-receiver').value,
     delDate: document.getElementById('f-del-date').value,
     delTime: document.getElementById('f-del-time').value,
-    delTemp: document.getElementById('f-del-temp').value,
+    delTemp: normTemp(document.getElementById('f-del-temp').value),
     recvQty: n('f-recv-qty'),
     svcDate: document.getElementById('f-svc-date').value,
     svcTime: document.getElementById('f-svc-time').value,
@@ -1881,6 +1903,10 @@ function saveDraft() {
     statusEl.innerHTML = '<span style="color:var(--danger-text);">Counts must be whole numbers of 0 or more. Check: ' + esc(bad.join(', ')) + '.</span>';
     return;
   }
+    if (!tempValid(document.getElementById('f-del-temp').value)) {
+    statusEl.innerHTML = '<span style="color:var(--danger-text);">Delivery temp must be a number in &deg;F, or SS for shelf-stable meals.</span>';
+    return;
+  }
   const uid = editingUid || pendingUid || genUID();
   const now = new Date().toISOString();
   const existing = records.find(r => r.uid === uid);
@@ -1894,7 +1920,7 @@ function saveDraft() {
     receiver: document.getElementById('f-receiver').value,
     delDate: document.getElementById('f-del-date').value,
     delTime: document.getElementById('f-del-time').value,
-    delTemp: document.getElementById('f-del-temp').value,
+    delTemp: normTemp(document.getElementById('f-del-temp').value),
     recvQty: nb('f-recv-qty'),
     svcDate: document.getElementById('f-svc-date').value,
     svcTime: document.getElementById('f-svc-time').value,
