@@ -516,8 +516,8 @@ background-image:
             <label for="f-sig-drawn">Signature</label>
             <div style="position:relative;">
               <canvas id="f-sig-drawn" width="400" height="80"
-                style="border:1px solid var(--border);border-radius:6px;background:white;cursor:crosshair;width:100%;touch-action:none;"></canvas>
-              <button type="button" onclick="clearSig()" style="position:absolute;top:4px;right:6px;font-size:10px;padding:2px 7px;border:1px solid var(--border);border-radius:4px;background:white;cursor:pointer;color:var(--text-soft);">Clear</button>
+                style="display:block;border:1px solid var(--border);border-radius:6px;background:white;cursor:crosshair;width:100%;height:140px;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;"></canvas>
+              <button type="button" onclick="clearSig()" style="position:absolute;top:4px;right:6px;font-size:12px;padding:5px 12px;touch-action:manipulation;border:1px solid var(--border);border-radius:4px;background:white;cursor:pointer;color:var(--text-soft);">Clear</button>
             </div>
           </div>
           <div class="esig-check">
@@ -1074,7 +1074,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.09.25.1</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.10.06.1</div>
 
 <script>
 // ═══════════════════════════
@@ -2159,32 +2159,79 @@ async function deleteRecord(uid) {
 // ══════════════════════════════
 //  SIGNATURE CANVAS
 // ══════════════════════════════
+// Uses Pointer Events with pointer capture so a stroke always ends cleanly, even when the
+// pen/finger/mouse is lifted outside the pad (the old mouse/touch handlers never saw that
+// release, so the pad kept "drawing" on hover and re-inked cleared strokes).
 let sigPainting = false;
+let sigPointerId = null;
+let sigHasInk = false;
+function sigPen(ctx, canvas) {
+  const r = canvas.getBoundingClientRect();
+  const scale = r.width ? canvas.width / r.width : 1;
+  ctx.strokeStyle = '#111'; ctx.lineWidth = 2.2 * scale; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+}
+// Match the drawing surface to the pad's on-screen size so strokes are sharp, not stretched.
+// Only done while the pad is empty, because resizing a canvas erases it.
+function sizeSigCanvas(canvas) {
+  const r = canvas.getBoundingClientRect();
+  if (!r.width || !r.height) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const w = Math.round(r.width * dpr), h = Math.round(r.height * dpr);
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+}
 function initSigCanvas() {
   const canvas = document.getElementById('f-sig-drawn');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
-  ctx.strokeStyle = '#111'; ctx.lineWidth = 2; ctx.lineCap = 'round';
   const getPos = (e) => {
     const r = canvas.getBoundingClientRect();
-    const src = e.touches ? e.touches[0] : e;
-    return { x: (src.clientX - r.left) * (canvas.width / r.width), y: (src.clientY - r.top) * (canvas.height / r.height) };
+    return { x: (e.clientX - r.left) * (canvas.width / r.width), y: (e.clientY - r.top) * (canvas.height / r.height) };
   };
-  canvas.onmousedown = canvas.ontouchstart = (e) => { e.preventDefault(); sigPainting = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
-  canvas.onmousemove = canvas.ontouchmove = (e) => { e.preventDefault(); if (!sigPainting) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
-  canvas.onmouseup = canvas.ontouchend = () => { sigPainting = false; };
+  const endStroke = (e) => {
+    if (e && sigPointerId !== null && e.pointerId !== sigPointerId) return;
+    sigPainting = false; sigPointerId = null;
+  };
+  canvas.onmousedown = canvas.onmousemove = canvas.onmouseup = null;
+  canvas.ontouchend = null;
+  // Keep the browser from treating a signature as a scroll / double-tap gesture (which could
+  // also swallow a quick tap on Clear right after signing). Drawing itself runs on pointer events.
+  canvas.ontouchstart = canvas.ontouchmove = (e) => { e.preventDefault(); };
+  canvas.onpointerdown = (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    if (sigPainting) return;                       // ignore a second finger / resting palm
+    e.preventDefault();
+    if (!sigHasInk) sizeSigCanvas(canvas);
+    sigPen(ctx, canvas);
+    sigPainting = true; sigPointerId = e.pointerId;
+    try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+    const p = getPos(e);
+    ctx.beginPath(); ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x + 0.01, p.y); ctx.stroke();     // a tap leaves a dot (i's, periods)
+    sigHasInk = true;
+  };
+  canvas.onpointermove = (e) => {
+    if (!sigPainting || e.pointerId !== sigPointerId) return;
+    // Mouse button was released somewhere we couldn't see it — stop instead of drawing on hover.
+    if (e.pointerType === 'mouse' && e.buttons === 0) { endStroke(); return; }
+    e.preventDefault();
+    const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke();
+  };
+  canvas.onpointerup = canvas.onpointercancel = canvas.onlostpointercapture = endStroke;
 }
 function clearSig() {
   const canvas = document.getElementById('f-sig-drawn');
   if (!canvas) return;
-  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+  const ctx = canvas.getContext('2d');
+  sigPainting = false; sigPointerId = null; sigHasInk = false;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.beginPath();                                 // drop the old stroke so it can never be re-inked
 }
 function getSigDataURL() {
   const canvas = document.getElementById('f-sig-drawn');
   if (!canvas) return null;
-  const ctx = canvas.getContext('2d');
-  const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-  const hasContent = Array.from(data).some((v, i) => i % 4 === 3 && v > 0);
+  const data = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+  let hasContent = false;
+  for (let i = 3; i < data.length; i += 4) { if (data[i] > 0) { hasContent = true; break; } }
   return hasContent ? canvas.toDataURL('image/png') : null;
 }
 
