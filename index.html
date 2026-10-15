@@ -758,6 +758,7 @@ background-image:
           <div class="btn-row">
             <button class="btn-primary" onclick="saveSiteInfo()"><i class="ti ti-device-floppy"></i> Save to Firebase</button>
             <button class="btn-sec" onclick="clearSiteInfoForm()"><i class="ti ti-x"></i> Clear</button>
+            <button class="btn-sec" style="margin-left:auto;border-color:var(--danger-text);color:var(--danger-text);" onclick="deleteSite(document.getElementById('si-site-select').value)"><i class="ti ti-trash"></i> Remove site</button>
           </div>
           <div id="si-status" style="margin-top:10px;font-size:13px;display:none;"></div>
         </div>
@@ -769,6 +770,7 @@ background-image:
         <div style="display:flex;gap:8px;margin-bottom:1rem;">
           <button class="btn-sec" style="font-size:12px;height:34px;" onclick="loadAllSiteInfo()"><i class="ti ti-refresh"></i> Refresh</button>
         </div>
+        <div id="si-delete-status" style="margin-bottom:10px;font-size:13px;display:none;"></div>
         <div id="si-all-table" class="table-scroll"></div>
       </div>
     </div>
@@ -1074,7 +1076,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.10.06.1</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.10.15.1</div>
 
 <script>
 // ═══════════════════════════
@@ -3703,7 +3705,8 @@ async function loadAllSiteInfo() {
     const nm = d.siteName || d.agencyName || d.siteId;
     h += '<tr><td title="' + esc(nm) + '" style="max-width:240px;">' + esc(nm) + '</td><td>' + esc(d.siteId) + '</td><td>' + esc(d.pin||'') + '</td><td>' + esc(d.orders||'—') + '</td><td title="' + esc(d.email||'') + '" style="max-width:220px;">' + esc(d.email||'—') + '</td>'
       + '<td>' + esc((d.mealKind||'').replace(' Meals','') || '—') + '</td><td>' + esc(d.daysServing||'—') + '</td>'
-      + '<td><button class="btn-sm blue" onclick="editSiteInfoRow(\'' + esc(d.siteId) + '\')"><i class="ti ti-pencil"></i></button></td></tr>';
+      + '<td><div style="display:flex;gap:3px;"><button class="btn-sm blue" title="Edit" onclick="editSiteInfoRow(\'' + esc(d.siteId) + '\')"><i class="ti ti-pencil"></i></button>'
+      + '<button class="btn-sm red" title="Remove this site" onclick="deleteSite(\'' + esc(d.siteId) + '\')"><i class="ti ti-trash"></i></button></div></td></tr>';
   });
   h += '</tbody></table>';
   ctr.innerHTML = h;
@@ -3714,6 +3717,68 @@ function editSiteInfoRow(siteId) {
   if (sel) { sel.value = siteId; loadSiteInfo(); }
   const form = document.getElementById('si-form');
   if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Re-fills every monitor-side site dropdown from SITES, keeping each one's current choice when it still exists.
+// Used after a site is removed so it drops out of every list without a page reload.
+function refreshSiteSelects() {
+  [['summary-site', true], ['lookup-site-filter', true], ['reimb-site', true], ['export-site-report', true], ['wwl-site', true],
+   ['audit-site', false], ['psm-site', false], ['rt-preview-site', false]].forEach(([id, all]) => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const cur = sel.value;
+    fillSiteOptions(sel, all, 'All sites');
+    if (cur && [...sel.options].some(o => o.value === cur)) sel.value = cur;
+  });
+  populateSiteInfoSelect();
+  populateLoginDropdown();
+}
+
+// ═══════════════════════════
+//  REMOVE A SITE (Update Sites tab)
+//  Deletes the site's site_info document — its login, PIN and contact card — so it drops off the login list,
+//  Site Tracker, reminders and every site dropdown. Its meal records are left untouched: each record carries
+//  its own siteName, so Site Lookup (All sites), the CSV and the monthly reports still show them. Delete those
+//  one at a time in Site Lookup if they need to go too. The confirmation requires typing the site's name.
+//  Note: re-importing Session_Import.xlsx with the site still in it will bring the site back.
+// ═══════════════════════════
+async function deleteSite(siteId) {
+  if (currentSite !== 'MONITOR' || !siteId || siteId === 'MONITOR' || !SITES[siteId]) return;
+  const name = SITES[siteId].name || siteId;
+  const recCount = records.filter(r => r.site === siteId).length;
+  const typed = prompt(
+    'Remove "' + name + '" (' + siteId + ') from SESSION?\n\n' +
+    'This deletes the site\'s login, PIN and contact card. It will no longer appear on the sign-in list, in Site Tracker, in reminders or in any report dropdown.\n\n' +
+    (recCount
+      ? 'Its ' + recCount + ' meal record(s) will NOT be deleted. They stay in the database and still show under "' + name + '" in Site Lookup and the exports.\n\n'
+      : 'It has no meal records.\n\n') +
+    'This cannot be undone. To confirm, type the site name exactly as shown:\n' + name
+  );
+  if (typed === null) return;
+  if (typed.trim() !== name) { alert('The name didn\'t match, so nothing was removed.'); return; }
+  const statusEl = document.getElementById('si-delete-status');
+  const say = (ok, msg) => { if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = ok ? 'var(--success-text)' : 'var(--danger-text)'; statusEl.innerHTML = '<span class="status-dot ' + (ok ? 'green' : 'red') + '"></span> ' + msg; } };
+  if (statusEl) { statusEl.style.display = 'block'; statusEl.style.color = 'var(--text-mid)'; statusEl.innerHTML = '<span class="spinner dark"></span> Removing ' + esc(name) + '…'; }
+  try {
+    // Docs are normally keyed by siteId, but delete by the siteId field too in case an older doc was keyed differently.
+    const snap = await _db.collection('site_info').where('siteId', '==', siteId).get();
+    const batch = _db.batch();
+    snap.docs.forEach(d => batch.delete(d.ref));
+    batch.delete(_db.collection('site_info').doc(siteId));
+    await batch.commit();
+  } catch (e) {
+    console.warn('site_info delete failed:', e);
+    say(false, 'Could not remove ' + esc(name) + ': ' + esc(e.message || e) + '. Check your connection and try again.');
+    return;
+  }
+  delete SITES[siteId]; delete SITE_INFO[siteId]; delete SITE_EMAILS[siteId]; delete STAFF[siteId];
+  const sel = document.getElementById('si-site-select');
+  const form = document.getElementById('si-form');
+  if (sel && sel.value === siteId) { sel.value = ''; clearSiteInfoForm(); if (form) form.style.display = 'none'; }
+  refreshSiteSelects();
+  loadAllSiteInfo();
+  say(true, 'Removed ' + esc(name) + ' (' + esc(siteId) + ').' + (recCount ? ' Its ' + recCount + ' meal record(s) were left in place.' : ''));
+  logChange({ siteId, siteName: name, by: 'Monitor', category: 'site_info', action: 'Site removed', detail: recCount + ' meal record(s) left in place' });
 }
 
 // ═══════════════════════════
