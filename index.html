@@ -794,10 +794,10 @@ background-image:
         </div>
       </div>
 
-      <!-- Per-Site Monthly Count Report -->
+      <!-- Site Summary Sheet Report -->
       <div class="card" id="card-psm" style="border-left:3px solid var(--amber);">
         <div class="card-title">
-          <i class="ti ti-file-spreadsheet"></i><span id="title-psm">Per-Site Monthly Count Report</span>
+          <i class="ti ti-file-spreadsheet"></i><span id="title-psm">Site Summary Sheet Report</span>
           <button class="btn-sm" style="margin-left:auto;" title="Edit heading &amp; description" onclick="toggleExportCardEdit('psm')"><i class="ti ti-pencil"></i></button>
         </div>
         <p class="report-desc" id="desc-psm">One site, a range of months, in the state template. <strong>Daily Meal Details</strong> lists every weekday Mon&ndash;Sat: counts on days that were submitted, blank where nothing came in. <strong>Monthly Averages</strong>, <strong>Monthly Totals</strong>, and a <strong>Site Information</strong> sheet follow.</p>
@@ -819,7 +819,7 @@ background-image:
         </div>
         <div class="btn-row" style="margin-top:0;">
           <button class="btn-primary green" onclick="exportPerSiteMonthReport()">
-            <i class="ti ti-file-spreadsheet"></i> Export Per-Site Monthly Count Report
+            <i class="ti ti-file-spreadsheet"></i> Export Site Summary Sheet Report
           </button>
         </div>
         <div id="psm-status" style="margin-top:8px;font-size:13px;display:none;"></div>
@@ -1441,7 +1441,7 @@ function refreshLookup() {
 // ═══════════════════════════
 const EXPORT_CARDS_DEFAULT = {
   intro:   { title: 'Export reports', description: 'Every report below reads the same live records. Pick one and export it. Meal Count Sheets for a single day come from the print buttons in <strong>Site Lookup &rarr; All sites</strong>.', color: '' },
-  psm:     { title: 'Per-Site Monthly Count Report', description: 'One site, a range of months, in the state template. <strong>Daily Meal Details</strong> lists every weekday Mon&ndash;Sat: counts on days that were submitted, blank where nothing came in. <strong>Monthly Averages</strong>, <strong>Monthly Totals</strong>, and a <strong>Site Information</strong> sheet follow.', color: '#58923a' },
+  psm:     { title: 'Site Summary Sheet Report', description: 'One site, a range of months, in the state template. <strong>Daily Meal Details</strong> lists every weekday Mon&ndash;Sat: counts on days that were submitted, blank where nothing came in. <strong>Monthly Averages</strong>, <strong>Monthly Totals</strong>, and a <strong>Site Information</strong> sheet follow.', color: '#58923a' },
   wwl:     { title: 'Weekly Waste & Leftover Report', description: 'One week, Mon&ndash;Sat, every site. A <strong>Summary</strong> with totals and waste and leftover as a share of available. Then <strong>Waste by Day</strong> and <strong>Leftover by Day</strong>. Pick any day in the week; it snaps to Monday. Use it to spot over-ordering.', color: '#3f72b8' },
   audit:   { title: 'Site Audit Report', description: 'One site, one date range, in the CACFP audit layout: daily details, monthly averages, monthly totals, site information. For when a monitor or the state asks for a site&#39;s full history.', color: '#3f72b8' },
   monthly: { title: 'Monthly Audit Report', description: 'A month across all sites, or one. The Sponsor Monthly Meal Count Summary by site, a sheet of every review flag, and the raw daily detail. This is the monthly claim review.', color: '#3f72b8' },
@@ -3435,7 +3435,7 @@ function psmMonthsInRange(fromMonth, toMonth) {
 }
 
 // ═══════════════════════════
-//  PER-SITE MONTHLY COUNT REPORT
+//  Site Summary Sheet Report
 // ═══════════════════════════
 function exportPerSiteMonthReport() {
   const site = document.getElementById('psm-site').value;
