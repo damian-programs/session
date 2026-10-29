@@ -3480,7 +3480,16 @@ function exportPerSiteMonthReport() {
     return;
   }
   daily.push(['TOTAL (submitted days only)','','','',t.recv,t.avail,t.served,t.first,t.second,t.ap,t.anp,t.served,t.waste,t.inc,t.left,'']);
+  // DAYS SERVED — a live formula, not a baked number, so a reviewer can see how it's derived:
+  // every service day whose 1st-meal count is above zero. Column H is '1st'; data starts at
+  // row 5 and ends one row above TOTAL, so the range is computed and never hardcoded.
+  const psmFirstDataRow = 5;
+  const psmLastDataRow  = daily.length - 1;
+  daily.push(['DAYS SERVED (1st meal served):', 0]);
   const wsD = XLSX.utils.aoa_to_sheet(daily);
+  wsD['B' + daily.length] = { t:'n',
+    f: 'COUNTIF(H' + psmFirstDataRow + ':H' + psmLastDataRow + ',">0")',
+    v: Object.values(recByDate).filter(r => (r.firstMeal||0) > 0).length };
   wsD['!cols'] = [{wch:12},{wch:11},{wch:14},{wch:20}].concat(Array(12).fill({wch:11}));
   XLSX.utils.book_append_sheet(wb, wsD, 'Daily Meal Details');
 
