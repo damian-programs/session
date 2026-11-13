@@ -1120,7 +1120,7 @@ background-image:
         <div id="rt-status" style="font-size:13px;margin-bottom:1rem;display:none;"></div>
         <div class="divider"></div>
         <div class="filter-row" style="margin-bottom:0.75rem;">
-          <div class="fg"><label for="rt-preview-site">Preview as it would go to</label>
+          <div class="fg"><label for="rt-preview-site">PREVIEW</label>
             <select id="rt-preview-site" onchange="previewReminderTemplate()" style="width:280px;"><option value="">Select site&hellip;</option></select>
           </div>
         </div>
@@ -1160,7 +1160,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.11.13.2</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.11.13.3</div>
 
 <script>
 // ═══════════════════════════
@@ -3554,16 +3554,29 @@ function templateVars(siteId, dates) {
 // Fills the placeholders. Any whole line holding a placeholder that came out empty is dropped first,
 // so a site with no attendance link on file doesn't receive a dangling "Your site's attendance
 // sheet:" with nothing after it. Everything else is substituted as before.
-function fillTemplate(tpl, vars) {
+// fillTemplateParts does the work and also reports which lines it threw away and why, so the
+// Settings preview can show a monitor that their own wording was dropped for this site rather than
+// appearing to ignore the edit. fillTemplate is the thin wrapper the send path uses; its output is
+// unchanged, so what lands in an email is exactly what it was before.
+function fillTemplateParts(tpl, vars) {
   const blank = Object.entries(vars)
     .filter(([, v]) => !String(v === null || v === undefined ? '' : v).trim())
     .map(([k]) => k);
-  let out = String(tpl || '');
-  if (blank.length) {
-    out = out.split('\n').filter(line => !blank.some(k => line.indexOf(k) !== -1)).join('\n');
-  }
-  Object.entries(vars).forEach(([k, v]) => { out = out.split(k).join(v); });
-  return out.replace(/\n{3,}/g, '\n\n').trim();
+  const sub = line => {
+    let s = line;
+    Object.entries(vars).forEach(([k, v]) => { s = s.split(k).join(v); });
+    return s;
+  };
+  const kept = [], dropped = [];
+  String(tpl || '').split('\n').forEach(line => {
+    const hit = blank.filter(k => line.indexOf(k) !== -1);
+    if (hit.length) dropped.push({ line: line, keys: hit });
+    else kept.push(line);
+  });
+  return { text: sub(kept.join('\n')).replace(/\n{3,}/g, '\n\n').trim(), dropped: dropped };
+}
+function fillTemplate(tpl, vars) {
+  return fillTemplateParts(tpl, vars).text;
 }
 function reminderText(siteId, dates) {
   const vars = templateVars(siteId, dates);
@@ -3582,6 +3595,12 @@ function renderReminderTemplate() {
   if (legend) legend.innerHTML = TEMPLATE_VARS.map(([k, d]) => '<code style="background:rgba(63,114,184,0.12);padding:1px 5px;border-radius:3px;font-family:DM Mono,monospace;font-size:11px;">' + esc(k) + '</code> ' + esc(d)).join('<br>');
   const sel = document.getElementById('rt-preview-site');
   if (sel && sel.options.length <= 1) fillSiteOptions(sel, false);
+  // The preview always had to pick some site; leaving the box blank meant it picked one silently and
+  // the monitor couldn't tell whose contact card the preview was using. Show the choice instead.
+  if (sel && !sel.value) {
+    const first = [...sel.options].map(o => o.value).find(v => v && v !== 'MONITOR');
+    if (first) sel.value = first;
+  }
   previewReminderTemplate();
 }
 function previewReminderTemplate() {
@@ -3594,12 +3613,31 @@ function previewReminderTemplate() {
   const dates = [ymd(d2.getFullYear(), d2.getMonth() + 1, d2.getDate()), ymd(d1.getFullYear(), d1.getMonth() + 1, d1.getDate())];
   const vars = templateVars(siteId, dates);
   const subj = fillTemplate((document.getElementById('rt-subject') || {}).value || DEFAULT_REMINDER_SUBJECT, vars).replace(/\s+/g, ' ');
-  const body = fillTemplate((document.getElementById('rt-body') || {}).value || DEFAULT_REMINDER_BODY, vars);
+  const parts = fillTemplateParts((document.getElementById('rt-body') || {}).value || DEFAULT_REMINDER_BODY, vars);
   const info = SITE_INFO[siteId] || {};
   const to = [SITE_EMAILS[siteId], info.email2].filter(Boolean).join(', ') || '(no email on file)';
+
+  // Any line holding a placeholder that is empty for this site is left out of the real email. It is
+  // shown here struck through instead of vanishing, because a monitor who had just reworded that
+  // line would otherwise think their edit hadn't taken.
+  let dropNote = '';
+  const realDrops = parts.dropped.filter(d => d.line.trim());
+  if (realDrops.length) {
+    const keys = [...new Set(realDrops.flatMap(d => d.keys))];
+    dropNote = '<div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border);">'
+      + '<div style="font-size:11px;color:var(--text-soft);margin-bottom:5px;">Left out for this site &mdash; '
+      + keys.map(k => '<code style="font-family:DM Mono,monospace;">' + esc(k) + '</code>').join(', ')
+      + ' ' + (keys.length === 1 ? 'is' : 'are') + ' empty on its contact card:</div>'
+      + realDrops.map(d => '<div style="font-size:12px;color:var(--text-soft);text-decoration:line-through;font-family:DM Sans,sans-serif;">' + esc(d.line.trim()) + '</div>').join('')
+      + '<div style="font-size:11px;color:var(--text-soft);margin-top:5px;">Your wording is saved and will go out in full to any site that does have '
+      + (keys.length === 1 ? 'that' : 'those') + ' on file. Pick another site above to see it.</div>'
+      + '</div>';
+  }
+
   out.innerHTML = '<div style="font-size:11px;color:var(--text-soft);margin-bottom:6px;">From: ' + esc(EMAIL_CFG.fromEmail || DEPT_EMAIL) + ' &nbsp;·&nbsp; To: ' + esc(to) + '</div>'
     + '<div style="font-weight:600;margin-bottom:8px;">' + esc(subj) + '</div>'
-    + '<pre style="font-family:DM Sans,sans-serif;font-size:13px;white-space:pre-wrap;margin:0;line-height:1.5;">' + esc(body) + '</pre>';
+    + '<pre style="font-family:DM Sans,sans-serif;font-size:13px;white-space:pre-wrap;margin:0;line-height:1.5;">' + esc(parts.text) + '</pre>'
+    + dropNote;
   renderAttendNotice();
 }
 
@@ -3780,7 +3818,7 @@ function setLookupStatus(cls, html) {
 // selection. Reads happen when Load is pressed, and only then.
 function markLookupStale() {
   if (!lookupLoaded) {
-    setLookupStatus('alert-info', '<i class="ti ti-info-circle"></i><span>Pick a period and a site, then press <strong>Load</strong>. Nothing is read from the database until you do, and choosing one site reads a small fraction of what all 89 do.</span>');
+    setLookupStatus('alert-info', '<i class="ti ti-info-circle"></i><span>Pick a period and a site, then press <strong>Load</strong>.</span>');
     return;
   }
   setLookupStatus('alert-warning', '<i class="ti ti-alert-triangle"></i><span>Selection changed &mdash; the figures below are still the previous one. Press <strong>Load</strong> to pull it in.</span>');
