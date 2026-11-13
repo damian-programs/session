@@ -149,6 +149,14 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 .btn-sec:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-sm { height: 30px; font-size: 11px; padding: 0 10px; border: 1px solid var(--border); border-radius: 4px; background: white; cursor: pointer; color: var(--text-mid); font-family: 'DM Sans', sans-serif; display: inline-flex; align-items: center; gap: 4px; }
 .btn-sm:hover { background: var(--cream); }
+.btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-sm:disabled:hover { background: white; }
+
+/* PAGER (all-sites records table) */
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-soft); }
+.pager-count { font-size: 11px; color: var(--text-soft); }
+.pager-btns { display: flex; align-items: center; gap: 6px; }
+.pager-page { font-size: 11px; color: var(--text-mid); font-weight: 600; padding: 0 4px; white-space: nowrap; }
 .btn-sm.blue { border-color: var(--navy); color: var(--navy); }
 .btn-sm.print-btn { border-color: var(--amber); color: var(--amber-dark); }
 .btn-sm.green { border-color: var(--success-text); color: var(--success-text); }
@@ -171,12 +179,19 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 .pill-warn { background: var(--warning-bg); color: var(--warning-text); }
 .pill-danger { background: var(--danger-bg); color: var(--danger-text); }
 .pill-info { background: var(--info-bg); color: var(--info-text); }
+/* "Expected pattern": a figure that would normally be flagged but matches this site's own
+   established history for that weekday. Orange, not red — reviewed, not a problem. */
+.pill-pattern { background: var(--pending-bg); color: var(--pending-text); border: 1px solid var(--pending-border); }
 .empty { text-align: center; padding: 2.5rem 1rem; color: var(--text-soft); font-size: 14px; }
 .empty i { font-size: 28px; display: block; margin-bottom: 8px; opacity: 0.5; }
 
 /* ANOMALY ROW */
 .rec-table tr.anomaly td { background: #fffbf0; }
 .rec-table tr.anomaly:hover td { background: #fff5d6; }
+/* A record whose only out-of-range figures match the site's own weekday pattern. */
+.rec-table tr.patterned td { background: #fffdf8; }
+.rec-table tr.patterned:hover td { background: #fff8ec; }
+.val-pattern { color: var(--pending-text); font-weight: 600; }
 
 /* TRACKER GRID */
 .tracker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 8px; }
@@ -276,6 +291,8 @@ background-image:
 .tracker-table th.site-col { text-align:left; min-width:150px; }
 .tracker-table th.sortable { cursor:pointer; user-select:none; }
 .tracker-table th.sortable:hover { color:var(--navy); }
+.rec-table th.sortable, .rem-log-table th.sortable { cursor:pointer; user-select:none; }
+.rec-table th.sortable:hover, .rem-log-table th.sortable:hover { color:var(--navy); }
 .tracker-table td { padding:6px 8px; border-bottom:1px solid var(--border-soft); text-align:center; vertical-align:middle; white-space:nowrap; }
 .tracker-table td.site-col { text-align:left; font-size:12px; min-width:150px; max-width:260px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .tracker-table td.dates-col { text-align:left; font-size:11px; color:var(--text-mid); width:100%; max-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -284,6 +301,13 @@ background-image:
 .day-cell-miss { background:var(--danger-bg);  color:var(--danger-text);  border-radius:4px; padding:2px 5px; font-size:10px; font-weight:600; }
 .day-cell-na   { background:#fff3bf; color:#9a7400; border:1px solid #f2d66b; border-radius:4px; padding:1px 7px; font-size:11px; font-weight:700; display:inline-block; }
 .tracker-card.na { background:#fffae0; border-color:#f2d66b; color:#8a6a00; }
+/* A missing day a reminder has already gone out for. Still missing — but already contacted. */
+.day-cell-mailed { background:var(--pending-bg); color:var(--pending-text); border:1px solid var(--pending-border); border-radius:4px; padding:1px 5px; font-size:10px; font-weight:700; display:inline-block; }
+.mail-badge { display:inline-flex; align-items:center; gap:3px; font-size:10px; font-weight:600; color:var(--pending-text); background:var(--pending-bg); border:1px solid var(--pending-border); border-radius:20px; padding:1px 7px; }
+.rem-log-table { width:100%; border-collapse:collapse; font-size:12px; }
+.rem-log-table th { text-align:left; padding:7px 8px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-soft); border-bottom:2px solid var(--border); white-space:nowrap; }
+.rem-log-table td { padding:6px 8px; border-bottom:1px solid var(--border-soft); vertical-align:top; }
+.rem-log-table tr:hover td { background:var(--cream); }
 
 /* RESPONSIVE */
 @media (max-width: 500px) {
@@ -504,9 +528,6 @@ background-image:
       <!-- E-Signature -->
       <div class="card">
         <div class="card-title"><i class="ti ti-pen"></i>E-signature</div>
-        <div id="locked-banner" class="alert alert-warning" style="display:none;margin-bottom:1rem;">
-          <i class="ti ti-lock"></i>&nbsp; This record is certified. Edits must be re-signed and are recorded in the record's history.
-        </div>
         <div class="esig-box">
           <div class="fg">
             <label for="f-sig-name">Person completing this record</label>
@@ -542,8 +563,9 @@ background-image:
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
           <div class="card-title" style="margin-bottom:0;"><i class="ti ti-table"></i>My site records</div>
-          <div style="display:flex;gap:8px;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn-sec" onclick="showTab('records')" style="font-size:12px;height:34px;"><i class="ti ti-refresh"></i> Refresh</button>
+            <button class="btn-sec" onclick="loadSiteAll()" style="font-size:12px;height:34px;"><i class="ti ti-history"></i> Load all my records</button>
             <button class="btn-sec" onclick="exportCSV(false)" style="font-size:12px;height:34px;"><i class="ti ti-download"></i> Export CSV</button>
           </div>
         </div>
@@ -551,41 +573,43 @@ background-image:
       </div>
     </div>
 
-    <!-- SITE LOOKUP TAB (real-time summary: reimbursement + monthly summary + all-site records) -->
+    <!-- SITE LOOKUP TAB — nothing is read from the database until Load is pressed -->
     <div id="pane-lookup" style="display:none;">
 
-      <div class="card" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-        <div style="font-size:13px;color:var(--text-mid);"><i class="ti ti-activity" style="color:var(--amber);"></i> Live numbers from Firebase. Filter by site or month in each section.</div>
-        <button class="btn-sec" style="font-size:12px;height:34px;" onclick="refreshLookup()"><i class="ti ti-refresh"></i> Refresh all</button>
-      </div>
-
-      <!-- Monthly Summary (live) -->
-      <div class="card">
-        <div class="card-title"><i class="ti ti-chart-bar"></i>Monthly summary</div>
-        <div class="filter-row">
-          <div class="fg"><label for="summary-month">Month</label><input type="month" id="summary-month" oninput="renderSummary()" style="width:160px;"></div>
+      <!-- What to look at -->
+      <div class="card" style="border-left:3px solid var(--navy);">
+        <div class="card-title"><i class="ti ti-search"></i>What do you want to look at?</div>
+        <div style="display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap;">
+          <button class="btn-sec" id="sview-daily"   onclick="setSummaryView('daily')"   style="font-size:12px;height:32px;">Daily</button>
+          <button class="btn-sec" id="sview-weekly"  onclick="setSummaryView('weekly')"  style="font-size:12px;height:32px;">Weekly</button>
+          <button class="btn-sec" id="sview-monthly" onclick="setSummaryView('monthly')" style="font-size:12px;height:32px;">Monthly</button>
+        </div>
+        <div class="filter-row" style="margin-bottom:1rem;">
+          <div class="fg" id="summary-ctrl-daily" style="display:none;"><label for="summary-date">Date</label><input type="date" id="summary-date" oninput="markLookupStale()" style="width:160px;"></div>
+          <div class="fg" id="summary-ctrl-weekly" style="display:none;"><label for="summary-week">Week (any day in it)</label><input type="date" id="summary-week" oninput="markLookupStale()" style="width:170px;"></div>
+          <div class="fg" id="summary-ctrl-monthly"><label for="summary-month">Month</label><input type="month" id="summary-month" oninput="markLookupStale()" style="width:160px;"></div>
           <div class="fg"><label for="summary-site">Site</label>
-            <select id="summary-site" oninput="renderSummary()" style="width:220px;">
+            <select id="summary-site" onchange="markLookupStale()" style="width:250px;">
               <option value="ALL">All sites</option>
             </select>
           </div>
+          <button class="btn-primary" style="height:38px;" onclick="runLookup(true)"><i class="ti ti-search"></i> Load</button>
         </div>
+        <div id="lookup-status" class="alert alert-info" style="margin-bottom:0;">
+          <i class="ti ti-info-circle"></i><span>Pick a period and a site, then press <strong>Load</strong>. Nothing is read from the database until you do, and choosing one site reads a small fraction of what all 89 do.</span>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="card" id="lookup-summary-card" style="display:none;">
+        <div class="card-title"><i class="ti ti-chart-bar"></i>Summary</div>
+        <div id="summary-range" style="font-size:12px;color:var(--text-soft);margin-bottom:0.9rem;display:flex;align-items:center;gap:6px;"></div>
         <div id="summary-content"></div>
       </div>
 
-      <!-- All Sites Combined View (with per-site filter) -->
-      <div class="card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
-          <div class="card-title" style="margin-bottom:0;"><i class="ti ti-building-community"></i>All sites &mdash; combined records</div>
-          <button class="btn-sec" onclick="loadFromFirebase('ALL').then(function(){renderTable(true);})" style="font-size:12px;height:34px;"><i class="ti ti-refresh"></i> Refresh</button>
-        </div>
-        <div class="filter-row" style="margin-bottom:1rem;">
-          <div class="fg"><label for="lookup-site-filter">Filter by site</label>
-            <select id="lookup-site-filter" onchange="renderTable(true)" style="width:260px;">
-              <option value="ALL">All sites</option>
-            </select>
-          </div>
-        </div>
+      <!-- Records for the selected period and site -->
+      <div class="card" id="lookup-records-card" style="display:none;">
+        <div class="card-title" style="margin-bottom:1rem;"><i class="ti ti-building-community"></i>Records for this selection</div>
         <div class="alert alert-info" style="margin-bottom:1rem;flex-direction:column;align-items:flex-start;gap:6px;">
           <div style="display:flex;align-items:center;gap:8px;font-weight:600;"><i class="ti ti-flag"></i> How records are flagged</div>
           <div style="font-size:12px;line-height:1.7;">
@@ -594,20 +618,23 @@ background-image:
             <strong>Served %</strong> = Total Served &divide; Available &mdash; flagged when under 30%<br>
             <strong>Balance</strong> &mdash; flagged when Served + Unservable + Leftover &ne; Available
           </div>
+          <div style="font-size:12px;line-height:1.7;border-top:1px solid #c0d8f8;padding-top:7px;margin-top:3px;">
+            <strong><span class="pill pill-pattern" style="font-size:9px;">&#10003; Expected</span> instead of a red flag.</strong>
+            A site that takes one delivery to cover several days leaves a lot over on the first day &mdash; that isn't an anomaly, it's how the site runs.
+            So a leftover or served figure over threshold is also checked against <strong>the same site on the same weekday</strong> over the preceding 70 days.
+            With at least <strong>3 prior records for that weekday</strong> that agree with each other, and today's figure within <strong>15 points</strong> of their median, it's marked expected rather than flagged. Hover it to see the history behind the decision.<br>
+            <strong>Waste and balance are never softened this way</strong> &mdash; high waste is a problem however habitual, and a balance mismatch is an arithmetic error.
+          </div>
         </div>
         <div id="all-records"></div>
       </div>
 
-
-      <!-- Reimbursement Estimate (live) — kept at the bottom of Site Lookup -->
-      <div class="card" style="border-left:3px solid var(--amber);">
+      <!-- Reimbursement Estimate — follows the selection above; the claim itself is monthly, so for a
+           daily or weekly selection this shows the month that period falls in. -->
+      <div class="card" id="lookup-reimb-card" style="display:none;border-left:3px solid var(--amber);">
         <div class="card-title"><i class="ti ti-cash"></i>Reimbursement tracker</div>
         <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">CACFP pays for one supper per child, per day. First meals only. Seconds and adult meals are not reimbursed. <strong>% reimbursed</strong> is first meals divided by total served.</p>
         <div class="filter-row" style="margin-bottom:1rem;">
-          <div class="fg"><label for="reimb-month">Month</label><input type="month" id="reimb-month" oninput="renderReimbursement()" style="width:160px;"></div>
-          <div class="fg"><label for="reimb-site">Site</label>
-            <select id="reimb-site" oninput="renderReimbursement()" style="width:220px;"><option value="ALL">All sites</option></select>
-          </div>
           <div class="fg"><label for="reimb-rate">Supper rate ($)</label><input type="number" id="reimb-rate" step="0.01" oninput="saveReimbRates();renderReimbursement()" style="width:110px;"></div>
           <div class="fg"><label for="reimb-cil">Cash-in-lieu ($)</label><input type="number" id="reimb-cil" step="0.0001" oninput="saveReimbRates();renderReimbursement()" style="width:120px;"></div>
         </div>
@@ -627,18 +654,18 @@ background-image:
         </div>
 
         <div id="tracker-ctrl-daily" class="filter-row" style="margin-bottom:1rem;">
-          <div class="fg"><label for="tracker-date">Date</label><input type="date" id="tracker-date" oninput="renderTracker()" style="width:160px;"></div>
+          <div class="fg"><label for="tracker-date">Date</label><input type="date" id="tracker-date" oninput="refreshTracker()" style="width:160px;"></div>
         </div>
 
         <div id="tracker-ctrl-weekly" style="display:none;margin-bottom:1rem;">
           <div class="filter-row">
-            <div class="fg"><label for="tracker-week-start">Week start (Monday)</label><input type="date" id="tracker-week-start" oninput="renderTrackerWeekly()" style="width:160px;"></div>
+            <div class="fg"><label for="tracker-week-start">Week start (Monday)</label><input type="date" id="tracker-week-start" oninput="refreshTracker()" style="width:160px;"></div>
           </div>
         </div>
 
         <div id="tracker-ctrl-monthly" style="display:none;margin-bottom:1rem;">
           <div class="filter-row">
-            <div class="fg"><label for="tracker-month">Month</label><input type="month" id="tracker-month" oninput="renderTrackerMonthly()" style="width:160px;"></div>
+            <div class="fg"><label for="tracker-month">Month</label><input type="month" id="tracker-month" oninput="refreshTracker()" style="width:160px;"></div>
           </div>
         </div>
 
@@ -656,6 +683,32 @@ background-image:
         <div id="tracker-send-status" style="display:none;margin-bottom:1rem;"></div>
         <div class="tracker-grid" id="tracker-grid"></div>
       </div>
+
+      <!-- Reminder history -->
+      <div class="card" style="border-left:3px solid var(--pending-border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px;">
+          <div class="card-title" style="margin-bottom:0;"><i class="ti ti-mail-check"></i>Reminder history</div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-sec" style="font-size:12px;height:34px;" onclick="loadReminderLog(true).then(renderReminderHistory)"><i class="ti ti-refresh"></i> Refresh</button>
+            <button class="btn-sec" style="font-size:12px;height:34px;" title="Re-derives this list from the full change log. Costs a larger read — only needed after restoring data or if the list looks wrong." onclick="rebuildReminderIndex('rem-hist-status').then(renderReminderHistory)"><i class="ti ti-database-import"></i> Rebuild from full log</button>
+          </div>
+        </div>
+        <div id="rem-hist-status" style="display:none;font-size:13px;margin-bottom:0.75rem;"></div>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Every reminder SESSION has raised, newest first &mdash; which site, which service dates it covered, who it went to, and when. The tracker above marks the same thing per day: a <span class="day-cell-mailed">&#9993;</span> is a day still missing that has already been emailed about.</p>
+        <div class="filter-row" style="margin-bottom:1rem;">
+          <div class="fg"><label for="rem-hist-site">Site</label>
+            <select id="rem-hist-site" onchange="renderReminderHistory()" style="width:260px;"><option value="ALL">All sites</option></select>
+          </div>
+          <div class="fg"><label for="rem-hist-limit">Show</label>
+            <select id="rem-hist-limit" onchange="renderReminderHistory()" style="width:140px;">
+              <option value="50">Last 50</option>
+              <option value="200">Last 200</option>
+              <option value="0">Everything</option>
+            </select>
+          </div>
+        </div>
+        <div id="rem-hist-content"></div>
+      </div>
     </div>
 
     <!-- UPDATE SITES TAB (import + add new + manual entry) -->
@@ -664,7 +717,7 @@ background-image:
       <!-- Excel Import -->
       <div class="card" style="border-left:3px solid var(--amber);">
         <div class="card-title"><i class="ti ti-file-import"></i>Import from Excel</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Upload <strong>Session_Import.xlsx</strong>. The first sheet is read. AGENCY NO becomes the site ID. Organization Name becomes the site name. The two attendees, the administrator, and the on-site supervisor become trained personnel. Email is for reminders; Email2 reaches the supervisor. Address, dates, hot or cold, hours, service time, and days serving come along too. PINs and notes you already set are kept. Delivery-quantity columns in the file are ignored.</p>
+        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">Upload <strong>Session_Import.xlsx</strong>. The first sheet is read. AGENCY NO becomes the site ID. Organization Name becomes the site name. The two attendees, the administrator, and the on-site supervisor become trained personnel. Email is for reminders; Email2 reaches the supervisor. Address, dates, hot or cold, hours, service time, and days serving come along too. A <strong>Google Attendance Link</strong> column (or Attendance Link / Google Attendance / Attendance Tab) is read into each site's attendance link; a link already entered by hand is kept when the file has no such column. PINs and notes you already set are kept. Delivery-quantity columns in the file are ignored.</p>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
           <label style="cursor:pointer;">
             <input type="file" id="si-import-file" accept=".xlsx,.xls" style="display:none;" onchange="previewImport(event)">
@@ -745,6 +798,10 @@ background-image:
             <div class="fg"><label for="si-hours">Site Operating Hours</label><input type="text" id="si-hours" placeholder="e.g. 2:30-7:00pm"></div>
             <div class="fg"><label for="si-hours-sat">Site Operating Hours &mdash; Saturday</label><input type="text" id="si-hours-sat" placeholder="Leave blank if closed Saturday"></div>
             <div class="fg full"><label for="si-days-serving">Days Serving</label><input type="text" id="si-days-serving" placeholder="e.g. Monday- Friday"></div>
+            <div class="fg full">
+              <label for="si-attendance-link">Google attendance link <span style="font-size:11px;color:var(--text-soft);">(the site's attendance tab &mdash; included in their reminder emails as <code>{attendanceLink}</code>)</span></label>
+              <input type="url" id="si-attendance-link" placeholder="https://docs.google.com/spreadsheets/d/&hellip;">
+            </div>
           </div>
 
           <div class="fg" style="margin-bottom:1rem;">
@@ -768,7 +825,7 @@ background-image:
       <div class="card">
         <div class="card-title"><i class="ti ti-table"></i>All sites &mdash; info overview</div>
         <div style="display:flex;gap:8px;margin-bottom:1rem;">
-          <button class="btn-sec" style="font-size:12px;height:34px;" onclick="loadAllSiteInfo()"><i class="ti ti-refresh"></i> Refresh</button>
+          <button class="btn-sec" style="font-size:12px;height:34px;" onclick="loadAllSiteInfo(true)"><i class="ti ti-refresh"></i> Refresh</button>
         </div>
         <div id="si-delete-status" style="margin-bottom:10px;font-size:13px;display:none;"></div>
         <div id="si-all-table" class="table-scroll"></div>
@@ -782,7 +839,7 @@ background-image:
           <i class="ti ti-files"></i><span id="title-intro">Export reports</span>
           <button class="btn-sm" style="margin-left:auto;" title="Edit heading &amp; description" onclick="toggleExportCardEdit('intro')"><i class="ti ti-pencil"></i></button>
         </div>
-        <p class="report-desc" id="desc-intro" style="margin-bottom:0;">Every report below reads the same live records. Pick one and export it. Meal Count Sheets for a single day come from the print buttons in <strong>Site Lookup &rarr; All sites</strong>.</p>
+        <p class="report-desc" id="desc-intro" style="margin-bottom:0;">Every report below reads the same live records. Pick one and export it. Meal Count Sheets for a single record come from the buttons on each row in <strong>Site Lookup</strong>, after you press Load there.</p>
         <div class="ec-edit-panel" id="ecpanel-intro" style="display:none;margin-top:1rem;padding:0.9rem;background:var(--cream);border-radius:var(--radius-sm);">
           <div class="fg" style="margin-bottom:10px;"><label>Title</label><input type="text" id="ectitle-intro"></div>
           <div class="fg" style="margin-bottom:10px;"><label>Description</label><textarea id="ecdesc-intro" style="height:70px;"></textarea></div>
@@ -800,7 +857,7 @@ background-image:
           <i class="ti ti-file-spreadsheet"></i><span id="title-psm">Site Summary Sheet Report</span>
           <button class="btn-sm" style="margin-left:auto;" title="Edit heading &amp; description" onclick="toggleExportCardEdit('psm')"><i class="ti ti-pencil"></i></button>
         </div>
-        <p class="report-desc" id="desc-psm">One site, a range of months, in the state template. <strong>Daily Meal Details</strong> lists every weekday Mon&ndash;Sat: counts on days that were submitted, blank where nothing came in. <strong>Monthly Averages</strong>, <strong>Monthly Totals</strong>, and a <strong>Site Information</strong> sheet follow.</p>
+        <p class="report-desc" id="desc-psm">One site, a range of months. A single <strong>Daily Meal Details</strong> sheet listing every day that site serves: service date, weekday, status, received, available, 1st and 2nd meals, with blanks where nothing came in, a total row, and a live DAYS SERVED formula.</p>
         <div class="ec-edit-panel" id="ecpanel-psm" style="display:none;margin-bottom:1rem;padding:0.9rem;background:var(--cream);border-radius:var(--radius-sm);">
           <div class="fg" style="margin-bottom:10px;"><label>Title</label><input type="text" id="ectitle-psm"></div>
           <div class="fg" style="margin-bottom:10px;"><label>Description</label><textarea id="ecdesc-psm" style="height:70px;"></textarea></div>
@@ -831,7 +888,7 @@ background-image:
           <i class="ti ti-trash"></i><span id="title-wwl">Weekly Waste &amp; Leftover Report</span>
           <button class="btn-sm" style="margin-left:auto;" title="Edit heading &amp; description" onclick="toggleExportCardEdit('wwl')"><i class="ti ti-pencil"></i></button>
         </div>
-        <p class="report-desc" id="desc-wwl">One week, Mon&ndash;Sat, every site. A <strong>Summary</strong> with totals and waste and leftover as a share of available. Then <strong>Waste by Day</strong> and <strong>Leftover by Day</strong>. Pick any day in the week; it snaps to Monday. Use it to spot over-ordering.</p>
+        <p class="report-desc" id="desc-wwl">One week, Mon&ndash;Sat, every site. A <strong>Summary</strong> with totals and waste and leftover as a share of available, then <strong>Waste by Day</strong>, <strong>Leftover by Day</strong>, and <strong>Review Flags</strong> for the week. Pick any day in the week; it snaps to Monday. Use it to spot over-ordering.</p>
         <div class="ec-edit-panel" id="ecpanel-wwl" style="display:none;margin-bottom:1rem;padding:0.9rem;background:var(--cream);border-radius:var(--radius-sm);">
           <div class="fg" style="margin-bottom:10px;"><label>Title</label><input type="text" id="ectitle-wwl"></div>
           <div class="fg" style="margin-bottom:10px;"><label>Description</label><textarea id="ecdesc-wwl" style="height:70px;"></textarea></div>
@@ -901,7 +958,7 @@ background-image:
           <i class="ti ti-calendar-stats"></i><span id="title-monthly">Monthly Audit Report</span>
           <button class="btn-sm" style="margin-left:auto;" title="Edit heading &amp; description" onclick="toggleExportCardEdit('monthly')"><i class="ti ti-pencil"></i></button>
         </div>
-        <p class="report-desc" id="desc-monthly">A month across all sites, or one. The Sponsor Monthly Meal Count Summary by site, a sheet of every review flag, and the raw daily detail. This is the monthly claim review.</p>
+        <p class="report-desc" id="desc-monthly">A month across all sites, or one: the Sponsor Monthly Meal Count Summary by site. Review Flags now live on the Weekly Waste &amp; Leftover Report, and the raw daily rows come from All Records (CSV).</p>
         <div class="ec-edit-panel" id="ecpanel-monthly" style="display:none;margin-bottom:1rem;padding:0.9rem;background:var(--cream);border-radius:var(--radius-sm);">
           <div class="fg" style="margin-bottom:10px;"><label>Title</label><input type="text" id="ectitle-monthly"></div>
           <div class="fg" style="margin-bottom:10px;"><label>Description</label><textarea id="ecdesc-monthly" style="height:70px;"></textarea></div>
@@ -930,7 +987,7 @@ background-image:
           <i class="ti ti-cash"></i><span id="title-reimb">Initial Estimated Reimbursement</span>
           <button class="btn-sm" style="margin-left:auto;" title="Edit heading &amp; description" onclick="toggleExportCardEdit('reimb')"><i class="ti ti-pencil"></i></button>
         </div>
-        <p class="report-desc" id="desc-reimb">One sheet in the compliance department's format. Per site: Received, Available, Attendance, 1st and 2nd meals. Real 2nds are capped at 2% of 1sts. Then a total and an estimate at $4.90. This is the first pass for the monthly claim.</p>
+        <p class="report-desc" id="desc-reimb">One sheet in the compliance department's format. Per site: Received, Available, Attendance, 1st and 2nd meals. Real 2nds are capped at 2% of 1sts. Then a total and an estimate at the supper rate set on the Reimbursement tracker. This is the first pass for the monthly claim.</p>
         <div class="ec-edit-panel" id="ecpanel-reimb" style="display:none;margin-bottom:1rem;padding:0.9rem;background:var(--cream);border-radius:var(--radius-sm);">
           <div class="fg" style="margin-bottom:10px;"><label>Title</label><input type="text" id="ectitle-reimb"></div>
           <div class="fg" style="margin-bottom:10px;"><label>Description</label><textarea id="ecdesc-reimb" style="height:70px;"></textarea></div>
@@ -1029,6 +1086,8 @@ background-image:
           <div class="fg full"><label for="rt-body">Body</label><textarea id="rt-body" style="height:260px;font-family:'DM Mono',monospace;font-size:13px;line-height:1.5;" oninput="previewReminderTemplate()"></textarea></div>
         </div>
         <div style="font-size:12px;color:var(--text-mid);line-height:1.9;margin-bottom:1rem;padding:10px 14px;background:var(--cream);border-radius:var(--radius-sm);" id="rt-vars"></div>
+        <!-- Appears only while the saved wording has no {attendanceLink} in it. -->
+        <div id="rt-attend-notice" style="display:none;margin-bottom:1rem;"></div>
         <div class="btn-row" style="margin-top:0;margin-bottom:1rem;">
           <button class="btn-primary green" onclick="saveReminderTemplate()"><i class="ti ti-check"></i> Save reminder text</button>
           <button class="btn-sec" onclick="resetReminderTemplate()"><i class="ti ti-arrow-back-up"></i> Reset to default</button>
@@ -1076,7 +1135,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.10.15.1</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.11.13.1</div>
 
 <script>
 // ═══════════════════════════
@@ -1113,7 +1172,7 @@ function retryConnection() {
   hideOfflineBanner();
   loadSitesFromFirebase();
   loadEmailConfig();
-  if (currentSite) loadFromFirebase(currentSite === 'MONITOR' ? 'ALL' : currentSite);
+  if (currentSite) loadFromFirebase(currentSite === 'MONITOR' ? 'ALL' : currentSite, { force: true });
 }
 window.addEventListener('offline', () => showOfflineBanner("You're offline... Data can't be loaded or saved. Please reconnect."));
 window.addEventListener('online',  () => { hideOfflineBanner(); retryConnection(); });
@@ -1149,8 +1208,18 @@ function siteDefaults() {
     attendee1: '', attendee2: '', orders: '', address: '', city: '', zip: '',
     adminContact: '', email: '', onsiteSupervisor: '', email2: '',
     startDate: '', endDate: '', mealKind: '', operatingHours: '', operatingHoursSat: '',
-    mealServiceTime: '', daysServing: ''
+    mealServiceTime: '', daysServing: '', attendanceLink: ''
   };
+}
+
+// A pasted Google Sheets address, with or without a scheme. Stored with https:// so it works as a
+// real link in a reminder email. Anything that isn't web-address-shaped is kept exactly as typed.
+function normLink(v) {
+  const s = String(v || '').trim();
+  if (!s) return '';
+  if (/^https?:\/\//i.test(s)) return s;
+  if (/^[\w.-]+\.[a-z]{2,}(\/|$)/i.test(s)) return 'https://' + s;
+  return s;
 }
 function absorbSiteDoc(data) {
   if (!data.siteId || data.siteId === 'MONITOR') return;
@@ -1240,7 +1309,58 @@ let records = JSON.parse(safeGet('cacfp_v2') || '[]');
 let editingUid = null;
 let pendingUid = null;
 
-function saveLocal() { safeSet('cacfp_v2', JSON.stringify(records)); }
+// ═══════════════════════════════════════════════════════════
+//  LOCAL CACHE
+//  The browser allows about 5 MB per site. Every record carries sigImage — the drawn signature as a
+//  base64 PNG, ~9 KB each — and an auditLog that grows with every edit, so one month of all sites
+//  came to roughly 23 MB. safeSet() caught the overflow and fell back to an in-memory object, so
+//  nothing looked broken while the cache quietly stopped surviving a reload — on exactly the devices
+//  where an offline cache matters. Stringifying it on every save cost 65 ms too.
+//
+//  Both fields stay in Firestore and in memory; they are only left out of what goes to localStorage,
+//  which brings the same month to under 1 MB and the save to 3 ms. The one exception is a record
+//  that hasn't reached Firestore yet: for that one the cache IS the only copy.
+// ═══════════════════════════════════════════════════════════
+const CACHE_OMIT = ['sigImage', 'auditLog'];
+// At roughly 550 bytes a cached record, 6,000 is about 3.3 MB — room for several months of all sites
+// while staying inside the quota. It only bites on paths that deliberately load everything, such as
+// the all-records CSV export.
+const CACHE_MAX_RECORDS = 6000;
+const CACHE_SOFT_LIMIT = 3 * 1024 * 1024;
+
+function cacheShape(r) {
+  if (r._pendingSync) return r;   // not uploaded yet — cache it whole or the signature is lost for good
+  const out = {};
+  for (const k in r) if (CACHE_OMIT.indexOf(k) === -1) out[k] = r[k];
+  return out;
+}
+
+// Every path that changes `records` funnels through here, so this is also where the weekday-pattern
+// index is dropped — it's rebuilt on the next review.
+function saveLocal() {
+  invalidatePatternCache();
+  try {
+    // Common path: everything fits, one pass, no sorting.
+    let json = records.length <= CACHE_MAX_RECORDS ? JSON.stringify(records.map(cacheShape)) : null;
+    if (json === null || json.length > CACHE_SOFT_LIMIT) {
+      // The cache is this device's safety net, not a mirror of the database: anything not yet
+      // uploaded is kept, then the most recent of the rest. Firestore is re-read on next sign-in.
+      const pending = records.filter(r => r._pendingSync);
+      let keep = records.filter(r => !r._pendingSync)
+        .sort((a, b) => String(b.svcDate || '').localeCompare(String(a.svcDate || '')))
+        .slice(0, Math.max(0, CACHE_MAX_RECORDS - pending.length));
+      json = JSON.stringify(pending.concat(keep).map(cacheShape));
+      // Still too big for the quota: drop the oldest half and try again, rather than let the write
+      // fail silently into memory — which is the failure this whole section exists to replace.
+      let guard = 0;
+      while (json.length > CACHE_SOFT_LIMIT && keep.length > 50 && guard++ < 10) {
+        keep = keep.slice(0, Math.floor(keep.length / 2));
+        json = JSON.stringify(pending.concat(keep).map(cacheShape));
+      }
+    }
+    safeSet('cacfp_v2', json);
+  } catch (e) { console.warn('local cache write failed:', e); }
+}
 function save() { saveLocal(); }
 
 function adjustCount(id, delta) {
@@ -1263,38 +1383,205 @@ function genUID() {
 // ═══════════════════════════
 //  FIREBASE DATABASE
 // ═══════════════════════════
-async function loadFromFirebase(site) {
-  setSyncBanner('loading', 'Loading from Firebase…');
-    try {
-    let ref;
-    if (site === 'ALL') {
-      ref = _db.collection('meal_records').orderBy('svcDate', 'desc');
+// ═══════════════════════════════════════════════════════════
+//  RECORD LOADING
+//
+//  This used to be one query — every meal record in the database — run again on every switch into
+//  Site Lookup and Site Tracker. That cost grows with every service day of the year: ~2,700 documents
+//  in November 2026, ~22,000 by the end of FY27, against a free tier of 50,000 reads a day.
+//
+//  Site users were the quieter half of the same problem. A site reads only its own records, but it
+//  read ALL of them on every sign-in and again on every tap of "My records" — ~31 documents each
+//  today, ~160 by May, which across 89 sites is tens of thousands of reads a day on its own. Their
+//  load is now capped at the most recent SITE_RECENT_LIMIT, with everything else on request.
+//
+//  Three things keep reads down now:
+//    · scope   — a fetch is either one site or all sites, so picking a site reads that site only
+//    · span    — only the service dates a view is actually showing
+//    · freshness — a scope+span already held isn't re-read for LOAD_FRESH_MS, which is what stops
+//                  tab-flipping from re-reading
+//
+//  ONE RULE: anything that reports from `records` must await ensureRange() for the scope and span it
+//  covers first, or it will quietly build a short report. Every view and every export below does.
+// ═══════════════════════════════════════════════════════════
+const LOAD_FRESH_MS = 60000;
+const SITE_RECENT_LIMIT = 150;   // a site's recent records: ~7 months of service days
+let LOADED_SPANS = {};           // scope key ('ALL' or a siteId) → [{from,to}] merged ISO spans
+let lastRangeFetchMs = 0;
+let siteHasFullHistory = false;  // set when a site user asks for everything
+
+function shiftDays(iso, delta) {
+  const d = new Date(iso + 'T12:00:00');
+  d.setDate(d.getDate() + delta);
+  return ymd(d.getFullYear(), d.getMonth() + 1, d.getDate());
+}
+function monthBounds(month) {
+  const [y, m] = String(month || today().slice(0, 7)).split('-').map(Number);
+  return { from: ymd(y, m, 1), to: ymd(y, m, new Date(y, m, 0).getDate()) };
+}
+// A span is covered either by that scope's own spans or, for a single site, by an all-sites span
+// that already includes those dates.
+function spanCovered(scope, from, to) {
+  const hit = list => (list || []).some(s => s.from <= from && s.to >= to);
+  return hit(LOADED_SPANS[scope]) || (scope !== 'ALL' && hit(LOADED_SPANS.ALL));
+}
+// Records the span just fetched, merging it into that scope's set. Spans that touch or overlap
+// become one, so the coverage test above stays a simple containment check.
+function noteLoaded(scope, from, to) {
+  const all = (LOADED_SPANS[scope] || []).concat([{ from, to }]).sort((a, b) => a.from.localeCompare(b.from));
+  const merged = [];
+  all.forEach(s => {
+    const last = merged[merged.length - 1];
+    if (last && s.from <= shiftDays(last.to, 1)) { if (s.to > last.to) last.to = s.to; }
+    else merged.push({ from: s.from, to: s.to });
+  });
+  LOADED_SPANS[scope] = merged;
+}
+function resetLoadedSpans() { LOADED_SPANS = {}; lastRangeFetchMs = 0; siteHasFullHistory = false; }
+
+// The one entry point for loading. `opts.scope` is a siteId or 'ALL' (default). `opts.pad` adds the
+// weekday-pattern lookback and defaults to TRUE — leave it on anywhere a pattern verdict is shown,
+// turn it off where none is (Site Tracker only asks "did this site submit?", so it needs no history).
+async function ensureRange(from, to, opts) {
+  if (!from || !to) return;
+  const o = (opts && typeof opts === 'object') ? opts : { force: !!opts };
+  const scope = o.scope || 'ALL';
+  const pad = o.pad !== false;
+  if (from > to) { const t = from; from = to; to = t; }
+  const start = pad ? shiftDays(from, -PATTERN.lookbackDays) : from;
+  if (!o.force && spanCovered(scope, start, to) && (Date.now() - lastRangeFetchMs) < LOAD_FRESH_MS) return;
+  await fetchRange(scope, start, to);
+}
+
+// Two query shapes, both using indexes Firestore already has:
+//   all sites  → a range on svcDate alone, which needs no composite index
+//   one site   → the same site+svcDate query the app has always used, filtered by date here
+// The second avoids asking for a composite index this project may not have, and a single site's
+// whole history is a few hundred documents anyway.
+async function fetchRange(scope, from, to) {
+  const label = scope === 'ALL' ? 'all sites' : ((SITES[scope] || {}).name || scope);
+  setSyncBanner('loading', 'Loading ' + label + ', ' + fmtDate(from) + ' – ' + fmtDate(to) + '…');
+  try {
+    let fresh;
+    if (scope === 'ALL') {
+      const snap = await _db.collection('meal_records')
+        .where('svcDate', '>=', from).where('svcDate', '<=', to)
+        .orderBy('svcDate', 'desc').get();
+      fresh = snap.docs.map(d => d.data());
     } else {
-      ref = _db.collection('meal_records').where('site', '==', site).orderBy('svcDate', 'desc');
+      try {
+        const snap = await _db.collection('meal_records')
+          .where('site', '==', scope)
+          .where('svcDate', '>=', from).where('svcDate', '<=', to)
+          .orderBy('svcDate', 'desc').get();
+        fresh = snap.docs.map(d => d.data());
+      } catch (idxErr) {
+        // That query wants a composite index on (site, svcDate). The app's existing site query
+        // implies one, but if this project's is shaped differently Firestore rejects the query
+        // rather than returning partial data — so fall back to the site's history and filter here.
+        // A single site is a few hundred documents, so this is cheap; it must never be a LIMITed
+        // query, or an older range would come back empty and the report would be quietly short.
+        console.warn('site+date query unavailable, falling back to full site history:', idxErr && idxErr.message);
+        const snap2 = await _db.collection('meal_records')
+          .where('site', '==', scope).orderBy('svcDate', 'desc').get();
+        fresh = snap2.docs.map(d => d.data()).filter(r => r.svcDate >= from && r.svcDate <= to);
+      }
     }
-    const snap = await ref.get();
+    const freshUIDs = new Set(fresh.map(r => r.uid));
+    // Inside the scope and span just read, Firestore is the authority: a cached record it no longer
+    // has was deleted or replaced elsewhere, so it goes. Records outside that scope or span are left
+    // alone, and a record this device saved but couldn't upload is kept and retried below.
+    const kept = records.filter(r => {
+      if (!r.svcDate || r.svcDate < from || r.svcDate > to) return true;
+      if (scope !== 'ALL' && r.site !== scope) return true;
+      return !freshUIDs.has(r.uid) && r._pendingSync;
+    });
+    records = kept.concat(fresh);
+    saveLocal();
+    noteLoaded(scope, from, to);
+    lastRangeFetchMs = Date.now();
+    hideOfflineBanner();
+    for (const r of records.filter(x => x._pendingSync)) await saveToFirebase(r);
+    setSyncBanner('ok', 'Synced with Firebase ✓');
+    setTimeout(() => setSyncBanner('hide'), 2000);
+  } catch (e) {
+    console.warn('Firebase range load failed:', e);
+    setSyncBanner('warn', 'Could not reach the database');
+    setTimeout(() => setSyncBanner('hide'), 4000);
+    showOfflineBanner("Disconnected from the internet... Records can't be loaded. Please reconnect.");
+  }
+}
+
+// What a site user gets: their most recent records, not their whole history. Enough to use the form,
+// see what they've filed lately, and give the weekday pattern something to work with. "Load all my
+// records" in My records fetches the rest when they want it.
+async function loadSiteRecent(site, force) {
+  if (!force && siteHasFullHistory) return;
+  // Already pulled this site's recent records a moment ago — this is what makes repeated taps of
+  // "My records" free rather than a fresh read every time.
+  if (!force && (LOADED_SPANS[site] || []).length && (Date.now() - lastRangeFetchMs) < LOAD_FRESH_MS) return;
+  setSyncBanner('loading', 'Loading your records…');
+  try {
+    const snap = await _db.collection('meal_records')
+      .where('site', '==', site).orderBy('svcDate', 'desc').limit(SITE_RECENT_LIMIT).get();
     const fresh = snap.docs.map(d => d.data());
     const freshUIDs = new Set(fresh.map(r => r.uid));
-    // Cached records Firestore no longer has are dropped (deleted or replaced elsewhere). Only records
-    // this device saved but couldn't upload (_pendingSync) are kept, and they're retried below.
-    const localOnly = records.filter(r => !freshUIDs.has(r.uid) && r._pendingSync && (site === 'ALL' || r.site === site));
-    if (site === 'ALL') {
-      records = [...fresh, ...localOnly];
-    } else {
-      const otherSites = records.filter(r => r.site !== site);
-      records = [...otherSites, ...fresh, ...localOnly];
-    }
+    // The oldest record this read returned is as far back as it is authoritative; anything of this
+    // site's that is older was not covered by the query, so it stays.
+    const oldest = fresh.length ? fresh.map(r => r.svcDate).sort()[0] : '0000-00-00';
+    const kept = records.filter(r => {
+      if (r.site !== site) return true;
+      if (r.svcDate && r.svcDate < oldest) return true;
+      return !freshUIDs.has(r.uid) && r._pendingSync;
+    });
+    records = kept.concat(fresh);
     saveLocal();
+    noteLoaded(site, oldest, '9999-99-99');
+    lastRangeFetchMs = Date.now();
     hideOfflineBanner();
-    for (const r of localOnly) await saveToFirebase(r);
+    for (const r of records.filter(x => x._pendingSync && x.site === site)) await saveToFirebase(r);
     setSyncBanner('ok', 'Synced with Firebase ✓');
-    setTimeout(() => setSyncBanner('hide'), 2500);
+    setTimeout(() => setSyncBanner('hide'), 2000);
   } catch (e) {
     console.warn('Firebase load failed:', e);
     setSyncBanner('warn', 'Could not reach the database');
     setTimeout(() => setSyncBanner('hide'), 4000);
     showOfflineBanner("Disconnected from the internet... Records can't be loaded. Please reconnect.");
   }
+}
+
+// "Load all my records" — the whole history for one site, on request.
+async function loadSiteAll() {
+  const site = currentSite;
+  if (!site || site === 'MONITOR') return;
+  setSyncBanner('loading', 'Loading your full history…');
+  try {
+    const snap = await _db.collection('meal_records').where('site', '==', site).orderBy('svcDate', 'desc').get();
+    const fresh = snap.docs.map(d => d.data());
+    const freshUIDs = new Set(fresh.map(r => r.uid));
+    const kept = records.filter(r => r.site !== site || (!freshUIDs.has(r.uid) && r._pendingSync));
+    records = kept.concat(fresh);
+    saveLocal();
+    siteHasFullHistory = true;
+    noteLoaded(site, '0000-00-00', '9999-99-99');
+    lastRangeFetchMs = Date.now();
+    hideOfflineBanner();
+    setSyncBanner('ok', 'Loaded ' + fresh.length + ' record(s) ✓');
+    setTimeout(() => setSyncBanner('hide'), 2500);
+  } catch (e) {
+    console.warn('Full history load failed:', e);
+    setSyncBanner('warn', 'Could not reach the database');
+    setTimeout(() => setSyncBanner('hide'), 4000);
+  }
+  renderTable(false);
+}
+
+// Kept as the single name the rest of the app calls. Monitors no longer load anything here — Site
+// Lookup and Site Tracker each pull the scope and span they're showing.
+async function loadFromFirebase(site, opts) {
+  const force = !!(opts && opts.force);
+  if (site === 'ALL' || site === 'MONITOR') return;
+  return loadSiteRecent(site, force);
 }
 
 // _pendingSync marks a record saved on this device that hasn't reached Firestore yet. It's local-only:
@@ -1345,6 +1632,7 @@ function doLogin() {
   if (!s || !SITES[s] || SITES[s].pin !== p) { err.style.display = 'flex'; return; }
   err.style.display = 'none';
   currentSite = s;
+  resetLoadedSpans();   // whatever the last session held says nothing about this one
 
   document.getElementById('login-page').style.display = 'none';
   document.getElementById('main-app').style.display = 'block';
@@ -1363,8 +1651,6 @@ function doLogin() {
 
   if (s === 'MONITOR') {
     fillSiteOptions(document.getElementById('summary-site'), true, 'All sites');
-    fillSiteOptions(document.getElementById('lookup-site-filter'), true, 'All sites');
-    fillSiteOptions(document.getElementById('reimb-site'), true, 'All sites');
     fillSiteOptions(document.getElementById('export-site-report'), true, 'All sites');
     fillSiteOptions(document.getElementById('audit-site'), false);
     MONITOR_TABS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'inline-block'; });
@@ -1386,6 +1672,7 @@ function doLogin() {
 
 function doLogout() {
   currentSite = null; editingUid = null; pendingUid = null;
+  resetLoadedSpans();
   document.getElementById('login-page').style.display = 'flex';
   document.getElementById('main-app').style.display = 'none';
   document.getElementById('lp').value = '';
@@ -1410,29 +1697,24 @@ function showTab(t) {
     loadFromFirebase(currentSite).then(() => renderTable(false));
   }
   if (t === 'lookup') {
-    const sm = document.getElementById('summary-month');
-    if (sm && !sm.value) sm.value = today().slice(0,7);
-    renderReimbursement(); renderSummary(); renderTable(true);
-    loadFromFirebase('ALL').then(() => { renderReimbursement(); renderSummary(); renderTable(true); });
+    // Seeds the controls only. Opening this tab reads nothing — runLookup() does, on the Load button.
+    setSummaryView(summaryView || 'monthly');
   }
   if (t === 'tracker') {
     const tdate = document.getElementById('tracker-date');
     if (tdate && !tdate.value) tdate.value = today();
+    const rhs = document.getElementById('rem-hist-site');
+    if (rhs && rhs.options.length <= 1) fillSiteOptions(rhs, true, 'All sites');
+    // setTrackerView draws from memory, then pulls the span it needs. The reminder log loads
+    // alongside it and re-draws once more, so emailed markers appear as soon as the log is in.
     setTrackerView(trackerView || 'daily');
-    loadFromFirebase('ALL').then(() => {
-      if (trackerView === 'daily') renderTracker();
-      else if (trackerView === 'weekly') renderTrackerWeekly();
-      else renderTrackerMonthly();
-    });
+    loadReminderLog().then(() => { renderReminderHistory(); redrawTracker(); });
   }
   if (t === 'exports') { populateExportSelects(); applyAllExportCards(); }
   if (t === 'updatesites') { populateSiteInfoSelect(); loadAllSiteInfo(); }
   if (t === 'settings') { renderEmailConfig(); renderReminderTemplate(); populateRemoveFieldSelect(); }
 }
 
-function refreshLookup() {
-  loadFromFirebase('ALL').then(() => { renderReimbursement(); renderSummary(); renderTable(true); });
-}
 
 // ═══════════════════════════
 //  EXPORT REPORTS — editable headings, descriptions & accent colors (admin)
@@ -1440,12 +1722,12 @@ function refreshLookup() {
 //  description may contain simple inline HTML (e.g. <strong>) as the built-in copy does.
 // ═══════════════════════════
 const EXPORT_CARDS_DEFAULT = {
-  intro:   { title: 'Export reports', description: 'Every report below reads the same live records. Pick one and export it. Meal Count Sheets for a single day come from the print buttons in <strong>Site Lookup &rarr; All sites</strong>.', color: '' },
-  psm:     { title: 'Site Summary Sheet Report', description: 'One site, a range of months, in the state template. <strong>Daily Meal Details</strong> lists every weekday Mon&ndash;Sat: counts on days that were submitted, blank where nothing came in. <strong>Monthly Averages</strong>, <strong>Monthly Totals</strong>, and a <strong>Site Information</strong> sheet follow.', color: '#58923a' },
-  wwl:     { title: 'Weekly Waste & Leftover Report', description: 'One week, Mon&ndash;Sat, every site. A <strong>Summary</strong> with totals and waste and leftover as a share of available. Then <strong>Waste by Day</strong> and <strong>Leftover by Day</strong>. Pick any day in the week; it snaps to Monday. Use it to spot over-ordering.', color: '#3f72b8' },
+  intro:   { title: 'Export reports', description: 'Every report below reads the same live records. Pick one and export it. Meal Count Sheets for a single record come from the buttons on each row in <strong>Site Lookup</strong>, after you press Load there.', color: '' },
+  psm:     { title: 'Site Summary Sheet Report', description: 'One site, a range of months. A single <strong>Daily Meal Details</strong> sheet listing every day that site serves: service date, weekday, status, received, available, 1st and 2nd meals, with blanks where nothing came in, a total row, and a live DAYS SERVED formula.', color: '#58923a' },
+  wwl:     { title: 'Weekly Waste & Leftover Report', description: 'One week, Mon&ndash;Sat, every site. A <strong>Summary</strong> with totals and waste and leftover as a share of available, then <strong>Waste by Day</strong>, <strong>Leftover by Day</strong>, and <strong>Review Flags</strong> for the week. Pick any day in the week; it snaps to Monday. Use it to spot over-ordering.', color: '#3f72b8' },
   audit:   { title: 'Site Audit Report', description: 'One site, one date range, in the CACFP audit layout: daily details, monthly averages, monthly totals, site information. For when a monitor or the state asks for a site&#39;s full history.', color: '#3f72b8' },
-  monthly: { title: 'Monthly Audit Report', description: 'A month across all sites, or one. The Sponsor Monthly Meal Count Summary by site, a sheet of every review flag, and the raw daily detail. This is the monthly claim review.', color: '#3f72b8' },
-  reimb:   { title: 'Initial Estimated Reimbursement', description: 'One sheet in the compliance department&#39;s format. Per site: Received, Available, Attendance, 1st and 2nd meals. Real 2nds are capped at 2% of 1sts. Then a total and an estimate at $4.90. This is the first pass for the monthly claim.', color: '#58923a' },
+  monthly: { title: 'Monthly Audit Report', description: 'A month across all sites, or one: the Sponsor Monthly Meal Count Summary by site. Review Flags now live on the Weekly Waste &amp; Leftover Report, and the raw daily rows come from All Records (CSV).', color: '#3f72b8' },
+  reimb:   { title: 'Initial Estimated Reimbursement', description: 'One sheet in the compliance department&#39;s format. Per site: Received, Available, Attendance, 1st and 2nd meals. Real 2nds are capped at 2% of 1sts. Then a total and an estimate at the supper rate set on the Reimbursement tracker. This is the first pass for the monthly claim.', color: '#58923a' },
   csv:     { title: 'All Records (CSV)', description: 'Every record, every site, one row each, all fields. For spreadsheets and pivot tables.', color: '' }
 };
 let EXPORT_CARDS = JSON.parse(JSON.stringify(EXPORT_CARDS_DEFAULT));
@@ -1649,6 +1931,12 @@ function recalc() {
   }
 }
 
+// NOTE: an earlier build showed sites an "anticipated daily output" line here — their usual first-meal
+// count for that weekday — before they entered anything. It was removed deliberately. CACFP counts are
+// point-of-service counts, and telling a site the expected number before they type one invites them to
+// agree with it. The weekday pattern is still used, but only to review records after the fact, never
+// to suggest a figure while one is being entered.
+
 // ═══════════════════════════
 //  COUNT FIELDS — whole, non-negative numbers only
 //  Minus, plus, decimal point, comma and "e" are blocked as they're typed; anything pasted in is
@@ -1794,7 +2082,7 @@ async function saveRecord() {
       const editCount = (orig.editCount || 0) + (wasDraft ? 0 : 1);
       const next = {
         ...orig, ...fields,
-        isDraft: false, locked: true, prevLeftoverAuto: null,
+        isDraft: false, prevLeftoverAuto: null,
         sigImage: newSig || orig.sigImage || null,
         certifiedAt: now, lastEditedAt: now, editCount
       };
@@ -1818,7 +2106,7 @@ async function saveRecord() {
   const uid = pendingUid || genUID();
   const rec = {
     uid, site: currentSite, siteName: SITES[currentSite].name, ...fields,
-    isDraft: false, locked: true, sigImage: newSig, createdAt: now, certifiedAt: now, lastEditedAt: now, editCount: 0,
+    isDraft: false, sigImage: newSig, createdAt: now, certifiedAt: now, lastEditedAt: now, editCount: 0,
     auditLog: [{ at: now, by: signer, action: 'Created and certified', changes: [] }]
   };
   records.push(rec); save();
@@ -1979,37 +2267,165 @@ function clearForm() {
   autoFillPrevLeftover();
 }
 
-// ═══════════════════════════
-//  ANOMALY DETECTION
-// ═══════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  ANOMALY DETECTION + WEEKDAY PATTERN LEARNING
+//
+//  A site that takes one delivery to cover several days legitimately shows a large leftover on the
+//  first day and a small served count — 10 meals delivered Monday to cover Mon/Tue/Wed leaves ~70%
+//  on Monday. Flat thresholds called that an anomaly every single week.
+//
+//  So each figure is now also compared against THE SAME SITE on THE SAME WEEKDAY in its own recent
+//  history. When there are at least PATTERN.minSamples prior records, they agree with each other,
+//  and today's figure sits within PATTERN.tolerance of their median, the red flag becomes an orange
+//  "expected pattern" check instead, and the tooltip shows the history it was judged against.
+//
+//  The verdict depends on what's in `records`, so ensureRange() pads every fetch by lookbackDays —
+//  without that, the same record could be flagged or not depending on which span happened to be
+//  loaded, which is exactly the sort of inconsistency a compliance review can't have.
+//
+//  Two things are never softened: waste, because high waste is a real problem however habitual,
+//  and a balance mismatch, because that is an arithmetic error. Until a site has enough same-weekday
+//  history, it behaves exactly as before.
+// ═══════════════════════════════════════════════════════════
 const ANOM = { wastePct: 0.30, leftoverPct: 0.40, servedPctMin: 0.30 };
+const PATTERN = {
+  minSamples: 3,      // prior same-weekday records needed before a pattern is trusted
+  // How far back to look — about 10 weeks, so roughly 10 samples of any given weekday. Also the
+  // amount every windowed fetch is padded by (see ensureRange), so that a record at the start of the
+  // loaded span is judged against the same history it would get on a full load. Raising this makes
+  // flag decisions no better and every fetch bigger.
+  lookbackDays: 70,
+  tolerance: 0.15,    // today's ratio must land within 15 points of the median
+  spread: 0.15,       // a past record "agrees" when it's within 15 points of the median
+  minAgree: 0.67      // two thirds of them must agree before the history counts as consistent
+};
 
-function isAnomaly(r) {
-  if (!r.availQty) return null;
-  const flags = [];
+// Every certified record bucketed by site + weekday, so judging one record doesn't re-scan the whole
+// array (89 sites × a school year of records would make that O(n²)). Built on first use and thrown
+// away whenever `records` changes.
+let _PAT_INDEX = null;
+let _REVIEW_CACHE = {};
+function invalidatePatternCache() { _PAT_INDEX = null; _REVIEW_CACHE = {}; }
+function patternIndex() {
+  if (_PAT_INDEX) return _PAT_INDEX;
+  const idx = {};
+  records.forEach(r => {
+    if (r.isDraft || !r.svcDate || !r.availQty || r.site === 'MONITOR') return;
+    const key = r.site + '|' + new Date(r.svcDate + 'T12:00:00').getDay();
+    (idx[key] = idx[key] || []).push({
+      uid: r.uid,
+      svcDate: r.svcDate,
+      leftRatio: r.leftover / r.availQty,
+      servedRatio: (r.totalServed || 0) / r.availQty,
+      first: r.firstMeal || 0
+    });
+  });
+  Object.values(idx).forEach(a => a.sort((x, y) => x.svcDate.localeCompare(y.svcDate)));
+  _PAT_INDEX = idx;
+  return idx;
+}
+
+function median(nums) {
+  if (!nums.length) return null;
+  const s = [...nums].sort((a, b) => a - b);
+  const m = Math.floor(s.length / 2);
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+// This site's own history for the weekday of `rec` — only records BEFORE it and inside the lookback
+// window, with `rec` itself excluded, so a record is never judged against itself.
+function weekdaySamples(rec) {
+  if (!rec || !rec.svcDate || !rec.site) return [];
+  const key = rec.site + '|' + new Date(rec.svcDate + 'T12:00:00').getDay();
+  const bucket = patternIndex()[key] || [];
+  const cutoff = new Date(rec.svcDate + 'T12:00:00');
+  cutoff.setDate(cutoff.getDate() - PATTERN.lookbackDays);
+  const cutoffStr = ymd(cutoff.getFullYear(), cutoff.getMonth() + 1, cutoff.getDate());
+  return bucket.filter(s => s.uid !== rec.uid && s.svcDate < rec.svcDate && s.svcDate >= cutoffStr);
+}
+
+// Is `observed` explained by the site's established history? Returns the supporting numbers, or
+// null when there isn't enough consistent history to say so.
+function patternVerdict(samples, pick, observed) {
+  if (samples.length < PATTERN.minSamples) return null;
+  const vals = samples.map(pick).filter(v => isFinite(v));
+  if (vals.length < PATTERN.minSamples) return null;
+  const med = median(vals);
+  const agree = vals.filter(v => Math.abs(v - med) <= PATTERN.spread).length;
+  if (agree / vals.length < PATTERN.minAgree) return null;        // history is too erratic to trust
+  if (Math.abs(observed - med) > PATTERN.tolerance) return null;  // today doesn't match it
+  return { median: med, samples: vals.length, agree };
+}
+
+// Full review of one record: red flags, plus figures that WOULD have been flagged but match this
+// site's own weekday pattern. `pattern.expectedFirst` is its typical first-meal count for that
+// weekday — the anticipated daily output.
+function reviewRecord(r) {
+  const out = { flags: [], expected: [], pattern: null };
+  if (!r || !r.availQty) return out;
+  // Memoised for as long as the pattern index lives — the Site Lookup table re-renders on every sort
+  // and filter, and re-deriving a year of history each time is wasted work. Both are dropped together
+  // by invalidatePatternCache() whenever `records` changes, so a stale review can't survive an edit.
+  if (r.uid && _REVIEW_CACHE[r.uid]) return _REVIEW_CACHE[r.uid];
+  const samples = weekdaySamples(r);
+  const dayName = dowName(r.svcDate);
+  out.pattern = {
+    samples: samples.length,
+    dayName,
+    expectedFirst: samples.length >= PATTERN.minSamples ? median(samples.map(s => s.first)) : null
+  };
+
   const wasteRatio = r.waste / r.availQty;
   const leftoverRatio = r.leftover / r.availQty;
   const servedRatio = r.totalServed / r.availQty;
-  const sum = r.totalServed + r.totalUnsrv + r.leftover;
+  const sum = (r.totalServed || 0) + (r.totalUnsrv || 0) + (r.leftover || 0);
   const bal = r.availQty - sum;
+  const sinceWhen = (v) => ' — matches this site\'s usual ' + dayName + ' (median '
+    + Math.round(v.median * 100) + '% over ' + v.samples + ' prior ' + dayName
+    + (v.samples === 1 ? '' : 's') + ')';
+
   if (wasteRatio > ANOM.wastePct)
-    flags.push('Waste is ' + Math.round(wasteRatio * 100) + '% of available (' + r.waste + '/' + r.availQty + ')');
-  if (leftoverRatio > ANOM.leftoverPct)
-    flags.push('Leftover is ' + Math.round(leftoverRatio * 100) + '% of available (' + r.leftover + '/' + r.availQty + ')');
-  if (servedRatio < ANOM.servedPctMin && r.totalServed > 0)
-    flags.push('Only ' + Math.round(servedRatio * 100) + '% of available meals were served (' + r.totalServed + '/' + r.availQty + ')');
+    out.flags.push('Waste is ' + Math.round(wasteRatio * 100) + '% of available (' + r.waste + '/' + r.availQty + ')');
+
+  if (leftoverRatio > ANOM.leftoverPct) {
+    const text = 'Leftover is ' + Math.round(leftoverRatio * 100) + '% of available (' + r.leftover + '/' + r.availQty + ')';
+    const v = patternVerdict(samples, s => s.leftRatio, leftoverRatio);
+    if (v) out.expected.push(text + sinceWhen(v)); else out.flags.push(text);
+  }
+
+  if (servedRatio < ANOM.servedPctMin && r.totalServed > 0) {
+    const text = 'Only ' + Math.round(servedRatio * 100) + '% of available meals were served (' + r.totalServed + '/' + r.availQty + ')';
+    const v = patternVerdict(samples, s => s.servedRatio, servedRatio);
+    if (v) out.expected.push(text + sinceWhen(v)); else out.flags.push(text);
+  }
+
   if (bal !== 0)
-    flags.push('Balance off by ' + Math.abs(bal) + ' meal' + (Math.abs(bal) > 1 ? 's' : '') + ' (served+unsrv+left=' + sum + ', available=' + r.availQty + ')');
-  return flags.length ? flags : null;
+    out.flags.push('Balance off by ' + Math.abs(bal) + ' meal' + (Math.abs(bal) > 1 ? 's' : '') + ' (served+unsrv+left=' + sum + ', available=' + r.availQty + ')');
+
+  if (r.uid) _REVIEW_CACHE[r.uid] = out;
+  return out;
 }
+
 
 // ═══════════════════════════
 //  RECORDS TABLE
 // ═══════════════════════════
 let adminSort = { col: 'svcDate', dir: 'desc' };
+// The all-sites table is paged: a month across 89 sites is ~1,900 rows, and drawing them all took
+// about 110 ms and 2.4 MB of HTML every time it was sorted or filtered. Site users' own records are
+// not paged — one site holds a few hundred rows at most.
+const ADMIN_PAGE_SIZE = 10;
+let adminPage = 0;
+function setAdminPage(p) {
+  adminPage = p;
+  renderTable(true);
+  const el = document.getElementById('all-records');
+  if (el && el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 function setAdminSort(col) {
   if (adminSort.col === col) adminSort.dir = adminSort.dir === 'asc' ? 'desc' : 'asc';
   else { adminSort.col = col; adminSort.dir = col === 'svcDate' ? 'desc' : 'asc'; }
+  adminPage = 0;   // a re-sort means page 12 of the old order is meaningless
   renderTable(true);
 }
 function sortArrow(col) {
@@ -2027,12 +2443,21 @@ function auditEntryHtml(e) {
 function renderTable(isAdmin) {
   let myRecs = isAdmin ? records : records.filter(r => r.site === currentSite);
   if (isAdmin) {
-    const f = document.getElementById('lookup-site-filter');
-    const fv = f ? f.value : 'ALL';
+    // Scoped to the Summary period above. `records` holds whatever spans have been pulled in, which
+    // may be wider than the period on show — filtering here keeps the table honest about what it is
+    // reporting instead of quietly listing whatever happens to be in memory.
+    const rg = summaryRange();
+    myRecs = myRecs.filter(r => r.svcDate && r.svcDate >= rg.from && r.svcDate <= rg.to);
+    const fv = lookupScope();
     if (fv && fv !== 'ALL') myRecs = myRecs.filter(r => r.site === fv);
   }
   const ctr = document.getElementById(isAdmin ? 'all-records' : 'my-records');
-  if (!myRecs.length) { ctr.innerHTML = '<div class="empty"><i class="ti ti-inbox"></i>Nothing here yet. Records show up as you log them.</div>'; return; }
+  if (!myRecs.length) {
+    ctr.innerHTML = isAdmin
+      ? '<div class="empty"><i class="ti ti-inbox"></i>No records in this period. Change the period on the Summary card above.</div>'
+      : '<div class="empty"><i class="ti ti-inbox"></i>Nothing here yet. Records show up as you log them.</div>';
+    return;
+  }
 
   let sorted;
   if (isAdmin) {
@@ -2049,6 +2474,7 @@ function renderTable(isAdmin) {
         case 'leftPct':  return r.availQty > 0 ? r.leftover / r.availQty : -1;
         case 'balance':  return Math.abs((r.availQty||0) - ((r.totalServed||0)+(r.totalUnsrv||0)+(r.leftover||0)));
         case 'sig':      return (r.sigName || '').toLowerCase();
+        case 'status':   return statusRank(r);
         default:         return r.svcDate || '';
       }
     };
@@ -2062,6 +2488,12 @@ function renderTable(isAdmin) {
     sorted = [...myRecs].sort((a, b) => (b.svcDate || '').localeCompare(a.svcDate || ''));
   }
 
+  // Only the admin table is paged. adminPage is clamped here rather than at the click, so a smaller
+  // result set after a re-filter can't leave the view stranded on a page that no longer exists.
+  const pageCount = Math.max(1, Math.ceil(sorted.length / ADMIN_PAGE_SIZE));
+  if (isAdmin) adminPage = Math.min(Math.max(0, adminPage), pageCount - 1);
+  const rows = isAdmin ? sorted.slice(adminPage * ADMIN_PAGE_SIZE, (adminPage + 1) * ADMIN_PAGE_SIZE) : sorted;
+
   let h = '<div class="table-scroll"><table class="rec-table"><thead><tr>';
   if (isAdmin) {
     h += '<th style="width:120px;cursor:pointer;" onclick="setAdminSort(\'site\')">Site ' + sortArrow('site') + '</th>';
@@ -2073,7 +2505,7 @@ function renderTable(isAdmin) {
     h += '<th style="width:70px;cursor:pointer;" onclick="setAdminSort(\'wastePct\')">Waste % ' + sortArrow('wastePct') + '</th>';
     h += '<th style="width:70px;cursor:pointer;" onclick="setAdminSort(\'leftPct\')">Left % ' + sortArrow('leftPct') + '</th>';
     h += '<th style="width:75px;cursor:pointer;" onclick="setAdminSort(\'balance\')">Balance ' + sortArrow('balance') + '</th>';
-    h += '<th style="width:85px;">Status</th>';
+    h += '<th style="width:85px;cursor:pointer;" onclick="setAdminSort(\'status\')" title="Sorts drafts and flagged records to the top">Status ' + sortArrow('status') + '</th>';
     h += '<th style="cursor:pointer;" onclick="setAdminSort(\'sig\')">Signed by ' + sortArrow('sig') + '</th>';
     h += '<th style="width:150px;"></th></tr></thead><tbody>';
   } else {
@@ -2081,27 +2513,41 @@ function renderTable(isAdmin) {
   }
   const colCount = isAdmin ? 12 : 9;
 
-  sorted.forEach(r => {
+  rows.forEach(r => {
     const sum = (r.totalServed||0) + (r.totalUnsrv||0) + (r.leftover||0);
     const bal = (r.availQty||0) - sum;
     const ok = bal === 0;
-    const anomFlags = isAnomaly(r);
-    const anom = !!anomFlags;
+    const review = reviewRecord(r);
+    const anomFlags = review.flags;
+    const anom = anomFlags.length > 0;
+    // Nothing red, but something over threshold that this site's own weekday history explains.
+    const patterned = !anom && review.expected.length > 0;
     const edited = (r.editCount || 0) > 0;
     const siteName = r.siteName || r.site || '';
-    h += '<tr class="' + (anom ? 'anomaly' : '') + '" style="' + (r.isDraft ? 'opacity:0.65;font-style:italic;' : '') + '">';
+    h += '<tr class="' + (anom ? 'anomaly' : patterned ? 'patterned' : '') + '" style="' + (r.isDraft ? 'opacity:0.65;font-style:italic;' : '') + '">';
     if (isAdmin) h += '<td title="' + esc(siteName) + '">' + esc(siteName.substring(0,16)) + (siteName.length > 16 ? '…':'') + '</td>';
     h += '<td>' + fmtDate(r.svcDate) + '</td><td>' + (r.availQty||0) + '</td><td>' + (r.totalServed||0) + '</td><td>' + (r.totalUnsrv||0) + '</td><td>' + (r.leftover||0) + '</td>';
     if (isAdmin) {
       const wp = r.availQty > 0 ? r.waste / r.availQty : 0;
       const lp = r.availQty > 0 ? r.leftover / r.availQty : 0;
       const wpOver = wp > ANOM.wastePct, lpOver = lp > ANOM.leftoverPct;
+      // A leftover over threshold that the weekday pattern explains goes orange, not red.
+      const lpPattern = lpOver && review.expected.some(t => t.indexOf('Leftover is') === 0);
       h += '<td style="' + (wpOver ? 'color:var(--danger-text);font-weight:700;' : '') + '">' + (r.availQty > 0 ? Math.round(wp*100) + '%' : '—') + '</td>';
-      h += '<td style="' + (lpOver ? 'color:var(--danger-text);font-weight:700;' : '') + '">' + (r.availQty > 0 ? Math.round(lp*100) + '%' : '—') + '</td>';
+      h += '<td class="' + (lpPattern ? 'val-pattern' : '') + '"'
+        + (lpPattern ? ' title="Expected for this site on a ' + esc((review.pattern && review.pattern.dayName) || '') + '" style="cursor:help;"' : ' style="' + (lpOver ? 'color:var(--danger-text);font-weight:700;' : '') + '"')
+        + '>' + (r.availQty > 0 ? Math.round(lp*100) + '%' : '—') + '</td>';
     }
     h += '<td><span class="pill ' + (ok ? 'pill-ok' : 'pill-warn') + '">' + (ok ? 'OK' : 'Off ' + Math.abs(bal)) + '</span></td>';
-    const anomTip = anom ? anomFlags.join(' | ') : '';
-    h += '<td>' + (r.isDraft ? '<span class="pill pill-warn">Draft</span>' : anom ? '<span class="pill pill-danger" title="' + esc(anomTip) + '" style="cursor:help;">⚠ ' + anomFlags.length + ' flag' + (anomFlags.length > 1 ? 's' : '') + '</span>' : edited ? '<span class="pill pill-info">Edited</span>' : '<span class="pill pill-ok">Clean</span>') + '</td>';
+    const anomTip = anomFlags.join(' | ');
+    const patTip = review.expected.join(' | ');
+    let statusPill;
+    if (r.isDraft) statusPill = '<span class="pill pill-warn">Draft</span>';
+    else if (anom) statusPill = '<span class="pill pill-danger" title="' + esc(anomTip + (patTip ? '  ||  Expected pattern: ' + patTip : '')) + '" style="cursor:help;">⚠ ' + anomFlags.length + ' flag' + (anomFlags.length > 1 ? 's' : '') + '</span>';
+    else if (patterned) statusPill = '<span class="pill pill-pattern" title="' + esc(patTip) + '" style="cursor:help;">&#10003; Expected</span>';
+    else if (edited) statusPill = '<span class="pill pill-info">Edited</span>';
+    else statusPill = '<span class="pill pill-ok">Clean</span>';
+    h += '<td>' + statusPill + '</td>';
     h += '<td title="' + esc(r.sigName) + '">' + esc(r.sigName) + '</td>';
     h += '<td><div style="display:flex;gap:3px;flex-wrap:wrap;">';
     if (!isAdmin) h += '<button class="btn-sm blue" title="' + (r.isDraft ? 'Finish draft' : 'Edit') + '" onclick="editRecord(\'' + r.uid + '\')"><i class="ti ti-pencil"></i></button>';
@@ -2115,14 +2561,39 @@ function renderTable(isAdmin) {
       h += '<button class="btn-sm red" title="Delete this unsaved draft" onclick="deleteRecord(\'' + r.uid + '\')"><i class="ti ti-trash"></i></button>';
     }
     h += '</div></td></tr>';
-    h += '<tr id="audit-' + r.uid + '" style="display:none;"><td colspan="' + colCount + '" style="background:#f8f8f8;padding:8px 12px;white-space:normal;">';
-    if (r.auditLog && r.auditLog.length) h += r.auditLog.slice().reverse().map(auditEntryHtml).join('');
-    else h += '<span style="font-size:12px;color:var(--text-soft);">No history recorded for this record.</span>';
-    h += '</td></tr>';
+    // Empty on purpose — showAudit() fills it the first time it's opened. Writing every record's
+    // history up front doubled this table's HTML for content nobody had asked to see.
+    h += '<tr id="audit-' + r.uid + '" style="display:none;"><td colspan="' + colCount + '" style="background:#f8f8f8;padding:8px 12px;white-space:normal;"></td></tr>';
   });
   h += '</tbody></table></div>';
-  if (isAdmin) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">⚠ Waste % = waste ÷ available (red &gt; 30%) · Left % = leftover ÷ available (red &gt; 40%). Flags also cover served &lt; 30% of available and balance mismatches. Hover a flag count for details. Click any column header to sort. The history button shows every change made to a record.</p>';
-  else h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Use the pencil to edit a record or finish a draft. Every edit must be re-signed and is recorded in its history. Click the clock button to see the version history. Unsaved drafts can be deleted; certified records can\'t.</p>';
+
+  if (isAdmin) {
+    const from = sorted.length ? adminPage * ADMIN_PAGE_SIZE + 1 : 0;
+    const to = Math.min(sorted.length, (adminPage + 1) * ADMIN_PAGE_SIZE);
+    h += '<div class="pager"><span class="pager-count">Showing <strong>' + from + '&ndash;' + to + '</strong> of ' + sorted.length + ' record' + (sorted.length === 1 ? '' : 's') + ' in this selection</span>';
+    if (pageCount > 1) {
+      const btn = (label, page, disabled, title) =>
+        '<button class="btn-sm"' + (disabled ? ' disabled' : ' onclick="setAdminPage(' + page + ')"') + (title ? ' title="' + title + '"' : '') + '>' + label + '</button>';
+      h += '<div class="pager-btns">'
+        + btn('&laquo;', 0, adminPage === 0, 'First page')
+        + btn('&lsaquo; Prev', adminPage - 1, adminPage === 0)
+        + '<span class="pager-page">Page ' + (adminPage + 1) + ' of ' + pageCount + '</span>'
+        + btn('Next &rsaquo;', adminPage + 1, adminPage >= pageCount - 1)
+        + btn('&raquo;', pageCount - 1, adminPage >= pageCount - 1, 'Last page')
+        + '</div>';
+    }
+    h += '</div>';
+  }
+
+  if (isAdmin) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">⚠ Waste % = waste ÷ available (red &gt; 30%) · Left % = leftover ÷ available (red &gt; 40%). Flags also cover served &lt; 30% of available and balance mismatches. A <span class="pill pill-pattern" style="font-size:9px;">&#10003; Expected</span> row is one where the leftover or served figure is over threshold but matches this site\'s own history for that weekday — hover it to see the history it was compared against. Hover a flag count for details. Click any column header to sort. The history button shows every change made to a record.</p>';
+  else {
+    h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Use the pencil to edit a record or finish a draft. Every edit must be re-signed and is recorded in its history. Click the clock button to see the version history. Unsaved drafts can be deleted; certified records can\'t.';
+    // Only the most recent records are loaded on sign-in; say so rather than letting an older record
+    // look as though it had vanished.
+    if (!siteHasFullHistory && sorted.length >= SITE_RECENT_LIMIT)
+      h += ' Showing your most recent <strong>' + SITE_RECENT_LIMIT + '</strong> records &mdash; use <strong>Load all my records</strong> above for everything.';
+    h += '</p>';
+  }
   ctr.innerHTML = h;
 }
 
@@ -2237,29 +2708,89 @@ function getSigDataURL() {
   return hasContent ? canvas.toDataURL('image/png') : null;
 }
 
-async function unlockRecord(uid) {
-  if (!confirm('Unlock this record for editing?')) return;
-  const idx = records.findIndex(r => r.uid === uid);
-  if (idx === -1) return;
-  records[idx].locked = false;
-  records[idx].unlockedAt = new Date().toISOString();
-  if (records[idx].auditLog) records[idx].auditLog.push({ at: records[idx].unlockedAt, by: 'Monitor', action: 'Unlocked by admin' });
-  saveLocal();
-  await saveToFirebase(records[idx]);
-  renderTable(true);
-  setSyncBanner('ok', 'Record unlocked ✓');
-  setTimeout(() => setSyncBanner('hide'), 2500);
-}
-
 function showAudit(uid) {
   const row = document.getElementById('audit-' + uid);
-  if (row) row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+  if (!row) return;
+  // Built on first open rather than with the table. Same content, same place — it just isn't written
+  // for 1,800 rows at once when a monitor is looking at one of them.
+  const cell = row.firstElementChild;
+  if (cell && !cell.dataset.filled) {
+    const r = records.find(x => x.uid === uid);
+    const log = (r && r.auditLog && r.auditLog.length) ? r.auditLog : null;
+    cell.innerHTML = log
+      ? log.slice().reverse().map(auditEntryHtml).join('')
+      : '<span style="font-size:12px;color:var(--text-soft);">No history recorded for this record.</span>';
+    cell.dataset.filled = '1';
+  }
+  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
 }
 
 // ═══════════════════════════
 //  TRACKER VIEW MANAGEMENT
 // ═══════════════════════════
 let trackerView = 'daily';
+// ═══════════════════════════════════════════════════════════
+//  GENERIC COLUMN SORTING
+//  The records table and the two tracker tables each already had their own sort, and keep it. The
+//  four smaller tables had none at all, so rather than a fourth and fifth copy of the same logic they
+//  share this: a table declares a key and how to read each column, and gets clickable headers from it.
+// ═══════════════════════════════════════════════════════════
+const TABLE_SORT = {};
+function tableSortState(key, defCol, defDir) {
+  if (!TABLE_SORT[key]) TABLE_SORT[key] = { col: defCol || '', dir: defDir || 'asc' };
+  return TABLE_SORT[key];
+}
+function setTableSort(key, col) {
+  const st = tableSortState(key, col);
+  if (st.col === col) st.dir = st.dir === 'asc' ? 'desc' : 'asc';
+  else { st.col = col; st.dir = 'asc'; }
+  const fn = TABLE_RERENDER[key];
+  if (fn) fn();
+}
+function tableArrow(key, col) {
+  const st = TABLE_SORT[key];
+  if (!st || st.col !== col) return '<span style="opacity:0.3;">&#8597;</span>';
+  return st.dir === 'asc' ? '&#9650;' : '&#9660;';
+}
+// A clickable header cell.
+function sortTh(key, col, label, style) {
+  return '<th class="sortable" style="' + (style || '') + '" onclick="setTableSort(\'' + key + '\',\'' + col + '\')">' + label + ' ' + tableArrow(key, col) + '</th>';
+}
+// Sorts rows by the table's current column. `cols` maps a column key to a reader function.
+function sortTableRows(key, rows, cols, defCol, defDir) {
+  const st = tableSortState(key, defCol, defDir);
+  const get = cols[st.col] || cols[defCol];
+  if (!get) return rows;
+  const dir = st.dir === 'asc' ? 1 : -1;
+  return rows.slice().sort((a, b) => {
+    let va = get(a), vb = get(b);
+    if (typeof va === 'string') va = va.toLowerCase();
+    if (typeof vb === 'string') vb = vb.toLowerCase();
+    if (va < vb) return -1 * dir;
+    if (va > vb) return 1 * dir;
+    return 0;
+  });
+}
+// Which function redraws each table after its header is clicked.
+const TABLE_RERENDER = {
+  sumSites: () => renderSummary(),
+  reimb:    () => renderReimbursement(),
+  remHist:  () => renderReminderHistory(),
+  siteInfo: () => loadAllSiteInfo()
+};
+
+// Sort order for the records table's Status column: on an ascending sort, whatever needs attention
+// comes first — drafts, then flagged records with the most flags leading, then expected-pattern,
+// then edited, then clean.
+function statusRank(r) {
+  if (r.isDraft) return 0;
+  const rev = reviewRecord(r);
+  if (rev.flags.length) return 1 - Math.min(rev.flags.length, 9) / 100;
+  if (rev.expected.length) return 2;
+  if ((r.editCount || 0) > 0) return 3;
+  return 4;
+}
+
 let trackerSort = { weekly: { col: 'site', dir: 'asc' }, monthly: { col: 'site', dir: 'asc' } };
 function setTrackerSort(view, col) {
   const s = trackerSort[view];
@@ -2316,14 +2847,100 @@ function setTrackerView(v) {
     const mo = document.getElementById('tracker-month');
     if (mo && !mo.value) mo.value = today().slice(0, 7);
   }
-  if (v === 'daily')   renderTracker();
-  if (v === 'weekly')  renderTrackerWeekly();
-  if (v === 'monthly') renderTrackerMonthly();
+  refreshTracker();
 }
 
-// Saturdays are N/A in every tracker view: never counted as expected or missing, never emailed about,
-// and shown as a yellow "–" unless the site happened to submit that day (then a green ✓).
-function isSaturday(iso) { return new Date(iso + 'T12:00:00').getDay() === 6; }
+// Re-draws whichever tracker view is showing.
+function redrawTracker() {
+  if (trackerView === 'daily') renderTracker();
+  else if (trackerView === 'weekly') renderTrackerWeekly();
+  else renderTrackerMonthly();
+}
+
+// The service-date span the tracker is currently showing.
+function trackerRange() {
+  const val = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  if (trackerView === 'weekly') {
+    const start = mondayOf(val('tracker-week-start') || today());
+    return { from: start, to: shiftDays(start, 5) };      // Mon–Sat
+  }
+  if (trackerView === 'monthly') return monthBounds(val('tracker-month') || today().slice(0, 7));
+  const d = val('tracker-date') || today();
+  return { from: d, to: d };
+}
+// Draws from what's already in memory, then pulls the span and draws again — so changing the date
+// never leaves a blank grid while the fetch is in flight.
+async function refreshTracker(force) {
+  redrawTracker();
+  const rg = trackerRange();
+  // No pattern verdicts here — the tracker only asks whether a record exists — so no lookback padding.
+  await ensureRange(rg.from, rg.to, { pad: false, force: !!force });
+  redrawTracker();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SERVICE DAYS, PER SITE
+//
+//  Which days a site is expected to submit used to be decided three different ways: the tracker
+//  treated Monday–Friday as expected and every Saturday as N/A, while the Site Summary Sheet counted
+//  Monday–SATURDAY as expected and listed every Saturday as a missing submission. The same month at
+//  the same site could show 21 expected days in one place and 25 in the other.
+//
+//  Both now read the site's own "Days Serving" field from its contact card. That field is free text
+//  typed by whoever filled in the import sheet, so the parser below is deliberately forgiving;
+//  anything it can't read falls back to Monday–Friday, which is what the tracker always assumed.
+//  Check what it made of each site under Update Sites: hover the Days serving column.
+// ═══════════════════════════════════════════════════════════
+const DOW_NUM = { sun:0, sunday:0, mon:1, monday:1, tue:2, tues:2, tuesday:2, wed:3, weds:3, wednesday:3,
+                  thu:4, thur:4, thurs:4, thursday:4, fri:5, friday:5, sat:6, saturday:6 };
+const DOW_LABEL = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DEFAULT_SERVICE_DAYS = [1, 2, 3, 4, 5];   // Mon–Fri, the long-standing assumption
+
+// "Monday- Friday", "Mon-Fri", "M-F", "Monday through Thursday, Saturday", "mon/wed/fri" → a Set of
+// weekday numbers (0 = Sunday). Returns null when nothing in the text looks like a day.
+function parseServiceDays(text) {
+  const raw = String(text || '').toLowerCase().trim();
+  if (!raw) return null;
+  // "m-f" and "m-th" are common shorthand and would otherwise not match a day name.
+  const expanded = raw
+    .replace(/\bm\s*[-–—]\s*f\b/g, 'monday-friday')
+    .replace(/\bm\s*[-–—]\s*th\b/g, 'monday-thursday')
+    .replace(/\bm\s*[-–—]\s*s(a|at)?\b/g, 'monday-saturday')
+    .replace(/\bthrough\b|\bthru\b|\bto\b/g, '-');
+  const days = new Set();
+  // Ranges first: anything of the form <day> - <day>, inclusive, wrapping forward through the week.
+  const rangeRe = /([a-z]+)\s*[-–—]\s*([a-z]+)/g;
+  let m, consumed = '';
+  while ((m = rangeRe.exec(expanded)) !== null) {
+    const a = DOW_NUM[m[1]], b = DOW_NUM[m[2]];
+    if (a === undefined || b === undefined) continue;
+    for (let i = 0, d = a; i < 7; i++, d = (d + 1) % 7) { days.add(d); if (d === b) break; }
+    consumed += ' ' + m[0];
+  }
+  // Then any single days named outside a range already handled.
+  const rest = consumed ? expanded.split(/\s+/).filter(w => consumed.indexOf(w) === -1).join(' ') : expanded;
+  (rest.match(/[a-z]+/g) || []).forEach(w => { if (DOW_NUM[w] !== undefined) days.add(DOW_NUM[w]); });
+  return days.size ? days : null;
+}
+
+// The weekday numbers a site is expected to serve on. Falls back to Mon–Fri.
+function siteServiceDays(siteId) {
+  const info = SITE_INFO[siteId] || {};
+  const parsed = parseServiceDays(info.daysServing);
+  return parsed || new Set(DEFAULT_SERVICE_DAYS);
+}
+function isServiceDay(siteId, iso) {
+  return siteServiceDays(siteId).has(new Date(iso + 'T12:00:00').getDay());
+}
+// "Mon, Tue, Wed, Thu, Fri" — for tooltips and the report's own header.
+function serviceDaysLabel(siteId) {
+  const s = siteServiceDays(siteId);
+  return [1,2,3,4,5,6,0].filter(d => s.has(d)).map(d => DOW_LABEL[d]).join(', ');
+}
+// True when the site's Days Serving text could not be read and the default is standing in.
+function serviceDaysAssumed(siteId) {
+  return !parseServiceDays((SITE_INFO[siteId] || {}).daysServing);
+}
 
 // ── Daily ─────────────────────────────────────────────────
 function renderTracker() {
@@ -2334,25 +2951,33 @@ function renderTracker() {
   const grid = document.getElementById('tracker-grid');
   const summary = document.getElementById('tracker-summary');
   if (grid) grid.style.display = 'grid';
-  const sat = isSaturday(date);
-  if (sat) {
-    summary.innerHTML = '<span class="day-cell-na">–</span>&nbsp; ' + fmtDate(date) + ' is a Saturday — marked <strong>N/A</strong>. ' + submitted.size + ' site(s) submitted anyway.';
-  } else {
-    const missing = allSites.filter(([k]) => !submitted.has(k));
-    summary.innerHTML = '<strong>' + submitted.size + '</strong> of <strong>' + allSites.length + '</strong> sites submitted for ' + fmtDate(date) + '. <span style="color:var(--danger-text);">' + missing.length + ' missing.</span>';
-  }
+  // Expected is per site now: a site that doesn't serve this weekday is N/A, not missing.
+  const expected = allSites.filter(([k]) => isServiceDay(k, date));
+  const doneCount = expected.filter(([k]) => submitted.has(k)).length;
+  const missingCount = expected.length - doneCount;
+  const offCount = allSites.length - expected.length;
+  summary.innerHTML = '<strong>' + doneCount + '</strong> of <strong>' + expected.length + '</strong> sites expected on ' + dowName(date) + ', ' + fmtDate(date)
+    + ' submitted. <span style="color:var(--danger-text);">' + missingCount + ' missing.</span>'
+    + (offCount ? ' &nbsp;<span class="day-cell-na">–</span> ' + offCount + ' not serving that day.' : '');
   grid.innerHTML = allSites.map(([k, v]) => {
     const done = submitted.has(k);
-    if (sat && !done) {
-      return '<div class="tracker-card na"><div class="tracker-card-name">' + esc(v.name) + '</div><div class="tracker-card-sub"><span class="day-cell-na">–</span> N/A (Saturday)</div></div>';
+    if (!isServiceDay(k, date) && !done) {
+      return '<div class="tracker-card na"><div class="tracker-card-name">' + esc(v.name) + '</div><div class="tracker-card-sub" title="' + esc('Serves ' + serviceDaysLabel(k)) + '"><span class="day-cell-na">–</span> N/A (not a service day)</div></div>';
     }
     const hasEmail = !!SITE_EMAILS[k];
     const selBox = (!done && hasEmail)
       ? '<label style="display:flex;align-items:center;gap:6px;margin-top:6px;font-size:11px;cursor:pointer;"><input type="checkbox" class="tracker-sel" data-site="' + k + '" data-dates=\'["' + date + '"]\' onchange="updateSelCount()" style="width:15px;height:15px;accent-color:var(--navy);"> Select to email</label>'
       : (!done && !hasEmail ? '<span style="font-size:10px;color:var(--text-soft);">No email on file</span>' : '');
+    // Already contacted for this date? Say so, so two monitors don't email the same site twice.
+    const mailed = done ? [] : remindersFor(k, date);
+    const mailedBadge = mailed.length
+      ? '<div style="margin-top:5px;"><span class="mail-badge" title="' + esc(mailedTip(mailed)) + '"><i class="ti ti-mail-check" style="font-size:11px;"></i> '
+        + (mailed.length > 1 ? mailed.length + '× emailed, last ' : 'emailed ') + esc(localDay(mailed[0].at)) + '</span></div>'
+      : '';
     return '<div class="tracker-card ' + (done ? 'submitted' : 'missing') + '" style="display:flex;flex-direction:column;justify-content:space-between;">'
       + '<div><div class="tracker-card-name">' + esc(v.name) + '</div>'
-      + '<div class="tracker-card-sub">' + (done ? '✓ Submitted' : '✗ Not submitted') + '</div></div>'
+      + '<div class="tracker-card-sub">' + (done ? '✓ Submitted' : '✗ Not submitted') + '</div>'
+      + mailedBadge + '</div>'
       + (selBox ? '<div style="margin-top:4px;">' + selBox + '</div>' : '')
       + '</div>';
   }).join('');
@@ -2375,7 +3000,6 @@ function renderTrackerWeekly() {
     const d = new Date(monday); d.setDate(d.getDate() + i);
     weekDays.push(ymd(d.getFullYear(), d.getMonth() + 1, d.getDate()));
   }
-  const expectedDays = weekDays.filter(d => !isSaturday(d));
   const allSites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR');
   const submittedByDate = {};
   weekDays.forEach(d => {
@@ -2384,27 +3008,50 @@ function renderTrackerWeekly() {
   const dayLabels = weekDays.map(fmtDayLabel);
 
   const rows = allSites.map(([k, v]) => {
-    const missingDays   = expectedDays.filter(d => !submittedByDate[d].has(k));
-    const submittedDays = expectedDays.filter(d => submittedByDate[d].has(k));
-    return { k, name: v.name, missingDays, submitted: submittedDays.length,
-             missing: missingDays.length, allOk: missingDays.length === 0, hasEmail: !!SITE_EMAILS[k] };
+    // Each site's own serving days, so a Mon–Thu site isn't chased for Friday and a Mon–Sat one is.
+    const siteDays      = weekDays.filter(d => isServiceDay(k, d));
+    const missingDays   = siteDays.filter(d => !submittedByDate[d].has(k));
+    const submittedDays = siteDays.filter(d => submittedByDate[d].has(k));
+    const row = { k, name: v.name, missingDays, submitted: submittedDays.length, expected: siteDays.length,
+             missing: missingDays.length, allOk: missingDays.length === 0, hasEmail: !!SITE_EMAILS[k],
+             contacted: missingDays.filter(d => remindersFor(k, d).length).length };
+    // One sortable value per day column: submitted, missing, or not a service day.
+    weekDays.forEach((d, i) => {
+      row['d' + i] = submittedByDate[d].has(k) ? 2 : (isServiceDay(k, d) ? 0 : 1);
+    });
+    return row;
   });
   trackerSortRows(rows, 'weekly');
   const totalMissing = rows.filter(r => !r.allOk).length;
 
   let h = '<div class="table-scroll"><table class="tracker-table t-weekly">'
     + '<thead><tr><th class="site-col sortable" onclick="setTrackerSort(\'weekly\',\'site\')">Site ' + trackerArrow('weekly','site') + '</th>';
-  dayLabels.forEach(d => { h += '<th>' + d + '</th>'; });
-  h += '<th class="sortable" onclick="setTrackerSort(\'weekly\',\'submitted\')">Status ' + trackerArrow('weekly','submitted') + '</th><th>Email</th></tr></thead><tbody>';
+  dayLabels.forEach((d, i) => {
+    h += '<th class="sortable" onclick="setTrackerSort(\'weekly\',\'d' + i + '\')" title="Sort by this day">' + d + ' ' + trackerArrow('weekly','d' + i) + '</th>';
+  });
+  h += '<th class="sortable" onclick="setTrackerSort(\'weekly\',\'submitted\')">Status ' + trackerArrow('weekly','submitted') + '</th>'
+    + '<th class="sortable" onclick="setTrackerSort(\'weekly\',\'contacted\')" title="Missing days a reminder has already gone out for">Contacted? ' + trackerArrow('weekly','contacted') + '</th>'
+    + '<th>Email</th></tr></thead><tbody>';
   rows.forEach(row => {
     h += '<tr>';
-    h += '<td class="site-col" title="' + esc(row.name) + '">' + esc(row.name) + '</td>';
+    h += '<td class="site-col" title="' + esc(row.name + ' — serves ' + serviceDaysLabel(row.k)) + '">' + esc(row.name) + '</td>';
     weekDays.forEach(d => {
       const ok = submittedByDate[d].has(row.k);
-      if (isSaturday(d) && !ok) h += '<td><span class="day-cell-na" title="Saturday — N/A">–</span></td>';
-      else h += '<td><span class="' + (ok ? 'day-cell-ok' : 'day-cell-miss') + '">' + (ok ? '✓' : '✗') + '</span></td>';
+      if (!isServiceDay(row.k, d) && !ok) { h += '<td><span class="day-cell-na" title="' + esc('Not a service day — this site serves ' + serviceDaysLabel(row.k)) + '">–</span></td>'; return; }
+      if (ok) { h += '<td><span class="day-cell-ok">✓</span></td>'; return; }
+      // Still missing, but a reminder has already gone out for this day.
+      const m = remindersFor(row.k, d);
+      h += m.length
+        ? '<td><span class="day-cell-mailed" title="' + esc('Still missing. ' + mailedTip(m)) + '">&#9993;</span></td>'
+        : '<td><span class="day-cell-miss">✗</span></td>';
     });
-    h += '<td><span class="pill ' + (row.allOk ? 'pill-ok' : 'pill-danger') + '">' + row.submitted + '/' + expectedDays.length + '</span></td>';
+    h += '<td><span class="pill ' + (row.allOk ? 'pill-ok' : 'pill-danger') + '">' + row.submitted + '/' + row.expected + '</span></td>';
+    // How many of this row's missing days have already been emailed about.
+    const contacted = row.missingDays.filter(d => remindersFor(row.k, d).length);
+    h += '<td>' + (row.allOk ? ''
+      : contacted.length
+        ? '<span class="mail-badge" title="' + esc('Emailed for ' + contacted.map(fmtDate).join(', ')) + '">' + contacted.length + '/' + row.missing + '</span>'
+        : '<span style="font-size:10px;color:var(--text-soft);">not yet</span>') + '</td>';
     if (!row.allOk && row.hasEmail) {
       h += '<td><input type="checkbox" class="tracker-sel" data-site="' + row.k + '" data-dates=\'' + JSON.stringify(row.missingDays) + '\' onchange="updateSelCount()" style="width:16px;height:16px;accent-color:var(--navy);cursor:pointer;" title="Select to email"></td>';
     } else if (!row.allOk) {
@@ -2416,7 +3063,7 @@ function renderTrackerWeekly() {
   });
   h += '</tbody></table></div>';
   trackerGrid.innerHTML = h;
-  trackerSum.innerHTML = 'Week of ' + dayLabels[0] + ' — <strong>' + totalMissing + '</strong> site(s) with missing submissions. Saturday is N/A (<span class="day-cell-na">–</span>).';
+  trackerSum.innerHTML = 'Week of ' + dayLabels[0] + ' — <strong>' + totalMissing + '</strong> site(s) with missing submissions. A <span class="day-cell-na">–</span> is a day that site doesn\'t serve, taken from its Days Serving field.';
   refreshSendRow();
 }
 
@@ -2430,26 +3077,26 @@ function renderTrackerMonthly() {
   trackerGrid.style.display = 'block';
   const [yr, mo] = month.split('-').map(Number);
   const daysInMonth = new Date(yr, mo, 0).getDate();
-  const weekdays = [];
-  let saturdays = 0;
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dow = new Date(yr, mo-1, d).getDay();
-    if (dow >= 1 && dow <= 5) weekdays.push(ymd(yr, mo, d));
-    else if (dow === 6) saturdays++;
-  }
+  // Every day of the month; which of them count is decided per site below.
+  const allDays = [];
+  for (let d = 1; d <= daysInMonth; d++) allDays.push(ymd(yr, mo, d));
   const allSites = Object.entries(SITES).filter(([k]) => k !== 'MONITOR');
   const submittedByDate = {};
-  weekdays.forEach(d => {
+  allDays.forEach(d => {
     submittedByDate[d] = new Set(records.filter(r => r.svcDate === d && !r.isDraft).map(r => r.site));
   });
 
   const rows = allSites.map(([k, v]) => {
-    const submitted = weekdays.filter(d => submittedByDate[d].has(k));
-    const missing   = weekdays.filter(d => !submittedByDate[d].has(k));
-    const rate = weekdays.length > 0 ? Math.round((submitted.length / weekdays.length) * 100) : 0;
-    return { k, name: v.name, expected: weekdays.length, submitted: submitted.length,
+    const siteDays  = allDays.filter(d => isServiceDay(k, d));
+    const submitted = siteDays.filter(d => submittedByDate[d].has(k));
+    const missing   = siteDays.filter(d => !submittedByDate[d].has(k));
+    const rate = siteDays.length > 0 ? Math.round((submitted.length / siteDays.length) * 100) : 0;
+    return { k, name: v.name, expected: siteDays.length, submitted: submitted.length,
              missing: missing.length, missingDays: missing, rate,
-             allOk: missing.length === 0, hasEmail: !!SITE_EMAILS[k] };
+             allOk: missing.length === 0, hasEmail: !!SITE_EMAILS[k], days: serviceDaysLabel(k),
+             // Sortable stand-ins for the two columns that aren't plain numbers.
+             firstMissing: missing.length ? missing[0] : '9999-99-99',
+             contacted: missing.filter(d => remindersFor(k, d).length).length };
   });
   trackerSortRows(rows, 'monthly');
   const totalMissing = rows.filter(r => !r.allOk).length;
@@ -2461,18 +3108,31 @@ function renderTrackerMonthly() {
     + '<th class="sortable" onclick="setTrackerSort(\'monthly\',\'submitted\')">Submitted ' + trackerArrow('monthly','submitted') + '</th>'
     + '<th class="sortable" onclick="setTrackerSort(\'monthly\',\'missing\')">Missing ' + trackerArrow('monthly','missing') + '</th>'
     + '<th class="sortable" onclick="setTrackerSort(\'monthly\',\'rate\')">Rate ' + trackerArrow('monthly','rate') + '</th>'
-    + '<th style="text-align:left;">Missing dates</th><th>Email</th>'
+    + '<th class="sortable" style="text-align:left;" onclick="setTrackerSort(\'monthly\',\'firstMissing\')" title="Sort by earliest missing date">Missing dates ' + trackerArrow('monthly','firstMissing') + '</th>'
+    + '<th class="sortable" onclick="setTrackerSort(\'monthly\',\'contacted\')" title="Missing days a reminder has already gone out for">Contacted? ' + trackerArrow('monthly','contacted') + '</th>'
+    + '<th>Email</th>'
     + '</tr></thead><tbody>';
   rows.forEach(row => {
-    const missingFmt = row.missingDays.map(fmtDate).join(', ');
+    // Dates already emailed about are marked with an envelope, so the column itself answers
+    // "who has been contacted and for which days".
+    const contacted = row.missingDays.filter(d => remindersFor(row.k, d).length);
+    const contactedSet = new Set(contacted);
+    const missingPlain = row.missingDays.map(fmtDate).join(', ');
+    const missingFmt = row.missingDays.map(d => contactedSet.has(d)
+      ? '<span class="day-cell-mailed" title="' + esc(mailedTip(remindersFor(row.k, d))) + '">' + fmtDate(d) + ' &#9993;</span>'
+      : fmtDate(d)).join(', ');
     const rateColor = row.rate === 100 ? 'var(--success-text)' : row.rate >= 80 ? 'var(--warning-text)' : 'var(--danger-text)';
     h += '<tr>';
-    h += '<td class="site-col" title="' + esc(row.name) + '">' + esc(row.name) + '</td>';
-    h += '<td>' + row.expected + '</td>';
+    h += '<td class="site-col" title="' + esc(row.name + ' — serves ' + row.days) + '">' + esc(row.name) + '</td>';
+    h += '<td title="' + esc('Serves ' + row.days) + '">' + row.expected + '</td>';
     h += '<td>' + row.submitted + '</td>';
     h += '<td style="color:' + (row.missing ? 'var(--danger-text)' : 'var(--success-text)') + ';">' + row.missing + '</td>';
     h += '<td style="font-weight:600;color:' + rateColor + ';">' + row.rate + '%</td>';
-    h += '<td class="dates-col" title="' + (row.missing ? row.missing + ' missing: ' + missingFmt : 'All submitted') + '">' + (row.missing ? missingFmt : '<span style="color:var(--success-text);">All submitted &#10003;</span>') + '</td>';
+    h += '<td class="dates-col" title="' + esc(row.missing ? row.missing + ' missing: ' + missingPlain : 'All submitted') + '">' + (row.missing ? missingFmt : '<span style="color:var(--success-text);">All submitted &#10003;</span>') + '</td>';
+    h += '<td>' + (row.allOk ? ''
+      : contacted.length
+        ? '<span class="mail-badge" title="' + esc('Emailed for ' + contacted.map(fmtDate).join(', ')) + '">' + contacted.length + '/' + row.missing + '</span>'
+        : '<span style="font-size:10px;color:var(--text-soft);">not yet</span>') + '</td>';
     if (!row.allOk && row.hasEmail) {
       h += '<td><input type="checkbox" class="tracker-sel" data-site="' + row.k + '" data-dates=\'' + JSON.stringify(row.missingDays) + '\' onchange="updateSelCount()" style="width:16px;height:16px;accent-color:var(--navy);cursor:pointer;" title="Select to email"></td>';
     } else if (!row.allOk) {
@@ -2485,7 +3145,12 @@ function renderTrackerMonthly() {
   h += '</tbody></table></div>';
   trackerGrid.innerHTML = h;
   const monthLabel = new Date(yr, mo-1, 1).toLocaleString('en-US',{month:'long',year:'numeric'});
-  trackerSum.innerHTML = monthLabel + ' — <strong>' + totalMissing + '</strong> site(s) with missing submissions out of ' + weekdays.length + ' expected service days (Mon–Fri). ' + saturdays + ' Saturday(s) marked N/A (<span class="day-cell-na">–</span>).';
+  // How many sites are running on a schedule other than the Mon–Fri default is worth seeing at a
+  // glance, since it decides who gets chased.
+  const assumed = rows.filter(r => serviceDaysAssumed(r.k)).length;
+  trackerSum.innerHTML = monthLabel + ' — <strong>' + totalMissing + '</strong> site(s) with missing submissions. '
+    + 'Expected days come from each site\'s own <strong>Days Serving</strong> field; hover a site to see its days.'
+    + (assumed ? ' <span style="color:var(--warning-text);">' + assumed + ' site(s) have no readable Days Serving and are assumed Mon–Fri.</span>' : '');
   refreshSendRow();
 }
 
@@ -2614,6 +3279,176 @@ async function logChange(entry) {
   return rec;
 }
 
+// ═══════════════════════════════════════════════════════════
+//  REMINDER HISTORY
+//  Reminders were already written to change_log; nothing ever read them back. This loads them so the
+//  tracker can show which sites have been contacted and for which service dates, and so two monitors
+//  don't email the same site twice.
+//  Entries written from this version carry `dates` and `recipients` as real arrays. Older ones only
+//  have the free-text `detail` ("2026-10-01, 2026-10-02 → a@x.org, b@x.org"), which is parsed below,
+//  so the history reaches back over everything already sent.
+// ═══════════════════════════════════════════════════════════
+let REMINDER_LOG = {};          // { siteId: [ { at, action, method, dates[], recipients[], by } ] }
+let _reminderLogLoaded = false;
+
+function parseLegacyDates(detail) {
+  const left = String(detail || '').split('→')[0] || '';
+  return left.split(',').map(s => s.trim()).filter(s => /^\d{4}-\d{2}-\d{2}$/.test(s));
+}
+function parseLegacyRecipients(detail) {
+  const parts = String(detail || '').split('→');
+  return parts.length < 2 ? [] : parts[1].split(',').map(s => s.trim()).filter(Boolean);
+}
+
+// How many recent sends are kept per site in the rollup. 89 sites × 12 entries stays comfortably
+// inside Firestore's 1 MB document ceiling. change_log keeps everything; this is just the index.
+const REMINDER_KEEP = 12;
+
+// Scanning change_log for this cost up to 2,000 document reads every time Site Tracker was opened.
+// Instead, the recent sends per site live in one rollup document — one read. change_log is still
+// written on every send and remains the durable audit trail; "Rebuild from full log" re-derives
+// this index from it.
+async function loadReminderLog(force) {
+  if (_reminderLogLoaded && !force) return REMINDER_LOG;
+  try {
+    const doc = await _db.collection('app_config').doc('reminderIndex').get();
+    const data = doc.exists ? (doc.data() || {}) : {};
+    if (data.sites && Object.keys(data.sites).length) {
+      const byS = {};
+      Object.entries(data.sites).forEach(([k, arr]) => {
+        if (!Array.isArray(arr)) return;
+        byS[k] = arr.map(e => ({
+          at: e.at || '', action: e.action || 'Reminder emailed',
+          method: e.method || 'postmark',
+          dates: Array.isArray(e.dates) ? e.dates : [],
+          recipients: Array.isArray(e.recipients) ? e.recipients : [],
+          by: e.by || 'Monitor'
+        })).sort((p, q) => String(q.at).localeCompare(String(p.at)));
+      });
+      REMINDER_LOG = byS;
+      _reminderLogLoaded = true;
+      return REMINDER_LOG;
+    }
+  } catch (e) { console.warn('reminder index load failed:', e); }
+  // No index yet — the first monitor to open the tracker after an update builds it from change_log,
+  // so the October history is picked up, and nobody pays that read again.
+  await rebuildReminderIndex();
+  return REMINDER_LOG;
+}
+
+// The expensive path, run deliberately rather than on every tab open. An equality filter on one
+// field with no orderBy needs no composite index, so the sorting is done here.
+async function rebuildReminderIndex(statusElId) {
+  const el = statusElId ? document.getElementById(statusElId) : null;
+  if (el) { el.style.display = 'block'; el.innerHTML = '<span class="spinner dark"></span> Reading the full change log…'; }
+  try {
+    const snap = await _db.collection('change_log').where('category', '==', 'reminder').limit(5000).get();
+    const byS = {};
+    snap.docs.forEach(d => {
+      const x = d.data();
+      if (!x.siteId || x.siteId === 'ALL') return;
+      (byS[x.siteId] = byS[x.siteId] || []).push({
+        at: x.at || '',
+        action: x.action || 'Reminder emailed',
+        method: x.method || (/draft/i.test(x.action || '') ? 'mailto' : 'postmark'),
+        dates: Array.isArray(x.dates) ? x.dates : parseLegacyDates(x.detail),
+        recipients: Array.isArray(x.recipients) ? x.recipients : parseLegacyRecipients(x.detail),
+        by: x.by || 'Monitor'
+      });
+    });
+    Object.keys(byS).forEach(k => {
+      byS[k].sort((p, q) => String(q.at).localeCompare(String(p.at)));
+      byS[k] = byS[k].slice(0, REMINDER_KEEP);
+    });
+    REMINDER_LOG = byS;
+    _reminderLogLoaded = true;
+    try { await _db.collection('app_config').doc('reminderIndex').set({ sites: byS, updatedAt: new Date().toISOString() }); }
+    catch (e) { console.warn('reminder index write failed:', e); }
+    if (el) el.innerHTML = '<span class="status-dot green"></span> Rebuilt from ' + snap.size + ' log entr' + (snap.size === 1 ? 'y' : 'ies') + '. Keeping the last ' + REMINDER_KEEP + ' per site.';
+  } catch (e) {
+    console.warn('reminder log rebuild failed:', e);
+    if (el) el.innerHTML = '<span class="status-dot red"></span> Could not read the change log: ' + esc(e.message || e);
+  }
+  return REMINDER_LOG;
+}
+
+// Records a send in three places: change_log (durable trail), the rollup index (what gets read back),
+// and memory (so the tracker updates without another round trip).
+async function noteReminderSent(siteId, siteName, dates, recipients, method) {
+  const action = method === 'mailto' ? 'Outlook draft opened' : 'Reminder emailed';
+  const entry = await logChange({
+    siteId, siteName, by: 'Monitor', category: 'reminder', action, method,
+    dates: dates.slice(), recipients: recipients.slice(),
+    detail: dates.join(', ') + ' → ' + recipients.join(', ')
+  });
+  const row = { at: entry.at, action, method, dates: dates.slice(), recipients: recipients.slice(), by: 'Monitor' };
+  const arr = [row].concat(REMINDER_LOG[siteId] || []).slice(0, REMINDER_KEEP);
+  REMINDER_LOG[siteId] = arr;
+  // merge:true on a nested map updates this site's key and leaves every other site's alone.
+  try { await _db.collection('app_config').doc('reminderIndex').set({ sites: { [siteId]: arr }, updatedAt: entry.at }, { merge: true }); }
+  catch (e) { console.warn('reminder index update failed:', e); }
+}
+
+// Every reminder that covered this service date for this site, newest first.
+function remindersFor(siteId, date) {
+  return (REMINDER_LOG[siteId] || []).filter(e => e.dates.indexOf(date) !== -1);
+}
+function mailedTip(entries) {
+  return entries.map(e => e.action + ' ' + fmtStamp(e.at) + ' to ' + (e.recipients.join(', ') || 'unknown')).join('  |  ');
+}
+// An ISO timestamp as a local MM/DD/YY, for the compact badges.
+function localDay(iso) {
+  const d = new Date(iso);
+  return isNaN(d) ? '' : fmtDate(ymd(d.getFullYear(), d.getMonth() + 1, d.getDate()));
+}
+
+function renderReminderHistory() {
+  const ctr = document.getElementById('rem-hist-content');
+  if (!ctr) return;
+  const siteSel = document.getElementById('rem-hist-site');
+  const limSel = document.getElementById('rem-hist-limit');
+  // Default to all sites when the select hasn't been populated yet, rather than filtering on an
+  // empty value and reporting that nothing has been sent.
+  const site = (siteSel && siteSel.value) || 'ALL';
+  const lim = limSel && limSel.value !== '' ? (parseInt(limSel.value) || 0) : 50;
+  let rows = [];
+  Object.entries(REMINDER_LOG).forEach(([k, arr]) => {
+    if (site !== 'ALL' && k !== site) return;
+    arr.forEach(e => rows.push({ siteId: k, name: (SITES[k] || {}).name || k, entry: e }));
+  });
+  const histCols = { at: r => r.entry.at, name: r => r.name, method: r => r.entry.method,
+                     dates: r => (r.entry.dates[0] || ''), recipients: r => r.entry.recipients.join(', ') };
+  // Newest first by default, which is why `at` descends unless the header says otherwise.
+  if (!TABLE_SORT.remHist) TABLE_SORT.remHist = { col: 'at', dir: 'desc' };
+  rows = sortTableRows('remHist', rows, histCols, 'at');
+  const total = rows.length;
+  if (lim > 0) rows = rows.slice(0, lim);
+  if (!rows.length) {
+    ctr.innerHTML = '<div class="empty"><i class="ti ti-mail-off"></i>No reminders have gone out' + (site !== 'ALL' ? ' to this site' : '') + ' yet.</div>';
+    return;
+  }
+  let h = '<div class="table-scroll"><table class="rem-log-table" style="min-width:840px;"><thead><tr>'
+    + sortTh('remHist', 'at', 'Sent', 'width:125px;')
+    + sortTh('remHist', 'name', 'Site', 'width:210px;')
+    + sortTh('remHist', 'method', 'How', 'width:75px;')
+    + sortTh('remHist', 'dates', 'Service dates covered')
+    + sortTh('remHist', 'recipients', 'To', 'width:220px;')
+    + '</tr></thead><tbody>';
+  rows.forEach(r => {
+    const e = r.entry;
+    const how = e.method === 'mailto'
+      ? '<span class="pill pill-warn" title="Opened as an Outlook draft — SESSION can\'t tell whether it was actually sent">Draft</span>'
+      : '<span class="pill pill-ok">Sent</span>';
+    h += '<tr><td style="white-space:nowrap;font-family:DM Mono,monospace;font-size:11px;">' + esc(fmtStamp(e.at)) + '</td>'
+      + '<td title="' + esc(r.name) + '">' + esc(r.name) + '</td>'
+      + '<td>' + how + '</td>'
+      + '<td>' + (e.dates.length ? esc(e.dates.map(fmtDate).join(', ')) : '<span style="color:var(--text-soft);">—</span>') + '</td>'
+      + '<td style="word-break:break-all;font-size:11px;">' + esc(e.recipients.join(', ') || '—') + '</td></tr>';
+  });
+  h += '</tbody></table></div><p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Showing ' + rows.length + ' of ' + total + ' reminder(s). This list keeps the last ' + REMINDER_KEEP + ' sends per site, shared across every monitor; the complete trail stays in the change_log collection in Firebase and <strong>Rebuild from full log</strong> re-derives this from it. A <strong>Draft</strong> row means an Outlook draft was opened on someone\'s machine — SESSION can\'t confirm it was sent.</p>';
+  ctr.innerHTML = h;
+}
+
 function refreshSendRow() {
   const row = document.getElementById('tracker-send-all-row');
   if (!row) return;
@@ -2640,11 +3475,15 @@ function toggleSelectAll(cb) {
 // sees the same text and it can be changed from Settings without touching this file.
 // Placeholders are replaced per site at send time; see TEMPLATE_VARS for the list.
 const DEFAULT_REMINDER_SUBJECT = 'CACFP Meal Count Reminder — {siteName}';
+// Kept as its own constant so the Settings card can offer to drop exactly this line into wording that
+// was saved before the attendance link existed.
+const ATTENDANCE_LINE = 'Your site\'s attendance sheet: {attendanceLink}';
 const DEFAULT_REMINDER_BODY =
   'Hello {contact},\n\n' +
   'Our records show the CACFP meal count submission is still missing for the following service date(s):\n\n' +
   '{dateList}\n\n' +
   'Please log in to SESSION and complete the meal count sheet(s) for {dates} at your earliest convenience so we can keep the monthly claim on track.\n\n' +
+  ATTENDANCE_LINE + '\n\n' +
   'If the site was closed on any of these dates, please reply to this email and let the Kids Cafe team know.\n\n' +
   'Thank you,\n' +
   'Kids Cafe Program\n' +
@@ -2657,7 +3496,8 @@ const TEMPLATE_VARS = [
   ['{dateList}', 'Missing dates as a bulleted list, one per line (MM/DD/YY)'],
   ['{count}',    'How many dates are missing'],
   ['{dept}',     'Department email from Settings'],
-  ['{link}',     'Web address of SESSION']
+  ['{link}',     'Web address of SESSION'],
+  ['{attendanceLink}', 'The site\'s Google attendance tab, from its contact card. Any line holding a placeholder that comes out empty is left out of the email entirely, so a site with no link on file simply doesn\'t get that line']
 ];
 
 function templateVars(siteId, dates) {
@@ -2672,11 +3512,21 @@ function templateVars(siteId, dates) {
     '{dateList}': dateList.map(d => '  • ' + fmtDate(d)).join('\n'),
     '{count}':    String(dateList.length),
     '{dept}':     getDeptEmail(),
+    '{attendanceLink}': info.attendanceLink || '',
     '{link}':     (location.origin && location.origin !== 'null') ? location.origin + location.pathname : 'https://damian-programs.github.io/session/'
   };
 }
+// Fills the placeholders. Any whole line holding a placeholder that came out empty is dropped first,
+// so a site with no attendance link on file doesn't receive a dangling "Your site's attendance
+// sheet:" with nothing after it. Everything else is substituted as before.
 function fillTemplate(tpl, vars) {
+  const blank = Object.entries(vars)
+    .filter(([, v]) => !String(v === null || v === undefined ? '' : v).trim())
+    .map(([k]) => k);
   let out = String(tpl || '');
+  if (blank.length) {
+    out = out.split('\n').filter(line => !blank.some(k => line.indexOf(k) !== -1)).join('\n');
+  }
   Object.entries(vars).forEach(([k, v]) => { out = out.split(k).join(v); });
   return out.replace(/\n{3,}/g, '\n\n').trim();
 }
@@ -2715,6 +3565,37 @@ function previewReminderTemplate() {
   out.innerHTML = '<div style="font-size:11px;color:var(--text-soft);margin-bottom:6px;">From: ' + esc(EMAIL_CFG.fromEmail || DEPT_EMAIL) + ' &nbsp;·&nbsp; To: ' + esc(to) + '</div>'
     + '<div style="font-weight:600;margin-bottom:8px;">' + esc(subj) + '</div>'
     + '<pre style="font-family:DM Sans,sans-serif;font-size:13px;white-space:pre-wrap;margin:0;line-height:1.5;">' + esc(body) + '</pre>';
+  renderAttendNotice();
+}
+
+// The wording saved in Firestore overrides the built-in default, so a site that upgraded to this
+// version keeps whatever text it already had — including no attendance link. This notice says so and
+// offers to put the line in; the monitor still presses Save, so nothing is rewritten behind their back.
+function renderAttendNotice() {
+  const el = document.getElementById('rt-attend-notice');
+  if (!el) return;
+  const ta = document.getElementById('rt-body');
+  const body = ta ? (ta.value || '') : '';
+  if (body.indexOf('{attendanceLink}') !== -1) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  el.style.display = 'flex';
+  el.className = 'alert alert-warning';
+  el.innerHTML = '<i class="ti ti-link"></i><span>This wording has no <code>{attendanceLink}</code> in it, so reminders won\'t carry each site\'s Google attendance sheet. '
+    + '<button class="btn-sm blue" style="margin:0 4px;" onclick="insertAttendanceLine()">Add the line</button> '
+    + 'It goes in above the sign-off, and is left out automatically for any site with no link on file. Press <strong>Save reminder text</strong> afterwards to apply it for every monitor.</span>';
+}
+
+// Drops the attendance line into the body textarea, just above the sign-off when there is one and at
+// the end otherwise. Deliberately does not save on its own.
+function insertAttendanceLine() {
+  const ta = document.getElementById('rt-body');
+  if (!ta) return;
+  let body = (ta.value || '').replace(/\r\n/g, '\n');
+  if (body.indexOf('{attendanceLink}') !== -1) return;
+  const idx = body.search(/\n(?:thank you|thanks|sincerely|regards|best)\b/i);
+  if (idx !== -1) body = body.slice(0, idx) + '\n\n' + ATTENDANCE_LINE + body.slice(idx);
+  else body = body.replace(/\s*$/, '') + '\n\n' + ATTENDANCE_LINE;
+  ta.value = body.replace(/\n{3,}/g, '\n\n');
+  previewReminderTemplate();
 }
 async function saveReminderTemplate() {
   const s = document.getElementById('rt-status');
@@ -2743,17 +3624,22 @@ async function resetReminderTemplate() {
 async function sendReminderEmail(siteId, dates) {
   const email = SITE_EMAILS[siteId];
   if (!email) return { ok: false, error: 'No email on file for this site.' };
-  const { subject, body } = reminderText(siteId, dates);
+  const dateArr = (Array.isArray(dates) ? dates : [dates]).filter(Boolean);
+  const { subject, body } = reminderText(siteId, dateArr);
+  const siteName = (SITES[siteId] || {}).name || siteId;
   if (emailReady()) {
     const info = SITE_INFO[siteId] || {};
     const to = [email, info.email2].filter(Boolean);
     const r = await sendEmail({ to, subject, text: body, tag: 'reminder' });
-    if (r.ok) logChange({ siteId, siteName: (SITES[siteId]||{}).name || siteId, by: 'Monitor', category: 'reminder', action: 'Reminder emailed', detail: (Array.isArray(dates)?dates:[dates]).join(', ') + ' → ' + to.join(', ') });
+    if (r.ok) await noteReminderSent(siteId, siteName, dateArr, to, 'postmark');
     return r;
   }
-  // Fallback: Outlook draft via mailto.
+  // Fallback: Outlook draft via mailto. Recorded as well, marked as a draft — without this the
+  // history would silently miss every reminder raised before Postmark was set up, or from a device
+  // that has no relay key.
   const mailto = 'mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
   window.open(mailto, '_blank');
+  await noteReminderSent(siteId, siteName, dateArr, [email], 'mailto');
   return { ok: true, fallback: true };
 }
 
@@ -2800,10 +3686,9 @@ async function sendSelectedReminders() {
     msg += '.';
     st.innerHTML = msg;
   }
-  // Re-render the current tracker view so any now-caught-up sites drop off immediately.
-  if (trackerView === 'daily') renderTracker();
-  else if (trackerView === 'weekly') renderTrackerWeekly();
-  else renderTrackerMonthly();
+  // Re-draw so any now-caught-up sites drop off and the new sends show as emailed straight away.
+  redrawTracker();
+  renderReminderHistory();
 }
 
 // ═══════════════════════════
@@ -2817,38 +3702,157 @@ function stat(label, value, sub) {
     + '</div>';
 }
 
+// Monday of the week containing `iso`. CACFP service weeks run Monday–Saturday.
+function mondayOf(iso) {
+  const d = new Date((iso || today()) + 'T12:00:00');
+  const dow = d.getDay();
+  d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
+  return ymd(d.getFullYear(), d.getMonth() + 1, d.getDate());
+}
+
+let summaryView = 'monthly';
+function setSummaryView(v) {
+  summaryView = v;
+  ['daily','weekly','monthly'].forEach(x => {
+    const c = document.getElementById('summary-ctrl-' + x);
+    if (c) c.style.display = x === v ? 'flex' : 'none';
+    const b = document.getElementById('sview-' + x);
+    if (b) { b.style.background = x === v ? 'var(--navy)' : ''; b.style.color = x === v ? 'white' : ''; b.style.borderColor = x === v ? 'var(--navy)' : ''; }
+  });
+  const d = document.getElementById('summary-date');  if (d && !d.value) d.value = today();
+  const w = document.getElementById('summary-week');  if (w && !w.value) w.value = mondayOf(today());
+  const m = document.getElementById('summary-month'); if (m && !m.value) m.value = today().slice(0,7);
+  markLookupStale();   // switching the period changes the selection; it doesn't read anything
+}
+
+// Which site Site Lookup is set to — 'ALL' or a single siteId.
+function lookupScope() {
+  const el = document.getElementById('summary-site');
+  return (el && el.value) || 'ALL';
+}
+function lookupScopeLabel() {
+  const s = lookupScope();
+  return s === 'ALL' ? 'all sites' : ((SITES[s] || {}).name || s);
+}
+function setLookupStatus(cls, html) {
+  const el = document.getElementById('lookup-status');
+  if (!el) return;
+  el.style.display = 'flex';
+  el.className = 'alert ' + cls;
+  el.innerHTML = html;
+}
+// Changing any criterion doesn't fetch anything — it just says the shown figures are for the old
+// selection. Reads happen when Load is pressed, and only then.
+function markLookupStale() {
+  if (!lookupLoaded) {
+    setLookupStatus('alert-info', '<i class="ti ti-info-circle"></i><span>Pick a period and a site, then press <strong>Load</strong>. Nothing is read from the database until you do, and choosing one site reads a small fraction of what all 89 do.</span>');
+    return;
+  }
+  setLookupStatus('alert-warning', '<i class="ti ti-alert-triangle"></i><span>Selection changed &mdash; the figures below are still the previous one. Press <strong>Load</strong> to pull it in.</span>');
+}
+
+// The ONLY thing that reads meal records for Site Lookup. Everything on the tab draws from what this
+// brings back; nothing on the tab fetches on its own.
+let lookupLoaded = false;
+async function runLookup(force) {
+  const rg = summaryRange();
+  const scope = lookupScope();
+  setLookupStatus('alert-info', '<span class="spinner dark"></span><span>&nbsp; Loading ' + esc(rg.label) + ' for ' + esc(lookupScopeLabel()) + '…</span>');
+  await ensureRange(rg.from, rg.to, { scope, force: !!force });
+  lookupLoaded = true;
+  adminPage = 0;   // a new selection starts at its first page
+  ['lookup-summary-card', 'lookup-records-card', 'lookup-reimb-card'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'block';
+  });
+  renderSummary(); renderTable(true); renderReimbursement();
+  setLookupStatus('alert-success', '<i class="ti ti-circle-check"></i><span>Showing <strong>' + esc(rg.label) + '</strong> for <strong>' + esc(lookupScopeLabel()) + '</strong>. Press <strong>Load</strong> again to re-read it.</span>');
+}
+
+// The inclusive date window the summary covers, for whichever view is showing.
+function summaryRange() {
+  const val = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  if (summaryView === 'daily') {
+    const d = val('summary-date') || today();
+    return { from: d, to: d, noun: 'date', label: dowName(d) + ', ' + fmtDate(d) };
+  }
+  if (summaryView === 'weekly') {
+    const start = mondayOf(val('summary-week') || today());
+    const e = new Date(start + 'T12:00:00'); e.setDate(e.getDate() + 5);   // Mon–Sat
+    const end = ymd(e.getFullYear(), e.getMonth() + 1, e.getDate());
+    return { from: start, to: end, noun: 'week', label: 'Week of ' + fmtDate(start) + ' – ' + fmtDate(end) + ' (Mon–Sat)' };
+  }
+  const m = val('summary-month') || today().slice(0,7);
+  const [y, mo] = m.split('-').map(Number);
+  return { from: ymd(y, mo, 1), to: ymd(y, mo, new Date(y, mo, 0).getDate()), noun: 'month',
+           label: new Date(y, mo-1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' }) };
+}
+
 function renderSummary() {
-  const monthEl = document.getElementById('summary-month');
   const siteEl = document.getElementById('summary-site');
   const ctr = document.getElementById('summary-content');
+  const rangeEl = document.getElementById('summary-range');
   if (!ctr) return;
-  const month = monthEl ? monthEl.value : today().slice(0,7);
+  const rg = summaryRange();
   const site = siteEl ? siteEl.value : 'ALL';
-  let recs = records.filter(r => !r.isDraft && r.svcDate && r.svcDate.slice(0,7) === month && r.site !== 'MONITOR');
+  const siteLabel = site === 'ALL' ? 'all sites' : ((SITES[site] || {}).name || site);
+  if (rangeEl) rangeEl.innerHTML = '<i class="ti ti-calendar"></i><span>' + esc(rg.label) + ' &nbsp;·&nbsp; ' + esc(siteLabel) + '</span>';
+  let recs = records.filter(r => !r.isDraft && r.svcDate && r.svcDate >= rg.from && r.svcDate <= rg.to && r.site !== 'MONITOR');
   if (site && site !== 'ALL') recs = recs.filter(r => r.site === site);
   if (!recs.length) {
-    ctr.innerHTML = '<div class="empty"><i class="ti ti-calendar-off"></i>No records for this month' + (site !== 'ALL' ? ' and site' : '') + '.</div>';
+    ctr.innerHTML = '<div class="empty"><i class="ti ti-calendar-off"></i>No records for this ' + rg.noun + (site !== 'ALL' ? ' and site' : '') + '.</div>';
     return;
   }
   const sum = (f) => recs.reduce((a, r) => a + (r[f] || 0), 0);
   const daysServed = new Set(recs.map(r => r.site + '|' + r.svcDate)).size;
+  const received = sum('recvQty');
   const first = sum('firstMeal'), second = sum('secondMeal');
   const adults = sum('adultProg') + sum('adultNonProg');
   const served = sum('totalServed'), avail = sum('availQty');
   const waste = sum('waste'), leftover = sum('leftover');
   const siteCount = new Set(recs.map(r => r.site)).size;
-  ctr.innerHTML =
+  let h =
     '<div class="calc-row" style="grid-template-columns:repeat(auto-fill,minmax(140px,1fr));">'
     + stat('Sites reporting', siteCount)
     + stat('Service days', daysServed)
+    + stat('Received', received, 'delivered')
+    + stat('Available', avail, 'received + carried over')
     + stat('First meals', first, 'reimbursable')
     + stat('Second meals', second)
     + stat('Adult meals', adults)
     + stat('Total served', served)
-    + stat('Total available', avail)
     + stat('Waste', waste, avail > 0 ? Math.round(waste/avail*100) + '% of available' : '')
     + stat('Leftover', leftover, avail > 0 ? Math.round(leftover/avail*100) + '% of available' : '')
     + '</div>';
+
+  // With a single site picked the tiles above already are the breakdown. Across all sites, the
+  // site-by-site table is what makes the period comparable.
+  if (site === 'ALL') {
+    const bySite = {};
+    recs.forEach(r => {
+      if (!bySite[r.site]) bySite[r.site] = { name: r.siteName || r.site, recv: 0, avail: 0, first: 0, second: 0, days: new Set() };
+      const b = bySite[r.site];
+      b.recv += (r.recvQty || 0); b.avail += (r.availQty || 0);
+      b.first += (r.firstMeal || 0); b.second += (r.secondMeal || 0);
+      b.days.add(r.svcDate);
+    });
+    const sumCols = { name: b => b.name, days: b => b.days.size, recv: b => b.recv,
+                      avail: b => b.avail, first: b => b.first, second: b => b.second };
+    h += '<div class="table-scroll" style="margin-top:1.1rem;"><table class="rec-table"><thead><tr>'
+      + sortTh('sumSites', 'name', 'Site')
+      + sortTh('sumSites', 'days', 'Days', 'width:70px;')
+      + sortTh('sumSites', 'recv', 'Received', 'width:95px;')
+      + sortTh('sumSites', 'avail', 'Available', 'width:95px;')
+      + sortTh('sumSites', 'first', '1st meals', 'width:100px;')
+      + sortTh('sumSites', 'second', '2nd meals', 'width:100px;')
+      + '</tr></thead><tbody>';
+    sortTableRows('sumSites', Object.values(bySite), sumCols, 'name').forEach(b => {
+      h += '<tr><td title="' + esc(b.name) + '">' + esc(b.name) + '</td><td>' + b.days.size + '</td><td>' + b.recv + '</td><td>' + b.avail + '</td><td>' + b.first + '</td><td>' + b.second + '</td></tr>';
+    });
+    h += '</tbody><tfoot><tr style="font-weight:700;border-top:2px solid var(--border);">'
+      + '<td>Total</td><td>' + daysServed + '</td><td>' + received + '</td><td>' + avail + '</td><td>' + first + '</td><td>' + second + '</td>'
+      + '</tr></tfoot></table></div>';
+  }
+  ctr.innerHTML = h;
 }
 
 // ═══════════════════════════
@@ -2882,8 +3886,6 @@ function monthNameUpper(month) {
 }
 
 function renderReimbursement() {
-  const monthEl = document.getElementById('reimb-month');
-  const siteEl = document.getElementById('reimb-site');
   const rateEl = document.getElementById('reimb-rate');
   const cilEl = document.getElementById('reimb-cil');
   const ctr = document.getElementById('reimb-content');
@@ -2892,8 +3894,11 @@ function renderReimbursement() {
   if (rateEl && rateEl.value === '') rateEl.value = rates.rate;
   if (cilEl && cilEl.value === '') cilEl.value = rates.cil;
   const rate = rateEl && rateEl.value !== '' ? parseFloat(rateEl.value) : rates.rate;
-  const month = monthEl ? monthEl.value : today().slice(0,7);
-  const site = siteEl ? siteEl.value : 'ALL';
+  // Follows the Site Lookup selection. A claim is monthly, so a daily or weekly selection shows the
+  // month it falls in — but only the days of it that have actually been loaded.
+  const rg = summaryRange();
+  const month = rg.from.slice(0, 7);
+  const site = lookupScope();
   let recs = records.filter(r => !r.isDraft && r.svcDate && r.svcDate.slice(0,7) === month && r.site !== 'MONITOR');
   if (site && site !== 'ALL') recs = recs.filter(r => r.site === site);
   if (!recs.length) {
@@ -2907,13 +3912,21 @@ function renderReimbursement() {
     bySite[r.site].served += (r.totalServed || 0);
     bySite[r.site].days.add(r.svcDate);
   });
-  const rows = Object.entries(bySite).map(([k, v]) => ({ site: k, name: v.name, first: v.first, served: v.served, days: v.days.size, amount: v.first * rate }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const reimbCols = { name: r => r.name, days: r => r.days, served: r => r.served, first: r => r.first,
+                      pctReimb: r => (r.served > 0 ? r.first / r.served : -1), amount: r => r.amount };
+  const rows = sortTableRows('reimb',
+    Object.entries(bySite).map(([k, v]) => ({ site: k, name: v.name, first: v.first, served: v.served, days: v.days.size, amount: v.first * rate })),
+    reimbCols, 'name');
   const totalFirst = rows.reduce((a, r) => a + r.first, 0);
   const totalServed = rows.reduce((a, r) => a + r.served, 0);
   const totalAmount = rows.reduce((a, r) => a + r.amount, 0);
   let h = '<div class="table-scroll"><table class="rec-table"><thead><tr>'
-    + '<th>Site</th><th style="width:90px;">Service days</th><th style="width:100px;">Total served</th><th style="width:100px;">First meals</th><th style="width:105px;">% reimbursed</th><th style="width:130px;">Est. reimbursement</th>'
+    + sortTh('reimb', 'name', 'Site')
+    + sortTh('reimb', 'days', 'Service days', 'width:95px;')
+    + sortTh('reimb', 'served', 'Total served', 'width:105px;')
+    + sortTh('reimb', 'first', 'First meals', 'width:105px;')
+    + sortTh('reimb', 'pctReimb', '% reimbursed', 'width:110px;')
+    + sortTh('reimb', 'amount', 'Est. reimbursement', 'width:135px;')
     + '</tr></thead><tbody>';
   rows.forEach(r => {
     const p = r.served > 0 ? r.first / r.served : 0;
@@ -2924,16 +3937,23 @@ function renderReimbursement() {
   h += '</tbody><tfoot><tr style="font-weight:700;border-top:2px solid var(--border);">'
     + '<td>Total</td><td></td><td>' + totalServed + '</td><td>' + totalFirst + '</td><td>' + pct(totalFirst, totalServed) + '</td><td style="color:var(--success-text);">' + money(totalAmount) + '</td>'
     + '</tr></tfoot></table></div>'
-    + '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Estimate = first meals &times; ' + money(rate) + '. <strong>% reimbursed</strong> = first meals &divide; total served (second and adult meals are the non-reimbursed remainder). Overall this month: <strong>' + pct(totalFirst, totalServed) + '</strong> of ' + totalServed + ' meals served are reimbursable. This is an estimate for planning only; the official claim uses the compliance department\'s workbook.</p>';
+    + '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Estimate = first meals &times; ' + money(rate) + '. <strong>% reimbursed</strong> = first meals &divide; total served (second and adult meals are the non-reimbursed remainder). Overall: <strong>' + pct(totalFirst, totalServed) + '</strong> of ' + totalServed + ' meals served are reimbursable. This is an estimate for planning only; the official claim uses the compliance department\'s workbook.'
+    + (summaryView !== 'monthly' ? ' <strong style="color:var(--warning-text);">Your selection above is a ' + (summaryView === 'daily' ? 'single day' : 'single week') + ', so only that part of ' + esc(monthNameUpper(month)) + ' has been loaded &mdash; switch to Monthly and press Load for the whole claim month.</strong>' : '')
+    + '</p>';
   ctr.innerHTML = h;
 }
 
 // ═══════════════════════════
 //  INITIAL ESTIMATED REIMBURSEMENT EXPORT
 // ═══════════════════════════
-function exportInitialReimbursement(month) {
+async function exportInitialReimbursement(month) {
   if (!month) { alert('Pick a month first.'); return; }
-  const RATE = 4.9;
+  // The rate lives in one place: the Supper rate box on the Reimbursement tracker, which defaults to
+  // DEFAULT_SUPPER_RATE. This export used to hardcode 4.90 while the tracker showed 4.76, so the same
+  // month could be worth two different amounts depending on which screen you looked at.
+  const RATE = getReimbRates().rate;
+  const mb = monthBounds(month);
+  await ensureRange(mb.from, mb.to, { pad: false });
   let recs = records.filter(r => !r.isDraft && r.svcDate && r.svcDate.slice(0,7) === month && r.site !== 'MONITOR');
   if (!recs.length) { alert('No records found for ' + month + '.'); return; }
   const bySite = {};
@@ -2948,6 +3968,7 @@ function exportInitialReimbursement(month) {
   });
   const aoa = [];
   aoa.push(['INITIAL ESTIMATED REIMBURSEMENT — ' + monthNameUpper(month)]);
+  aoa.push(['Supper rate used', RATE]);
   aoa.push([]);
   aoa.push(['Site', 'Received', 'Available', 'Attendance', '1st Meals', '2nd Meals', 'Real 2nds', 'Reimbursable', 'Est. Reimbursement']);
   let tR=0,tA=0,tAt=0,t1=0,t2=0,tReal=0,tReim=0,tAmt=0;
@@ -3038,10 +4059,15 @@ async function checkFirebaseStatus() {
   if (el) el.innerHTML = '<span class="spinner dark"></span> Checking…';
   try {
     const snap = await _db.collection('meal_records').limit(1).get();
-    const snap2 = await _db.collection('site_info').get();
+    // count() charges one read per 1,000 matched documents instead of one per document, so a status
+    // check no longer costs ~90 reads. Older SDK builds don't have it, hence the fallback.
+    const col = _db.collection('site_info');
+    let siteCount;
+    if (typeof col.count === 'function') { const agg = await col.count().get(); siteCount = agg.data().count; }
+    else { siteCount = (await col.get()).size; }
     hideOfflineBanner();
     if (el) el.innerHTML = '<span class="status-dot green"></span> Connected to Firebase (project <strong>meal-tracker-ba544</strong>). '
-      + snap2.size + ' site(s) on file; meal_records reachable.';
+      + siteCount + ' site(s) on file; meal_records reachable.';
   } catch (e) {
     if (el) el.innerHTML = '<span class="status-dot red"></span> Could not reach Firebase: ' + esc(e.message || e);
     showOfflineBanner("Disconnected from the internet — can't reach the database. Please reconnect.");
@@ -3093,7 +4119,10 @@ function q(v) {
   return '"' + s.replace(/"/g, '""') + '"';
 }
 
-function exportCSV(isAdmin) {
+async function exportCSV(isAdmin) {
+  // The only thing that deliberately wants the whole history. Not forced, so a second export in the
+  // same session costs nothing; the monitor pays the full read once, on purpose, by pressing this.
+  if (isAdmin) await ensureRange('2020-01-01', shiftDays(today(), 400), { pad: false });
   let recs = isAdmin ? records : records.filter(r => r.site === currentSite);
   if (!recs.length) { alert('No records to export.'); return; }
   const cols = [
@@ -3103,7 +4132,7 @@ function exportCSV(isAdmin) {
     ['prevLeftover','Prev leftover'],['availQty','Available'],
     ['firstMeal','First meals'],['secondMeal','Second meals'],['adultProg','Adult program'],['adultNonProg','Adult non-program'],
     ['totalServed','Total served'],['waste','Waste'],['incomplete','Incomplete'],['totalUnsrv','Total unservable'],['leftover','Leftover'],
-    ['sigName','Signed by'],['notes','Notes'],['isDraft','Draft'],['locked','Locked'],['editCount','Edit count'],['createdAt','Created at']
+    ['sigName','Signed by'],['notes','Notes'],['isDraft','Draft'],['editCount','Edit count'],['createdAt','Created at'],['certifiedAt','Certified at']
   ];
   let csv = cols.map(c => q(c[1])).join(',') + '\n';
   recs.sort((a,b) => (b.svcDate||'').localeCompare(a.svcDate||'')).forEach(r => {
@@ -3130,7 +4159,8 @@ function siteInfoSheetRows(siteId) {
     ['Program dates', (i.startDate || i.endDate) ? (i.startDate || '?') + ' to ' + (i.endDate || '?') : ''],
     ['Meal type', i.mealKind || ''], ['Meal service time', i.mealServiceTime || ''],
     ['Operating hours', i.operatingHours || ''], ['Operating hours (Sat)', i.operatingHoursSat || ''],
-    ['Days serving', i.daysServing || '']];
+    ['Days serving', i.daysServing || ''],
+    ['Google attendance link', i.attendanceLink || '']];
 }
 
 // ═══════════════════════════
@@ -3158,6 +4188,17 @@ function exportMealCountSheet(uid) {
   const avail  = r.availQty || 0;
   const balanceTotal = served + unsrv + leftover;
   const balanced = balanceTotal === avail;
+
+  // An uncertified draft has no signature and may have no counts at all. Producing an Attachment 18
+  // from one would look like a completed compliance record, so say what it is before going ahead.
+  if (r.isDraft && !confirm('This record is still a draft — it has not been certified or signed. A Meal Count Sheet built from it is not a completed compliance record.\n\nExport anyway?')) return;
+
+  // The Attachment 18 tally grid holds 150 numbers, matching the paper form. Above that the totals
+  // stay right but the grid cannot cross off every meal, so the sheet would contradict itself. Say so
+  // rather than hand over a sheet whose grid and totals disagree.
+  const TALLY_MAX = 150;
+  const tallyOverflow = first > TALLY_MAX;
+  if (tallyOverflow && !confirm('This record has ' + first + ' first meals. The Attachment 18 tally grid holds ' + TALLY_MAX + ' numbers, so it cannot cross off every meal — the grid stops at ' + TALLY_MAX + ' while the totals show the true count.\n\nExport anyway?')) return;
 
   const emptyRow = (len) => new Array(len || 20).fill('');
   // A tally cell: crossed off ("✓1") once its number is within the count served, plain number otherwise.
@@ -3258,7 +4299,11 @@ function exportMealCountSheet(uid) {
   aoa.push(row28);
 
   // Row 29 — footer (A29:T29)
-  const row29 = emptyRow(); row29[0] = 'Record ID: ' + r.uid + '  |  Generated from SESSION for GCFB'; aoa.push(row29);
+  const row29 = emptyRow();
+  row29[0] = 'Record ID: ' + r.uid + '  |  Generated from SESSION for GCFB'
+    + (r.isDraft ? '  |  DRAFT — not certified or signed.' : '')
+    + (tallyOverflow ? '  |  NOTE: ' + first + ' first meals exceed the ' + TALLY_MAX + '-number tally grid. The grid stops at ' + TALLY_MAX + '; the totals above are the authoritative counts.' : '');
+  aoa.push(row29);
 
   const ws = XLSX.utils.aoa_to_sheet(aoa);
   ws['!cols'] = new Array(20).fill({ wch: 5.83 });
@@ -3278,8 +4323,11 @@ function exportMealCountSheet(uid) {
 //  MONTHLY AUDIT REPORT (all sites or one site)
 //  NOTE: rebuilt export — verify against the committed original before live claim use.
 // ═══════════════════════════
-function exportMonthlyReport(month, site) {
+async function exportMonthlyReport(month, site) {
   if (!month) { alert('Pick a month first.'); return; }
+  const mb = monthBounds(month);
+  // No pattern verdicts in this report any more, so no weekday-history padding is needed.
+  await ensureRange(mb.from, mb.to, { scope: (site && site !== 'ALL') ? site : 'ALL', pad: false });
   let recs = records.filter(r => !r.isDraft && r.svcDate && r.svcDate.slice(0,7) === month && r.site !== 'MONITOR');
   if (site && site !== 'ALL') recs = recs.filter(r => r.site === site);
   if (!recs.length) { alert('No records for ' + month + (site && site !== 'ALL' ? ' at this site' : '') + '.'); return; }
@@ -3303,25 +4351,9 @@ function exportMonthlyReport(month, site) {
   ws1['!cols'] = [{wch:30}].concat(Array(11).fill({wch:12}));
   XLSX.utils.book_append_sheet(wb, ws1, 'Monthly Summary');
 
-  const s2 = [['REVIEW FLAGS — ' + monthNameUpper(month)], [], ['Site','Service date','Flag']];
-  recs.sort((a,b)=>(a.siteName||'').localeCompare(b.siteName||'') || (a.svcDate||'').localeCompare(b.svcDate||'')).forEach(r => {
-    const flags = isAnomaly(r);
-    if (flags) flags.forEach(f => s2.push([r.siteName || r.site, fmtDate(r.svcDate), f]));
-  });
-  if (s2.length === 3) s2.push(['—','—','No anomalies flagged this month']);
-  const ws2 = XLSX.utils.aoa_to_sheet(s2);
-  ws2['!cols'] = [{wch:30},{wch:14},{wch:70}];
-  XLSX.utils.book_append_sheet(wb, ws2, 'Review Flags');
-
-  const s3 = [['DAILY DETAIL — ' + monthNameUpper(month)], [],
-    ['Site','Service date','Receiver','Received','Available','1st','2nd','Adult prog','Adult non-prog','Served','Waste','Incomplete','Leftover','Signed by']];
-  recs.sort((a,b)=>(a.siteName||'').localeCompare(b.siteName||'') || (a.svcDate||'').localeCompare(b.svcDate||'')).forEach(r => {
-    s3.push([r.siteName||r.site, fmtDate(r.svcDate), r.receiver||'', r.recvQty||0, r.availQty||0, r.firstMeal||0, r.secondMeal||0,
-      r.adultProg||0, r.adultNonProg||0, r.totalServed||0, r.waste||0, r.incomplete||0, r.leftover||0, r.sigName||'']);
-  });
-  const ws3 = XLSX.utils.aoa_to_sheet(s3);
-  ws3['!cols'] = [{wch:28},{wch:12},{wch:20}].concat(Array(11).fill({wch:11}));
-  XLSX.utils.book_append_sheet(wb, ws3, 'Daily Detail');
+  // Review Flags moved to the Weekly Waste & Leftover Report, where over-ordering is already the
+  // subject. Daily Detail was dropped: the same rows come from All Records (CSV) when they're needed.
+  // This report is now the Sponsor Monthly Meal Count Summary and nothing else.
 
   const label = (site && site !== 'ALL') ? site : 'AllSites';
   XLSX.writeFile(wb, 'Monthly_Audit_' + label + '_' + month + '.xlsx');
@@ -3331,13 +4363,14 @@ function exportMonthlyReport(month, site) {
 //  SITE AUDIT REPORT (one site, date range)
 //  NOTE: rebuilt export — verify against the committed original before live claim use.
 // ═══════════════════════════
-function exportSiteAudit() {
+async function exportSiteAudit() {
   const site = document.getElementById('audit-site').value;
   const start = document.getElementById('audit-start').value;
   const end = document.getElementById('audit-end').value;
   const statusEl = document.getElementById('audit-export-status');
   if (!site) { alert('Select a site.'); return; }
   if (!start || !end) { alert('Pick a start and end date.'); return; }
+  await ensureRange(start, end, { scope: site, pad: false });   // may sit well outside what's loaded
   let recs = records.filter(r => !r.isDraft && r.site === site && r.svcDate >= start && r.svcDate <= end);
   if (!recs.length) { alert('No records for this site in that date range.'); return; }
   recs.sort((a,b)=>(a.svcDate||'').localeCompare(b.svcDate||''));
@@ -3410,13 +4443,15 @@ function fmtStamp(iso) {
 function fmtDayLabel(iso) {
   return new Date(iso + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short' }) + ' ' + fmtDate(iso);
 }
-function weekdaysInMonth(month) {
+// Every day of `month` that this site is expected to serve, from its own Days Serving field. This
+// replaced a fixed Mon–Sat list, which disagreed with the tracker's Mon–Fri about the same month.
+function serviceDaysInMonth(month, siteId) {
   const [y, m] = month.split('-').map(Number);
   const days = new Date(y, m, 0).getDate();
   const out = [];
   for (let d = 1; d <= days; d++) {
-    const dow = new Date(y, m - 1, d).getDay();
-    if (dow >= 1 && dow <= 6) out.push(ymd(y, m, d));
+    const iso = ymd(y, m, d);
+    if (isServiceDay(siteId, iso)) out.push(iso);
   }
   return out;
 }
@@ -3436,8 +4471,12 @@ function psmMonthsInRange(fromMonth, toMonth) {
 
 // ═══════════════════════════
 //  Site Summary Sheet Report
+//  One sheet, Daily Meal Details. The column list is a constant because the DAYS SERVED formula
+//  finds its column by name from it — change the columns here and the formula follows.
 // ═══════════════════════════
-function exportPerSiteMonthReport() {
+const PSM_COLUMNS = ['Service date', 'Weekday', 'Status', 'Received', 'Available', '1st', '2nd'];
+
+async function exportPerSiteMonthReport() {
   const site = document.getElementById('psm-site').value;
   const fromM = document.getElementById('psm-from').value;
   const toM = document.getElementById('psm-to').value;
@@ -3449,29 +4488,34 @@ function exportPerSiteMonthReport() {
   if (statusEl) { statusEl.style.display = 'block'; statusEl.innerHTML = '<span class="spinner dark"></span> Building report…'; }
 
   const months = psmMonthsInRange(fromM, toM);
+  await ensureRange(monthBounds(months[0]).from, monthBounds(months[months.length - 1]).to, { scope: site, pad: false });
   const recByDate = {};
   records.filter(r => !r.isDraft && r.site === site).forEach(r => { recByDate[r.svcDate] = r; });
 
   const wb = XLSX.utils.book_new();
 
   const daily = [['DAILY MEAL DETAILS — ' + siteName],
-    ['Range', months[0] + ' to ' + months[months.length - 1]], [],
-    ['Service date','Weekday','Status','Receiver','Received','Available','Attendance','1st','2nd','Adult prog','Adult non-prog','Served','Waste','Incomplete','Leftover','Signed by']];
+    ['Range', months[0] + ' to ' + months[months.length - 1]],
+    ['Days serving', serviceDaysLabel(site) + (serviceDaysAssumed(site) ? '  (not stated on the contact card — assumed)' : '')], [],
+    PSM_COLUMNS];
+  // Taken from the header block's own length rather than hardcoded, so adding a header row can't
+  // silently shift the DAYS SERVED formula's range off by one.
+  const psmFirstDataRow = daily.length + 1;
+  // Likewise the formula's column: '1st' is found by name, so reordering or dropping a column can't
+  // leave the COUNTIF pointing at the wrong one.
+  const psmFirstMealCol = String.fromCharCode(65 + PSM_COLUMNS.indexOf('1st'));
   let anySubmitted = false;
-  let t = {recv:0,avail:0,first:0,second:0,ap:0,anp:0,served:0,waste:0,inc:0,left:0};
+  let t = {recv:0,avail:0,first:0,second:0};
   months.forEach(m => {
-    weekdaysInMonth(m).forEach(dateStr => {
+    serviceDaysInMonth(m, site).forEach(dateStr => {
       const r = recByDate[dateStr];
       const wd = dowName(dateStr);
       if (r) {
         anySubmitted = true;
-        daily.push([fmtDate(dateStr), wd, 'Submitted', r.receiver||'', r.recvQty||0, r.availQty||0, r.totalServed||0, r.firstMeal||0, r.secondMeal||0,
-          r.adultProg||0, r.adultNonProg||0, r.totalServed||0, r.waste||0, r.incomplete||0, r.leftover||0, r.sigName||'']);
+        daily.push([fmtDate(dateStr), wd, 'Submitted', r.recvQty||0, r.availQty||0, r.firstMeal||0, r.secondMeal||0]);
         t.recv+=(r.recvQty||0); t.avail+=(r.availQty||0); t.first+=(r.firstMeal||0); t.second+=(r.secondMeal||0);
-        t.ap+=(r.adultProg||0); t.anp+=(r.adultNonProg||0); t.served+=(r.totalServed||0);
-        t.waste+=(r.waste||0); t.inc+=(r.incomplete||0); t.left+=(r.leftover||0);
       } else {
-        daily.push([fmtDate(dateStr), wd, 'No submission', '', '', '', '', '', '', '', '', '', '', '', '', '']);
+        daily.push([fmtDate(dateStr), wd, 'No submission', '', '', '', '']);
       }
     });
   });
@@ -3479,61 +4523,30 @@ function exportPerSiteMonthReport() {
     if (statusEl) { statusEl.innerHTML = '<span class="status-dot red"></span> No submitted records for this site in that range.'; }
     return;
   }
-  daily.push(['TOTAL (submitted days only)','','','',t.recv,t.avail,t.served,t.first,t.second,t.ap,t.anp,t.served,t.waste,t.inc,t.left,'']);
+  daily.push(['TOTAL (submitted days only)','','',t.recv,t.avail,t.first,t.second]);
   // DAYS SERVED — a live formula, not a baked number, so a reviewer can see how it's derived:
-  // every service day whose 1st-meal count is above zero. Column H is '1st'; data starts at
-  // row 5 and ends one row above TOTAL, so the range is computed and never hardcoded.
-  const psmFirstDataRow = 5;
-  const psmLastDataRow  = daily.length - 1;
+  // every service day whose 1st-meal count is above zero. The range runs from the first data row to
+  // the one above TOTAL, and the column is looked up by name; none of it is hardcoded.
+  const psmLastDataRow = daily.length - 1;
   daily.push(['DAYS SERVED (1st meal served):', 0]);
   const wsD = XLSX.utils.aoa_to_sheet(daily);
   wsD['B' + daily.length] = { t:'n',
-    f: 'COUNTIF(H' + psmFirstDataRow + ':H' + psmLastDataRow + ',">0")',
+    f: 'COUNTIF(' + psmFirstMealCol + psmFirstDataRow + ':' + psmFirstMealCol + psmLastDataRow + ',">0")',
     v: Object.values(recByDate).filter(r => (r.firstMeal||0) > 0).length };
-  wsD['!cols'] = [{wch:12},{wch:11},{wch:14},{wch:20}].concat(Array(12).fill({wch:11}));
+  wsD['!cols'] = [{wch:12},{wch:11},{wch:14},{wch:11},{wch:11},{wch:11},{wch:11}];
   XLSX.utils.book_append_sheet(wb, wsD, 'Daily Meal Details');
-
-  const byMonth = {};
-  months.forEach(m => { byMonth[m] = { days:0, first:0, second:0, served:0, avail:0, waste:0, left:0 }; });
-  Object.values(recByDate).forEach(r => {
-    const m = r.svcDate.slice(0,7);
-    if (!byMonth[m]) return;
-    const b = byMonth[m];
-    b.days++; b.first+=(r.firstMeal||0); b.second+=(r.secondMeal||0); b.served+=(r.totalServed||0);
-    b.avail+=(r.availQty||0); b.waste+=(r.waste||0); b.left+=(r.leftover||0);
-  });
-  // Attendance follows the compliance department's own convention (see Initial Estimated
-  // Reimbursement export): Attendance = total meals served, not a separately tracked headcount.
-  const avg = [['MONTHLY AVERAGES — ' + siteName], ['(averaged over submitted service days only)'], [],
-    ['Month','Days served','Avg 1st/day','Avg served/day','Avg available/day','Avg attendance/day','Avg waste/day','Avg leftover/day']];
-  const tot = [['MONTHLY TOTALS — ' + siteName], [],
-    ['Month','Days served','1st meals','2nd meals','Total served','Available','Attendance','Waste','Leftover']];
-  months.forEach(m => {
-    const b = byMonth[m]; const dv = b.days || 1;
-    avg.push([m, b.days, +(b.first/dv).toFixed(1), +(b.served/dv).toFixed(1), +(b.avail/dv).toFixed(1), +(b.served/dv).toFixed(1), +(b.waste/dv).toFixed(1), +(b.left/dv).toFixed(1)]);
-    tot.push([m, b.days, b.first, b.second, b.served, b.avail, b.served, b.waste, b.left]);
-  });
-  const wsA = XLSX.utils.aoa_to_sheet(avg); wsA['!cols'] = [{wch:10},{wch:12}].concat(Array(6).fill({wch:16}));
-  const wsT = XLSX.utils.aoa_to_sheet(tot); wsT['!cols'] = [{wch:10},{wch:12}].concat(Array(7).fill({wch:13}));
-  XLSX.utils.book_append_sheet(wb, wsA, 'Monthly Averages');
-  XLSX.utils.book_append_sheet(wb, wsT, 'Monthly Totals');
-
-  const info = siteInfoSheetRows(site).concat([[],
-    ['Report range', months[0] + ' to ' + months[months.length - 1]],
-    ['Weekdays in range (Mon–Sat)', months.reduce((a,m)=>a+weekdaysInMonth(m).length,0)],
-    ['Submitted service days', Object.keys(recByDate).length],
-    ['Generated', fmtStamp(new Date().toISOString())]]);
-  const wsI = XLSX.utils.aoa_to_sheet(info); wsI['!cols'] = [{wch:28},{wch:40}];
-  XLSX.utils.book_append_sheet(wb, wsI, 'Site Information');
 
   XLSX.writeFile(wb, 'PerSite_Monthly_Count_' + site + '_' + fromM + '_to_' + toM + '.xlsx');
   if (statusEl) { statusEl.innerHTML = '<span class="status-dot green"></span> Exported ' + esc(siteName) + ' for ' + months.length + ' month(s).'; }
 }
+// Monthly Averages, Monthly Totals and Site Information were removed from this report: it is now the
+// Daily Meal Details sheet and nothing else. The dropped Attendance and Served columns held the same
+// value, totalServed, printed twice under different headings.
 
 // ═══════════════════════════
 //  WEEKLY WASTE & LEFTOVER REPORT
 // ═══════════════════════════
-function exportWeeklyWasteReport() {
+async function exportWeeklyWasteReport() {
   const weekVal = document.getElementById('wwl-week').value;
   const siteFilter = document.getElementById('wwl-site').value;
   const statusEl = document.getElementById('wwl-status');
@@ -3542,9 +4555,14 @@ function exportWeeklyWasteReport() {
   const dow = d.getDay();
   d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1));
   const weekDays = [];
-  for (let i = 0; i < 6; i++) { const x = new Date(d); x.setDate(x.getDate() + i); weekDays.push(x.toISOString().slice(0,10)); }
+  // ymd() on the local date, not toISOString() — the latter gives the UTC day, which is the bug
+  // today() warns about and the only place left in the file that still did it.
+  for (let i = 0; i < 6; i++) { const x = new Date(d); x.setDate(x.getDate() + i); weekDays.push(ymd(x.getFullYear(), x.getMonth() + 1, x.getDate())); }
   const dayLabels = weekDays.map(fmtDayLabel);
 
+  // Padding is on here now: the Review Flags sheet below shows weekday-pattern verdicts, which need
+  // the preceding history loaded or a record would be judged on whatever happened to be in memory.
+  await ensureRange(weekDays[0], weekDays[weekDays.length - 1], { scope: (siteFilter && siteFilter !== 'ALL') ? siteFilter : 'ALL' });
   let recs = records.filter(r => !r.isDraft && weekDays.includes(r.svcDate) && r.site !== 'MONITOR');
   if (siteFilter && siteFilter !== 'ALL') recs = recs.filter(r => r.site === siteFilter);
   if (!recs.length) { alert('No records in that week' + (siteFilter !== 'ALL' ? ' for the selected site' : '') + '.'); return; }
@@ -3589,6 +4607,20 @@ function exportWeeklyWasteReport() {
   const wsL = XLSX.utils.aoa_to_sheet(lMat); wsL['!cols'] = [{wch:30}].concat(Array(7).fill({wch:12}));
   XLSX.utils.book_append_sheet(wb, wsL, 'Leftover by Day');
 
+  // Review Flags, moved here from the Monthly Audit Report. Both levels are listed, so a reviewer
+  // sees what was softened as well as what was flagged — an expected-pattern row is still a figure
+  // over threshold, just one the site's own weekday history explains.
+  const flags = [['REVIEW FLAGS — week of ' + dayLabels[0]], [], ['Site','Service date','Level','Finding']];
+  recs.slice().sort((a,b)=>(a.siteName||'').localeCompare(b.siteName||'') || (a.svcDate||'').localeCompare(b.svcDate||'')).forEach(r => {
+    const rev = reviewRecord(r);
+    rev.flags.forEach(f => flags.push([r.siteName || r.site, fmtDate(r.svcDate), 'Flag', f]));
+    rev.expected.forEach(f => flags.push([r.siteName || r.site, fmtDate(r.svcDate), 'Expected pattern', f]));
+  });
+  if (flags.length === 3) flags.push(['—','—','—','No anomalies flagged this week']);
+  const wsF = XLSX.utils.aoa_to_sheet(flags);
+  wsF['!cols'] = [{wch:30},{wch:14},{wch:17},{wch:70}];
+  XLSX.utils.book_append_sheet(wb, wsF, 'Review Flags');
+
   const label = (siteFilter && siteFilter !== 'ALL') ? siteFilter : 'AllSites';
   XLSX.writeFile(wb, 'Weekly_Waste_Leftover_' + label + '_' + weekDays[0] + '.xlsx');
   if (statusEl) statusEl.innerHTML = '<span class="status-dot green"></span> Exported week of ' + dayLabels[0] + ' (' + siteRows.length + ' site(s)).';
@@ -3602,7 +4634,8 @@ const SI_FIELDS = {
   'si-pin': 'pin', 'si-phone': 'phone', 'si-attendee1': 'attendee1', 'si-attendee2': 'attendee2', 'si-orders': 'orders',
   'si-admin-contact': 'adminContact', 'si-email': 'email', 'si-onsite': 'onsiteSupervisor', 'si-email2': 'email2',
   'si-start': 'startDate', 'si-end': 'endDate', 'si-meal-kind': 'mealKind', 'si-svc-time': 'mealServiceTime',
-  'si-hours': 'operatingHours', 'si-hours-sat': 'operatingHoursSat', 'si-days-serving': 'daysServing', 'si-notes': 'notes'
+  'si-hours': 'operatingHours', 'si-hours-sat': 'operatingHoursSat', 'si-days-serving': 'daysServing',
+  'si-attendance-link': 'attendanceLink', 'si-notes': 'notes'
 };
 
 function populateSiteInfoSelect() {
@@ -3669,6 +4702,7 @@ async function saveSiteInfo() {
   const rec = { siteId: site, active: true, updatedAt: new Date().toISOString() };
   Object.entries(SI_FIELDS).forEach(([id, key]) => { rec[key] = g(id); });
   rec.agencyName = rec.siteName;
+  rec.attendanceLink = normLink(rec.attendanceLink);
   let staff = g('si-staff').split('\n').map(s => s.trim()).filter(Boolean);
   if (!staff.length) staff = [rec.attendee1, rec.attendee2, rec.adminContact, rec.onsiteSupervisor].filter(Boolean);
   rec.staff = staff;
@@ -3695,25 +4729,56 @@ function clearSiteInfoForm() {
   const s = document.getElementById('si-status'); if (s) s.style.display = 'none';
 }
 
-async function loadAllSiteInfo() {
+// Every site was already read into SITE_INFO when the page loaded, so opening this tab renders from
+// that instead of reading all ~90 documents again. Refresh forces a real fetch.
+async function loadAllSiteInfo(force) {
   const ctr = document.getElementById('si-all-table');
   if (!ctr) return;
-  ctr.innerHTML = '<div style="font-size:13px;color:var(--text-soft);padding:8px;"><span class="spinner dark"></span> Loading…</div>';
-  let docs = [];
-  try {
-    const snap = await _db.collection('site_info').get();
-    docs = snap.docs.map(d => d.data()).filter(d => d.siteId && d.siteId !== 'MONITOR');
-    docs.forEach(absorbSiteDoc);
-  } catch (e) {
-    ctr.innerHTML = '<div class="empty"><i class="ti ti-wifi-off"></i>Could not load sites from Firebase.</div>'; return;
+  let docs = Object.values(SITE_INFO).filter(d => d && d.siteId && d.siteId !== 'MONITOR');
+  if (force || !docs.length) {
+    ctr.innerHTML = '<div style="font-size:13px;color:var(--text-soft);padding:8px;"><span class="spinner dark"></span> Loading…</div>';
+    try {
+      const snap = await _db.collection('site_info').get();
+      docs = snap.docs.map(d => d.data()).filter(d => d.siteId && d.siteId !== 'MONITOR');
+      docs.forEach(absorbSiteDoc);
+    } catch (e) {
+      ctr.innerHTML = '<div class="empty"><i class="ti ti-wifi-off"></i>Could not load sites from Firebase.</div>'; return;
+    }
   }
   if (!docs.length) { ctr.innerHTML = '<div class="empty"><i class="ti ti-building"></i>No sites on file yet.</div>'; return; }
   docs.sort((a,b) => (a.siteName||a.agencyName||a.siteId).localeCompare(b.siteName||b.agencyName||b.siteId));
-  let h = '<table class="rec-table auto" style="min-width:900px;"><thead><tr><th>Site</th><th>ID</th><th>PIN</th><th>Orders</th><th>Admin email</th><th>Type</th><th>Days serving</th><th></th></tr></thead><tbody>';
-  docs.forEach(d => {
+  const infoCols = {
+    name:    d => (d.siteName || d.agencyName || d.siteId || ''),
+    siteId:  d => d.siteId || '',
+    pin:     d => d.pin || '',
+    orders:  d => d.orders || '',
+    email:   d => d.email || '',
+    attend:  d => (d.attendanceLink ? 0 : 1),
+    kind:    d => d.mealKind || '',
+    days:    d => serviceDaysLabel(d.siteId)
+  };
+  let h = '<table class="rec-table auto" style="min-width:980px;"><thead><tr>'
+    + sortTh('siteInfo', 'name', 'Site')
+    + sortTh('siteInfo', 'siteId', 'ID')
+    + sortTh('siteInfo', 'pin', 'PIN')
+    + sortTh('siteInfo', 'orders', 'Orders')
+    + sortTh('siteInfo', 'email', 'Admin email')
+    + sortTh('siteInfo', 'attend', 'Attend.')
+    + sortTh('siteInfo', 'kind', 'Type')
+    + sortTh('siteInfo', 'days', 'Days serving')
+    + '<th></th></tr></thead><tbody>';
+  sortTableRows('siteInfo', docs, infoCols, 'name').forEach(d => {
     const nm = d.siteName || d.agencyName || d.siteId;
     h += '<tr><td title="' + esc(nm) + '" style="max-width:240px;">' + esc(nm) + '</td><td>' + esc(d.siteId) + '</td><td>' + esc(d.pin||'') + '</td><td>' + esc(d.orders||'—') + '</td><td title="' + esc(d.email||'') + '" style="max-width:220px;">' + esc(d.email||'—') + '</td>'
-      + '<td>' + esc((d.mealKind||'').replace(' Meals','') || '—') + '</td><td>' + esc(d.daysServing||'—') + '</td>'
+      + '<td>' + (d.attendanceLink ? '<a href="' + esc(d.attendanceLink) + '" target="_blank" rel="noopener noreferrer" title="' + esc(d.attendanceLink) + '" style="color:var(--navy);"><i class="ti ti-external-link"></i></a>' : '<span style="color:var(--text-soft);">—</span>') + '</td>'
+      + '<td>' + esc((d.mealKind||'').replace(' Meals','') || '—') + '</td>'
+      // Hover shows what the tracker and the Site Summary Sheet made of this text — worth checking,
+      // since it decides which days the site is chased for.
+      + '<td title="' + esc(serviceDaysAssumed(d.siteId)
+          ? 'Could not read this — assuming ' + serviceDaysLabel(d.siteId)
+          : 'Read as: ' + serviceDaysLabel(d.siteId)) + '"'
+      + (serviceDaysAssumed(d.siteId) ? ' style="color:var(--warning-text);"' : '') + '>'
+      + esc(d.daysServing||'—') + '</td>'
       + '<td><div style="display:flex;gap:3px;"><button class="btn-sm blue" title="Edit" onclick="editSiteInfoRow(\'' + esc(d.siteId) + '\')"><i class="ti ti-pencil"></i></button>'
       + '<button class="btn-sm red" title="Remove this site" onclick="deleteSite(\'' + esc(d.siteId) + '\')"><i class="ti ti-trash"></i></button></div></td></tr>';
   });
@@ -3731,8 +4796,8 @@ function editSiteInfoRow(siteId) {
 // Re-fills every monitor-side site dropdown from SITES, keeping each one's current choice when it still exists.
 // Used after a site is removed so it drops out of every list without a page reload.
 function refreshSiteSelects() {
-  [['summary-site', true], ['lookup-site-filter', true], ['reimb-site', true], ['export-site-report', true], ['wwl-site', true],
-   ['audit-site', false], ['psm-site', false], ['rt-preview-site', false]].forEach(([id, all]) => {
+  [['summary-site', true], ['export-site-report', true], ['wwl-site', true],
+   ['audit-site', false], ['psm-site', false], ['rt-preview-site', false], ['rem-hist-site', true]].forEach(([id, all]) => {
     const sel = document.getElementById(id);
     if (!sel) return;
     const cur = sel.value;
@@ -3795,7 +4860,8 @@ async function deleteSite(siteId) {
 //  Columns read: Training Attendee 1 | Training Attendee 2 | Orders | AGENCY NO | Organization Name |
 //  Address | City | ZIP | Administrator Contact | Email | On-Site Supervisor | Email2 | start date: |
 //  end date: | combination (hot/cold) or cold meals? | Site Operating Hours: |
-//  Site Operating Hours - Saturday: | Meal Service Time: | Days Serving
+//  Site Operating Hours - Saturday: | Meal Service Time: | Days Serving |
+//  Google Attendance Link (also: Attendance Link / Google Attendance / Attendance Tab / Attendance)
 //  (The Monday–Saturday delivery-quantity columns are ignored.)
 // ═══════════════════════════
 let _importRows = [];
@@ -3849,7 +4915,13 @@ function previewImport(evt) {
           operatingHours: str(pick(r, ['Site Operating Hours:','Site Operating Hours'])),
           operatingHoursSat: str(pick(r, ['Site Operating Hours - Saturday:','Site Operating Hours - Saturday'])),
           mealServiceTime: str(pick(r, ['Meal Service Time:','Meal Service Time'])),
-          daysServing: str(pick(r, ['Days Serving']))
+          daysServing: str(pick(r, ['Days Serving'])),
+          // Several plausible column headings are accepted, since normKey() strips spaces, case and
+          // punctuation — "Google Attendance Link:" and "google attendance link" both match.
+          attendanceLink: normLink(pick(r, [
+            'Google Attendance Link','Attendance Link','Google Attendance','Attendance Tab',
+            'Google Attendance Tab','Attendance Sheet','Attendance','Attendance URL'
+          ]))
         };
         rec.staff = [rec.attendee1, rec.attendee2, rec.adminContact, rec.onsiteSupervisor].filter(Boolean);
         return rec;
@@ -3867,9 +4939,10 @@ function previewImport(evt) {
     }
     const newCount = _importRows.filter(r => !SITES[r.siteId]).length;
     let h = '<div style="font-size:13px;color:var(--text-mid);margin-bottom:6px;">Found <strong>' + _importRows.length + '</strong> site(s) — ' + newCount + ' new, ' + (_importRows.length - newCount) + ' existing (will be updated; PINs and notes kept).</div>';
-    h += '<div class="table-scroll"><table class="rec-table auto" style="min-width:900px;"><thead><tr><th>ID</th><th>Organization</th><th>Orders</th><th>Email</th><th>Type</th><th>Days serving</th><th>Dates</th><th>Staff</th></tr></thead><tbody>';
+    h += '<div class="table-scroll"><table class="rec-table auto" style="min-width:960px;"><thead><tr><th>ID</th><th>Organization</th><th>Orders</th><th>Email</th><th>Attend. link</th><th>Type</th><th>Days serving</th><th>Dates</th><th>Staff</th></tr></thead><tbody>';
     _importRows.slice(0, 150).forEach(r => {
       h += '<tr><td>' + esc(r.siteId) + '</td><td title="' + esc(r.siteName) + '" style="max-width:220px;">' + esc(r.siteName) + '</td><td>' + esc(r.orders||'—') + '</td><td title="' + esc(r.email) + '" style="max-width:180px;">' + esc(r.email||'—') + '</td>'
+        + '<td title="' + esc(r.attendanceLink || '') + '">' + (r.attendanceLink ? '<span style="color:var(--success-text);font-weight:700;">&#10003;</span>' : '<span style="color:var(--text-soft);">—</span>') + '</td>'
         + '<td>' + esc((r.mealKind||'').replace(' Meals','')) + '</td><td>' + esc(r.daysServing||'—') + '</td><td>' + esc(r.startDate) + ' → ' + esc(r.endDate) + '</td><td>' + r.staff.length + '</td></tr>';
     });
     h += '</tbody></table></div>';
@@ -3891,6 +4964,8 @@ async function runImport() {
       pin: existing.pin || (SITES[r.siteId] && SITES[r.siteId].pin) || r.siteId,
       notes: existing.notes || '',
       phone: existing.phone || '',
+      // A link already entered by hand survives a re-import of a file that has no such column.
+      attendanceLink: r.attendanceLink || existing.attendanceLink || '',
       active: true, updatedAt: new Date().toISOString()
     };
     try {
@@ -3919,7 +4994,8 @@ const REMOVABLE_SITE_FIELDS = {
   onsiteSupervisor: 'On-Site Supervisor', email2: 'Email2 (supervisor)',
   startDate: 'Start date', endDate: 'End date', mealKind: 'Meal type (hot/cold/combination)',
   operatingHours: 'Site Operating Hours', operatingHoursSat: 'Site Operating Hours \u2014 Saturday',
-  mealServiceTime: 'Meal Service Time', daysServing: 'Days Serving'
+  mealServiceTime: 'Meal Service Time', daysServing: 'Days Serving',
+  attendanceLink: 'Google attendance link'
 };
 
 function populateRemoveFieldSelect() {
