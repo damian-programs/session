@@ -1164,7 +1164,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.11.13.4</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.11.13.5</div>
 
 <script>
 // ═══════════════════════════
@@ -3536,7 +3536,7 @@ const TEMPLATE_VARS = [
   ['{count}',    'How many dates are missing'],
   ['{dept}',     'Department email from Settings'],
   ['{link}',     'Web address of SESSION'],
-  ['{attendanceLink}', 'The site\'s Google attendance tab, from its contact card. Any line holding a placeholder that comes out empty is left out of the email entirely, so a site with no link on file simply doesn\'t get that line']
+  ['{attendanceLink}', 'The site\'s Google attendance tab, from its contact card. A site with no link on file gets the line with nothing where the link would be, so word it to read sensibly either way']
 ];
 
 function templateVars(siteId, dates) {
@@ -3558,26 +3558,40 @@ function templateVars(siteId, dates) {
 // Fills the placeholders. Any whole line holding a placeholder that came out empty is dropped first,
 // so a site with no attendance link on file doesn't receive a dangling "Your site's attendance
 // sheet:" with nothing after it. Everything else is substituted as before.
-// fillTemplateParts does the work and also reports which lines it threw away and why, so the
-// Settings preview can show a monitor that their own wording was dropped for this site rather than
-// appearing to ignore the edit. fillTemplate is the thin wrapper the send path uses; its output is
-// unchanged, so what lands in an email is exactly what it was before.
+// An empty placeholder no longer takes its line with it. Earlier versions dropped the whole line to
+// avoid a dangling "Your site's attendance sheet:" with nothing after it, but that threw away any
+// real wording sharing the line, which is not a trade worth making — the wording matters more than
+// the tidiness. A placeholder with nothing behind it simply comes out blank now.
+//
+// The one exception is a line whose only content is empty placeholders. There is no wording to keep
+// there, so it would leave a stray blank line and is left out.
+//
+// fillTemplateParts also reports which placeholders came out empty, so the Settings preview can say
+// so without changing a word of the message. fillTemplate is the wrapper the send path uses.
 function fillTemplateParts(tpl, vars) {
   const blank = Object.entries(vars)
     .filter(([, v]) => !String(v === null || v === undefined ? '' : v).trim())
     .map(([k]) => k);
-  const sub = line => {
-    let s = line;
+  const sub = s => {
     Object.entries(vars).forEach(([k, v]) => { s = s.split(k).join(v); });
     return s;
   };
-  const kept = [], dropped = [];
+  const used = new Set();
+  const out = [];
   String(tpl || '').split('\n').forEach(line => {
     const hit = blank.filter(k => line.indexOf(k) !== -1);
-    if (hit.length) dropped.push({ line: line, keys: hit });
-    else kept.push(line);
+    if (!hit.length) { out.push(sub(line)); return; }
+    hit.forEach(k => used.add(k));
+    // Is there anything on this line besides the empty placeholders?
+    let bare = line;
+    hit.forEach(k => { bare = bare.split(k).join(''); });
+    if (!bare.trim()) return;                       // nothing to keep — leave the line out
+    // Keep the line, with the placeholder blank. Tidy only the gap the removal left behind: collapse
+    // runs of spaces and drop trailing space. Lines without an empty placeholder are never touched,
+    // so the two-space indent on {dateList} bullets survives.
+    out.push(sub(line).replace(/[ \t]{2,}/g, ' ').replace(/[ \t]+$/, ''));
   });
-  return { text: sub(kept.join('\n')).replace(/\n{3,}/g, '\n\n').trim(), dropped: dropped };
+  return { text: out.join('\n').replace(/\n{3,}/g, '\n\n').trim(), blanks: [...used] };
 }
 function fillTemplate(tpl, vars) {
   return fillTemplateParts(tpl, vars).text;
@@ -3621,20 +3635,15 @@ function previewReminderTemplate() {
   const info = SITE_INFO[siteId] || {};
   const to = [SITE_EMAILS[siteId], info.email2].filter(Boolean).join(', ') || '(no email on file)';
 
-  // Any line holding a placeholder that is empty for this site is left out of the real email. It is
-  // shown here struck through instead of vanishing, because a monitor who had just reworded that
-  // line would otherwise think their edit hadn't taken.
+  // Nothing is removed from the message any more, so this is a plain heads-up: these placeholders
+  // are empty on this site's contact card, so they come out blank above. The wording stays.
   let dropNote = '';
-  const realDrops = parts.dropped.filter(d => d.line.trim());
-  if (realDrops.length) {
-    const keys = [...new Set(realDrops.flatMap(d => d.keys))];
-    dropNote = '<div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border);">'
-      + '<div style="font-size:11px;color:var(--text-soft);margin-bottom:5px;">Left out for this site &mdash; '
-      + keys.map(k => '<code style="font-family:DM Mono,monospace;">' + esc(k) + '</code>').join(', ')
-      + ' ' + (keys.length === 1 ? 'is' : 'are') + ' empty on its contact card:</div>'
-      + realDrops.map(d => '<div style="font-size:12px;color:var(--text-soft);text-decoration:line-through;font-family:DM Sans,sans-serif;">' + esc(d.line.trim()) + '</div>').join('')
-      + '<div style="font-size:11px;color:var(--text-soft);margin-top:5px;">Your wording is saved and will go out in full to any site that does have '
-      + (keys.length === 1 ? 'that' : 'those') + ' on file. Pick another site above to see it.</div>'
+  if (parts.blanks.length) {
+    dropNote = '<div style="margin-top:12px;padding-top:10px;border-top:1px dashed var(--border);font-size:11px;color:var(--text-soft);">'
+      + parts.blanks.map(k => '<code style="font-family:DM Mono,monospace;">' + esc(k) + '</code>').join(', ')
+      + ' ' + (parts.blanks.length === 1 ? 'is' : 'are') + ' empty on this site&#39;s contact card, so '
+      + (parts.blanks.length === 1 ? 'it appears' : 'they appear') + ' blank above. Fill '
+      + (parts.blanks.length === 1 ? 'it' : 'them') + ' in under <strong>Update Sites</strong>, or pick another site to preview.'
       + '</div>';
   }
 
@@ -3681,7 +3690,7 @@ function renderAttendNotice() {
   el.className = 'alert alert-warning';
   el.innerHTML = '<i class="ti ti-link"></i><span>This wording has no <code>{attendanceLink}</code> in it, so reminders won\'t carry each site\'s Google attendance sheet. '
     + '<button class="btn-sm blue" style="margin:0 4px;" onclick="insertAttendanceLine()">Add the line</button> '
-    + 'It goes in above the sign-off, and is left out automatically for any site with no link on file. Press <strong>Save reminder text</strong> afterwards to apply it for every monitor.</span>';
+    + 'It goes in above the sign-off. A site with no link on file gets the line with nothing after the colon, so fill in the missing links under Update Sites. Press <strong>Save reminder text</strong> afterwards to apply it for every monitor.</span>';
 }
 
 // Drops the attendance line into the body textarea, just above the sign-off when there is one and at
