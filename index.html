@@ -1119,8 +1119,12 @@ background-image:
         </div>
         <div id="rt-status" style="font-size:13px;margin-bottom:1rem;display:none;"></div>
         <div class="divider"></div>
+        <!-- Says in so many words whether the preview below is the wording that will actually go
+             out. The preview reads this editor, the email reads what is saved, so without this a
+             typed-but-unsaved change looks live. -->
+        <div id="rt-unsaved" style="display:none;margin-bottom:0.9rem;"></div>
         <div class="filter-row" style="margin-bottom:0.75rem;">
-          <div class="fg"><label for="rt-preview-site">PREVIEW</label>
+          <div class="fg"><label for="rt-preview-site">Preview as it would go to</label>
             <select id="rt-preview-site" onchange="previewReminderTemplate()" style="width:280px;"><option value="">Select site&hellip;</option></select>
           </div>
         </div>
@@ -1160,7 +1164,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.11.13.3</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.11.13.4</div>
 
 <script>
 // ═══════════════════════════
@@ -3639,6 +3643,29 @@ function previewReminderTemplate() {
     + '<pre style="font-family:DM Sans,sans-serif;font-size:13px;white-space:pre-wrap;margin:0;line-height:1.5;">' + esc(parts.text) + '</pre>'
     + dropNote;
   renderAttendNotice();
+  renderUnsavedNotice();
+}
+
+// The preview is built from the editor; the email is built from what is saved in Firestore. When
+// those differ, reminders are still going out with the old wording, so say so plainly rather than
+// leaving a preview that looks live. This covers both forgetting to press Save and a Save that was
+// refused by the check below it.
+function renderUnsavedNotice() {
+  const el = document.getElementById('rt-unsaved');
+  if (!el) return;
+  const subjEl = document.getElementById('rt-subject'), bodyEl = document.getElementById('rt-body');
+  if (!subjEl || !bodyEl) return;
+  const savedSubj = EMAIL_CFG.reminderSubject || DEFAULT_REMINDER_SUBJECT;
+  const savedBody = EMAIL_CFG.reminderBody || DEFAULT_REMINDER_BODY;
+  const norm = s => String(s || '').replace(/\r\n/g, '\n').trim();
+  const changed = norm(subjEl.value) !== norm(savedSubj) || norm(bodyEl.value) !== norm(savedBody);
+  if (!changed) { el.style.display = 'none'; el.innerHTML = ''; return; }
+  const usingDefault = !EMAIL_CFG.reminderBody;
+  el.style.display = 'flex';
+  el.className = 'alert alert-warning';
+  el.innerHTML = '<i class="ti ti-alert-triangle"></i><span><strong>Not saved yet.</strong> The preview below shows what is in the boxes above. '
+    + 'Reminders are still going out with the ' + (usingDefault ? 'original built-in wording' : 'previously saved wording')
+    + ' until you press <strong>Save reminder text</strong>.</span>';
 }
 
 // The wording saved in Firestore overrides the built-in default, so a site that upgraded to this
@@ -3674,9 +3701,21 @@ async function saveReminderTemplate() {
   const s = document.getElementById('rt-status');
   const subject = (document.getElementById('rt-subject').value || '').trim();
   const body = (document.getElementById('rt-body').value || '').replace(/\r\n/g, '\n').trim();
-  const say = (ok, msg) => { if (s) { s.style.display = 'block'; s.style.color = ok ? 'var(--success-text)' : 'var(--danger-text)'; s.innerHTML = '<span class="status-dot ' + (ok ? 'green' : 'red') + '"></span> ' + msg; } };
-  if (!subject || !body) { say(false, 'Subject and body can\'t be empty. Use Reset to default if you want the original text back.'); return; }
-  if (!/\{dates\}|\{dateList\}/.test(body)) { say(false, 'The body needs {dates} or {dateList} somewhere, or the site won\'t know which days are missing.'); return; }
+  // A refused save used to show one line of red text under the button, which is easy to miss when
+  // the editor above it is 260px tall — and the preview kept showing the typed wording, so it looked
+  // as though the change had taken. A failure now scrolls itself into view and leaves the
+  // not-saved-yet notice standing.
+  const say = (ok, msg) => {
+    if (s) {
+      s.style.display = 'block';
+      s.style.color = ok ? 'var(--success-text)' : 'var(--danger-text)';
+      s.innerHTML = '<span class="status-dot ' + (ok ? 'green' : 'red') + '"></span> ' + msg;
+      if (!ok && s.scrollIntoView) s.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+    renderUnsavedNotice();
+  };
+  if (!subject || !body) { say(false, 'Not saved. Subject and body can\'t be empty. Use Reset to default if you want the original text back.'); return; }
+  if (!/\{dates\}|\{dateList\}/.test(body)) { say(false, 'Not saved. The body needs {dates} or {dateList} somewhere, or the site won\'t know which days are missing. Add one of those where you want the missing dates to appear, then press Save again.'); return; }
   try {
     await _db.collection('app_config').doc('email').set({ reminderSubject: subject, reminderBody: body, updatedAt: new Date().toISOString() }, { merge: true });
     EMAIL_CFG.reminderSubject = subject; EMAIL_CFG.reminderBody = body;
@@ -3818,7 +3857,7 @@ function setLookupStatus(cls, html) {
 // selection. Reads happen when Load is pressed, and only then.
 function markLookupStale() {
   if (!lookupLoaded) {
-    setLookupStatus('alert-info', '<i class="ti ti-info-circle"></i><span>Pick a period and a site, then press <strong>Load</strong>.</span>');
+    setLookupStatus('alert-info', '<i class="ti ti-info-circle"></i><span>Pick a period and a site, then press <strong>Load</strong>. Nothing is read from the database until you do, and choosing one site reads a small fraction of what all 89 do.</span>');
     return;
   }
   setLookupStatus('alert-warning', '<i class="ti ti-alert-triangle"></i><span>Selection changed &mdash; the figures below are still the previous one. Press <strong>Load</strong> to pull it in.</span>');
