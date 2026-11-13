@@ -91,6 +91,54 @@ body { font-family: 'DM Sans', sans-serif;
 
 /* CARD */
 .card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow-card); }
+
+/* COLLAPSIBLE CARDS
+   Every card with a title gets a caret. Collapsed state is remembered per device, so a monitor who
+   folds away the cards they don't use keeps them folded. Nothing starts collapsed. */
+.card-toggle { margin-left: auto; background: none; border: none; cursor: pointer; color: var(--text-soft);
+  padding: 2px 4px; line-height: 1; border-radius: 4px; display: inline-flex; align-items: center; flex: 0 0 auto; }
+.card-toggle:hover { background: var(--cream); color: var(--navy); }
+.card-toggle i { font-size: 16px; transition: transform 0.15s ease; }
+.card.collapsed > .card-title { margin-bottom: 0; }
+.card.collapsed > .card-title .card-toggle i { transform: rotate(-90deg); }
+.card.collapsed > *:not(.card-title) { display: none !important; }
+.card-title.clickable { cursor: pointer; user-select: none; }
+
+/* FROZEN TABLE HEADERS + A SCROLLBAR AT THE TOP AS WELL AS THE BOTTOM
+   Tables live in a .table-scroll that scrolls sideways. The header row sticks to the top of that box
+   so columns stay labelled while scrolling down, and .scroll-top gives a second horizontal bar above
+   the table so you don't have to reach the bottom of a long table to slide it. */
+.table-scroll { max-height: 70vh; overflow-y: auto; }
+.rec-table thead th, .tracker-table thead th, .rem-log-table thead th {
+  position: sticky; top: 0; z-index: 3; background: var(--white);
+  box-shadow: inset 0 -2px 0 var(--border);
+}
+.tracker-table thead th { background: var(--cream); }
+.scroll-top { overflow-x: auto; overflow-y: hidden; height: 12px; margin-bottom: 2px;
+  scrollbar-width: thin; scrollbar-color: var(--navy) var(--border-soft); }
+.scroll-top > div { height: 1px; }
+.scroll-top::-webkit-scrollbar { height: 11px; }
+.scroll-top::-webkit-scrollbar-track { background: var(--border-soft); border-radius: 6px; }
+.scroll-top::-webkit-scrollbar-thumb { background: var(--navy); border-radius: 6px; border: 2px solid var(--border-soft); }
+.scroll-top::-webkit-scrollbar-thumb:hover { background: var(--navy-light); }
+
+/* The tracker's site name stays put while the day columns slide past it, so a row is still
+   identifiable at the far right of a wide week. The corner cell needs the higher z-index to sit
+   over both the frozen header row and the frozen column. */
+.tracker-table th.site-col, .tracker-table td.site-col {
+  position: sticky; left: 0; z-index: 2; background: var(--white);
+  box-shadow: inset -1px 0 0 var(--border);
+}
+.tracker-table th.site-col { z-index: 4; background: var(--cream); }
+.tracker-table tr:hover td.site-col { background: var(--cream); }
+
+/* Compact mode: tighter rows and smaller type, for fitting more columns on screen. */
+body.compact .rec-table th, body.compact .rec-table td { padding: 4px 6px; font-size: 11px; }
+body.compact .tracker-table th, body.compact .tracker-table td { padding: 3px 5px; font-size: 10px; }
+body.compact .rem-log-table th, body.compact .rem-log-table td { padding: 3px 6px; font-size: 11px; }
+body.compact .card { padding: 0.8rem; margin-bottom: 0.6rem; }
+body.compact .card-title { margin-bottom: 0.6rem; }
+body.compact .table-scroll { max-height: 78vh; }
 .card-title { font-size: 12px; font-weight: 600; color: var(--text-soft); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 1.1rem; display: flex; align-items: center; gap: 7px; }
 .card-title i { font-size: 15px; color: var(--navy-light); }
 
@@ -179,19 +227,12 @@ input[readonly] { background: var(--cream); color: var(--text-mid); }
 .pill-warn { background: var(--warning-bg); color: var(--warning-text); }
 .pill-danger { background: var(--danger-bg); color: var(--danger-text); }
 .pill-info { background: var(--info-bg); color: var(--info-text); }
-/* "Expected pattern": a figure that would normally be flagged but matches this site's own
-   established history for that weekday. Orange, not red — reviewed, not a problem. */
-.pill-pattern { background: var(--pending-bg); color: var(--pending-text); border: 1px solid var(--pending-border); }
 .empty { text-align: center; padding: 2.5rem 1rem; color: var(--text-soft); font-size: 14px; }
 .empty i { font-size: 28px; display: block; margin-bottom: 8px; opacity: 0.5; }
 
 /* ANOMALY ROW */
 .rec-table tr.anomaly td { background: #fffbf0; }
 .rec-table tr.anomaly:hover td { background: #fff5d6; }
-/* A record whose only out-of-range figures match the site's own weekday pattern. */
-.rec-table tr.patterned td { background: #fffdf8; }
-.rec-table tr.patterned:hover td { background: #fff8ec; }
-.val-pattern { color: var(--pending-text); font-weight: 600; }
 
 /* TRACKER GRID */
 .tracker-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(200px, 100%), 1fr)); gap: 8px; }
@@ -370,6 +411,7 @@ background-image:
     <div class="topbar-brand">SESSION Forms for GCFB</div>
     <div class="topbar-right">
       <span class="site-badge" id="hdr-site"></span>
+      <button class="btn-signout" id="btn-density" onclick="toggleDensity()" title="Tighter rows and smaller type, to fit more columns on screen"><i class="ti ti-arrows-diagonal-minimize-2" style="font-size:13px;"></i> <span id="density-label">Compact</span></button>
       <button class="btn-signout" onclick="doLogout()"><i class="ti ti-logout" style="font-size:13px;"></i> Sign out</button>
     </div>
   </div>
@@ -618,28 +660,10 @@ background-image:
             <strong>Served %</strong> = Total Served &divide; Available &mdash; flagged when under 30%<br>
             <strong>Balance</strong> &mdash; flagged when Served + Unservable + Leftover &ne; Available
           </div>
-          <div style="font-size:12px;line-height:1.7;border-top:1px solid #c0d8f8;padding-top:7px;margin-top:3px;">
-            <strong><span class="pill pill-pattern" style="font-size:9px;">&#10003; Expected</span> instead of a red flag.</strong>
-            A site that takes one delivery to cover several days leaves a lot over on the first day &mdash; that isn't an anomaly, it's how the site runs.
-            So a leftover or served figure over threshold is also checked against <strong>the same site on the same weekday</strong> over the preceding 70 days.
-            With at least <strong>3 prior records for that weekday</strong> that agree with each other, and today's figure within <strong>15 points</strong> of their median, it's marked expected rather than flagged. Hover it to see the history behind the decision.<br>
-            <strong>Waste and balance are never softened this way</strong> &mdash; high waste is a problem however habitual, and a balance mismatch is an arithmetic error.
-          </div>
         </div>
         <div id="all-records"></div>
       </div>
 
-      <!-- Reimbursement Estimate — follows the selection above; the claim itself is monthly, so for a
-           daily or weekly selection this shows the month that period falls in. -->
-      <div class="card" id="lookup-reimb-card" style="display:none;border-left:3px solid var(--amber);">
-        <div class="card-title"><i class="ti ti-cash"></i>Reimbursement tracker</div>
-        <p style="font-size:13px;color:var(--text-mid);margin-bottom:1rem;">CACFP pays for one supper per child, per day. First meals only. Seconds and adult meals are not reimbursed. <strong>% reimbursed</strong> is first meals divided by total served.</p>
-        <div class="filter-row" style="margin-bottom:1rem;">
-          <div class="fg"><label for="reimb-rate">Supper rate ($)</label><input type="number" id="reimb-rate" step="0.01" oninput="saveReimbRates();renderReimbursement()" style="width:110px;"></div>
-          <div class="fg"><label for="reimb-cil">Cash-in-lieu ($)</label><input type="number" id="reimb-cil" step="0.0001" oninput="saveReimbRates();renderReimbursement()" style="width:120px;"></div>
-        </div>
-        <div id="reimb-content"></div>
-      </div>
     </div>
 
     <!-- SITE TRACKER TAB -->
@@ -999,6 +1023,7 @@ background-image:
         </div>
         <div class="filter-row" style="margin-bottom:1rem;">
           <div class="fg"><label for="export-mo-reimb">Month</label><input type="month" id="export-mo-reimb" style="width:160px;"></div>
+          <div class="fg"><label for="reimb-rate">Supper rate ($)</label><input type="number" id="reimb-rate" step="0.01" oninput="saveReimbRates()" style="width:120px;"></div>
         </div>
         <div class="btn-row" style="margin-top:0;">
           <button class="btn-primary green" onclick="exportInitialReimbursement(document.getElementById('export-mo-reimb').value)">
@@ -1135,7 +1160,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.11.13.1</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.11.13.2</div>
 
 <script>
 // ═══════════════════════════
@@ -1338,7 +1363,6 @@ function cacheShape(r) {
 // Every path that changes `records` funnels through here, so this is also where the weekday-pattern
 // index is dropped — it's rebuilt on the next review.
 function saveLocal() {
-  invalidatePatternCache();
   try {
     // Common path: everything fits, one pass, no sorting.
     let json = records.length <= CACHE_MAX_RECORDS ? JSON.stringify(records.map(cacheShape)) : null;
@@ -1439,18 +1463,16 @@ function noteLoaded(scope, from, to) {
 }
 function resetLoadedSpans() { LOADED_SPANS = {}; lastRangeFetchMs = 0; siteHasFullHistory = false; }
 
-// The one entry point for loading. `opts.scope` is a siteId or 'ALL' (default). `opts.pad` adds the
-// weekday-pattern lookback and defaults to TRUE — leave it on anywhere a pattern verdict is shown,
-// turn it off where none is (Site Tracker only asks "did this site submit?", so it needs no history).
+// The one entry point for loading. `opts.scope` is a siteId or 'ALL' (default). A fetch now covers
+// exactly the dates asked for: nothing reads other records any more, so no lookback is needed.
 async function ensureRange(from, to, opts) {
   if (!from || !to) return;
   const o = (opts && typeof opts === 'object') ? opts : { force: !!opts };
   const scope = o.scope || 'ALL';
-  const pad = o.pad !== false;
   if (from > to) { const t = from; from = to; to = t; }
-  const start = pad ? shiftDays(from, -PATTERN.lookbackDays) : from;
-  if (!o.force && spanCovered(scope, start, to) && (Date.now() - lastRangeFetchMs) < LOAD_FRESH_MS) return;
-  await fetchRange(scope, start, to);
+  // Already held and read recently: nothing to do. This is what stops tab-flipping re-reading.
+  if (!o.force && spanCovered(scope, from, to) && (Date.now() - lastRangeFetchMs) < LOAD_FRESH_MS) return;
+  await fetchRange(scope, from, to);
 }
 
 // Two query shapes, both using indexes Firestore already has:
@@ -1667,6 +1689,7 @@ function doLogin() {
   setTimeout(initSigCanvas, 100);
 
   loadFromFirebase(s === 'MONITOR' ? 'ALL' : s).then(() => autoFillPrevLeftover());
+  initViewChrome();   // carets on the cards, frozen headers, top scrollbars, saved density
   window.scrollTo(0, 0);
 }
 
@@ -1680,6 +1703,135 @@ function doLogout() {
   MONITOR_TABS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
   SITE_TABS.forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'inline-block'; });
   window.scrollTo(0, 0);
+}
+
+// ═══════════════════════════
+//  VIEW CHROME — collapsible cards, frozen table headers, a scrollbar above each wide table,
+//  and a compact density switch.
+//  All four are device-local and purely visual: nothing here reads or writes a record, and
+//  nothing changes what any screen shows, only how much of it fits.
+// ═══════════════════════════
+
+// A card is keyed by its own id when it has one, otherwise by a slug of its title text, so the
+// collapsed/expanded state survives a reload and a re-render of whatever sits inside it.
+function cardKey(card, titleEl, i) {
+  if (card.id) return card.id;
+  const t = (titleEl.textContent || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  return t ? 'ct-' + t : 'ci-' + i;
+}
+
+function initCollapsibleCards() {
+  const titles = document.querySelectorAll('.card > .card-title');
+  titles.forEach((titleEl, i) => {
+    if (titleEl.dataset.collapsible === '1') return;   // already wired
+    const card = titleEl.parentElement;
+    const key = cardKey(card, titleEl, i);
+    titleEl.dataset.collapsible = '1';
+    titleEl.dataset.cardKey = key;
+    titleEl.classList.add('clickable');
+
+    const btn = document.createElement('button');
+    btn.className = 'card-toggle';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Collapse or expand this section');
+    btn.innerHTML = '<i class="ti ti-chevron-down"></i>';
+    titleEl.appendChild(btn);
+
+    // The whole title bar is the hit area, but clicks on a control inside the title (none today,
+    // but titles do get buttons added over time) must not fold the card out from under it.
+    titleEl.addEventListener('click', e => {
+      if (e.target.closest('a, input, select, textarea') ) return;
+      if (e.target.closest('button') && !e.target.closest('.card-toggle')) return;
+      toggleCard(card, key);
+    });
+
+    if (safeGet('card_collapsed_' + key) === '1') card.classList.add('collapsed');
+  });
+}
+
+function toggleCard(card, key) {
+  const nowCollapsed = !card.classList.contains('collapsed');
+  card.classList.toggle('collapsed', nowCollapsed);
+  safeSet('card_collapsed_' + key, nowCollapsed ? '1' : '0');
+  if (!nowCollapsed) syncTopScrollbars();   // a table revealed again needs its top bar measured
+}
+
+// A second horizontal scrollbar above each table that is wider than its box. The tracker and the
+// site-info overview are wide enough that the only scrollbar — at the very bottom of a long table —
+// was out of reach without scrolling the page first.
+let _syncingScroll = false;
+function syncTopScrollbars() {
+  document.querySelectorAll('.table-scroll').forEach(box => {
+    if (!box.parentElement) return;
+    const needed = box.scrollWidth > box.clientWidth + 1;
+    let bar = box.previousElementSibling;
+    const haveBar = bar && bar.classList && bar.classList.contains('scroll-top');
+
+    if (!needed) {
+      if (haveBar) bar.remove();
+      return;
+    }
+    if (!haveBar) {
+      bar = document.createElement('div');
+      bar.className = 'scroll-top';
+      bar.appendChild(document.createElement('div'));
+      bar.addEventListener('scroll', () => {
+        if (_syncingScroll) return;
+        _syncingScroll = true; box.scrollLeft = bar.scrollLeft; _syncingScroll = false;
+      });
+      box.addEventListener('scroll', () => {
+        if (_syncingScroll) return;
+        _syncingScroll = true; bar.scrollLeft = box.scrollLeft; _syncingScroll = false;
+      });
+      box.parentElement.insertBefore(bar, box);
+    }
+    bar.firstChild.style.width = box.scrollWidth + 'px';
+    bar.scrollLeft = box.scrollLeft;
+  });
+}
+
+// Tables are rebuilt by a dozen different render functions. Rather than add a call to each one,
+// watch for DOM changes and re-measure on a short debounce. The guard keeps the observer from
+// reacting to the bars it inserts itself.
+let _chromeTimer = null;
+function scheduleViewChrome() {
+  if (_chromeTimer) clearTimeout(_chromeTimer);
+  _chromeTimer = setTimeout(() => {
+    _chromeTimer = null;
+    initCollapsibleCards();
+    syncTopScrollbars();
+  }, 120);
+}
+
+function toggleDensity() {
+  const on = !document.body.classList.contains('compact');
+  document.body.classList.toggle('compact', on);
+  safeSet('view_density', on ? 'compact' : 'normal');
+  const lbl = document.getElementById('density-label');
+  if (lbl) lbl.textContent = on ? 'Normal' : 'Compact';
+  setTimeout(syncTopScrollbars, 0);
+}
+
+function initViewChrome() {
+  if (safeGet('view_density') === 'compact') {
+    document.body.classList.add('compact');
+    const lbl = document.getElementById('density-label');
+    if (lbl) lbl.textContent = 'Normal';
+  }
+  initCollapsibleCards();
+  syncTopScrollbars();
+  if (!window._chromeObserver && window.MutationObserver) {
+    window._chromeObserver = new MutationObserver(muts => {
+      for (const m of muts) {
+        // Ignore our own inserted bars and the width we set on them.
+        if (m.target && m.target.classList && m.target.classList.contains('scroll-top')) continue;
+        scheduleViewChrome();
+        return;
+      }
+    });
+    window._chromeObserver.observe(document.getElementById('main-app'), { childList: true, subtree: true });
+    window.addEventListener('resize', scheduleViewChrome);
+  }
 }
 
 // ═══════════════════════════
@@ -1713,6 +1865,10 @@ function showTab(t) {
   if (t === 'exports') { populateExportSelects(); applyAllExportCards(); }
   if (t === 'updatesites') { populateSiteInfoSelect(); loadAllSiteInfo(); }
   if (t === 'settings') { renderEmailConfig(); renderReminderTemplate(); populateRemoveFieldSelect(); }
+  // A hidden pane measures zero wide, so the top scrollbars for this tab's tables can only be
+  // sized once it is on screen. Showing a tab is an attribute change, which the observer below
+  // does not watch, so ask for a re-measure here.
+  scheduleViewChrome();
 }
 
 
@@ -1787,6 +1943,10 @@ function populateExportSelects() {
   const er = document.getElementById('export-mo-reimb');
   if (em && !em.value) em.value = today().slice(0,7);
   if (er && !er.value) er.value = today().slice(0,7);
+  // The supper rate used to be seeded by the Reimbursement tracker on Site Lookup. That card is gone,
+  // so the box on this card shows the saved rate (or the default) when the tab opens.
+  const rr = document.getElementById('reimb-rate');
+  if (rr && rr.value === '') rr.value = getReimbRates().rate;
   const es = document.getElementById('export-site-report');
   if (es && es.options.length <= 1) fillSiteOptions(es, true, 'All sites');
   const as = document.getElementById('audit-site');
@@ -2267,143 +2427,30 @@ function clearForm() {
   autoFillPrevLeftover();
 }
 
-// ═══════════════════════════════════════════════════════════
-//  ANOMALY DETECTION + WEEKDAY PATTERN LEARNING
-//
-//  A site that takes one delivery to cover several days legitimately shows a large leftover on the
-//  first day and a small served count — 10 meals delivered Monday to cover Mon/Tue/Wed leaves ~70%
-//  on Monday. Flat thresholds called that an anomaly every single week.
-//
-//  So each figure is now also compared against THE SAME SITE on THE SAME WEEKDAY in its own recent
-//  history. When there are at least PATTERN.minSamples prior records, they agree with each other,
-//  and today's figure sits within PATTERN.tolerance of their median, the red flag becomes an orange
-//  "expected pattern" check instead, and the tooltip shows the history it was judged against.
-//
-//  The verdict depends on what's in `records`, so ensureRange() pads every fetch by lookbackDays —
-//  without that, the same record could be flagged or not depending on which span happened to be
-//  loaded, which is exactly the sort of inconsistency a compliance review can't have.
-//
-//  Two things are never softened: waste, because high waste is a real problem however habitual,
-//  and a balance mismatch, because that is an arithmetic error. Until a site has enough same-weekday
-//  history, it behaves exactly as before.
-// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════
+//  ANOMALY DETECTION
+//  Flat thresholds against the record's own figures. A weekday-pattern version of this was tried and
+//  withdrawn; it is being reworked for SESSION2, so nothing here looks at other records.
+// ═══════════════════════════
 const ANOM = { wastePct: 0.30, leftoverPct: 0.40, servedPctMin: 0.30 };
-const PATTERN = {
-  minSamples: 3,      // prior same-weekday records needed before a pattern is trusted
-  // How far back to look — about 10 weeks, so roughly 10 samples of any given weekday. Also the
-  // amount every windowed fetch is padded by (see ensureRange), so that a record at the start of the
-  // loaded span is judged against the same history it would get on a full load. Raising this makes
-  // flag decisions no better and every fetch bigger.
-  lookbackDays: 70,
-  tolerance: 0.15,    // today's ratio must land within 15 points of the median
-  spread: 0.15,       // a past record "agrees" when it's within 15 points of the median
-  minAgree: 0.67      // two thirds of them must agree before the history counts as consistent
-};
 
-// Every certified record bucketed by site + weekday, so judging one record doesn't re-scan the whole
-// array (89 sites × a school year of records would make that O(n²)). Built on first use and thrown
-// away whenever `records` changes.
-let _PAT_INDEX = null;
-let _REVIEW_CACHE = {};
-function invalidatePatternCache() { _PAT_INDEX = null; _REVIEW_CACHE = {}; }
-function patternIndex() {
-  if (_PAT_INDEX) return _PAT_INDEX;
-  const idx = {};
-  records.forEach(r => {
-    if (r.isDraft || !r.svcDate || !r.availQty || r.site === 'MONITOR') return;
-    const key = r.site + '|' + new Date(r.svcDate + 'T12:00:00').getDay();
-    (idx[key] = idx[key] || []).push({
-      uid: r.uid,
-      svcDate: r.svcDate,
-      leftRatio: r.leftover / r.availQty,
-      servedRatio: (r.totalServed || 0) / r.availQty,
-      first: r.firstMeal || 0
-    });
-  });
-  Object.values(idx).forEach(a => a.sort((x, y) => x.svcDate.localeCompare(y.svcDate)));
-  _PAT_INDEX = idx;
-  return idx;
-}
-
-function median(nums) {
-  if (!nums.length) return null;
-  const s = [...nums].sort((a, b) => a - b);
-  const m = Math.floor(s.length / 2);
-  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
-}
-
-// This site's own history for the weekday of `rec` — only records BEFORE it and inside the lookback
-// window, with `rec` itself excluded, so a record is never judged against itself.
-function weekdaySamples(rec) {
-  if (!rec || !rec.svcDate || !rec.site) return [];
-  const key = rec.site + '|' + new Date(rec.svcDate + 'T12:00:00').getDay();
-  const bucket = patternIndex()[key] || [];
-  const cutoff = new Date(rec.svcDate + 'T12:00:00');
-  cutoff.setDate(cutoff.getDate() - PATTERN.lookbackDays);
-  const cutoffStr = ymd(cutoff.getFullYear(), cutoff.getMonth() + 1, cutoff.getDate());
-  return bucket.filter(s => s.uid !== rec.uid && s.svcDate < rec.svcDate && s.svcDate >= cutoffStr);
-}
-
-// Is `observed` explained by the site's established history? Returns the supporting numbers, or
-// null when there isn't enough consistent history to say so.
-function patternVerdict(samples, pick, observed) {
-  if (samples.length < PATTERN.minSamples) return null;
-  const vals = samples.map(pick).filter(v => isFinite(v));
-  if (vals.length < PATTERN.minSamples) return null;
-  const med = median(vals);
-  const agree = vals.filter(v => Math.abs(v - med) <= PATTERN.spread).length;
-  if (agree / vals.length < PATTERN.minAgree) return null;        // history is too erratic to trust
-  if (Math.abs(observed - med) > PATTERN.tolerance) return null;  // today doesn't match it
-  return { median: med, samples: vals.length, agree };
-}
-
-// Full review of one record: red flags, plus figures that WOULD have been flagged but match this
-// site's own weekday pattern. `pattern.expectedFirst` is its typical first-meal count for that
-// weekday — the anticipated daily output.
-function reviewRecord(r) {
-  const out = { flags: [], expected: [], pattern: null };
-  if (!r || !r.availQty) return out;
-  // Memoised for as long as the pattern index lives — the Site Lookup table re-renders on every sort
-  // and filter, and re-deriving a year of history each time is wasted work. Both are dropped together
-  // by invalidatePatternCache() whenever `records` changes, so a stale review can't survive an edit.
-  if (r.uid && _REVIEW_CACHE[r.uid]) return _REVIEW_CACHE[r.uid];
-  const samples = weekdaySamples(r);
-  const dayName = dowName(r.svcDate);
-  out.pattern = {
-    samples: samples.length,
-    dayName,
-    expectedFirst: samples.length >= PATTERN.minSamples ? median(samples.map(s => s.first)) : null
-  };
-
+function isAnomaly(r) {
+  if (!r.availQty) return null;
+  const flags = [];
   const wasteRatio = r.waste / r.availQty;
   const leftoverRatio = r.leftover / r.availQty;
   const servedRatio = r.totalServed / r.availQty;
   const sum = (r.totalServed || 0) + (r.totalUnsrv || 0) + (r.leftover || 0);
-  const bal = r.availQty - sum;
-  const sinceWhen = (v) => ' — matches this site\'s usual ' + dayName + ' (median '
-    + Math.round(v.median * 100) + '% over ' + v.samples + ' prior ' + dayName
-    + (v.samples === 1 ? '' : 's') + ')';
-
+  const bal = (r.availQty || 0) - sum;
   if (wasteRatio > ANOM.wastePct)
-    out.flags.push('Waste is ' + Math.round(wasteRatio * 100) + '% of available (' + r.waste + '/' + r.availQty + ')');
-
-  if (leftoverRatio > ANOM.leftoverPct) {
-    const text = 'Leftover is ' + Math.round(leftoverRatio * 100) + '% of available (' + r.leftover + '/' + r.availQty + ')';
-    const v = patternVerdict(samples, s => s.leftRatio, leftoverRatio);
-    if (v) out.expected.push(text + sinceWhen(v)); else out.flags.push(text);
-  }
-
-  if (servedRatio < ANOM.servedPctMin && r.totalServed > 0) {
-    const text = 'Only ' + Math.round(servedRatio * 100) + '% of available meals were served (' + r.totalServed + '/' + r.availQty + ')';
-    const v = patternVerdict(samples, s => s.servedRatio, servedRatio);
-    if (v) out.expected.push(text + sinceWhen(v)); else out.flags.push(text);
-  }
-
+    flags.push('Waste is ' + Math.round(wasteRatio * 100) + '% of available (' + r.waste + '/' + r.availQty + ')');
+  if (leftoverRatio > ANOM.leftoverPct)
+    flags.push('Leftover is ' + Math.round(leftoverRatio * 100) + '% of available (' + r.leftover + '/' + r.availQty + ')');
+  if (servedRatio < ANOM.servedPctMin && r.totalServed > 0)
+    flags.push('Only ' + Math.round(servedRatio * 100) + '% of available meals were served (' + r.totalServed + '/' + r.availQty + ')');
   if (bal !== 0)
-    out.flags.push('Balance off by ' + Math.abs(bal) + ' meal' + (Math.abs(bal) > 1 ? 's' : '') + ' (served+unsrv+left=' + sum + ', available=' + r.availQty + ')');
-
-  if (r.uid) _REVIEW_CACHE[r.uid] = out;
-  return out;
+    flags.push('Balance off by ' + Math.abs(bal) + ' meal' + (Math.abs(bal) > 1 ? 's' : '') + ' (served+unsrv+left=' + sum + ', available=' + r.availQty + ')');
+  return flags.length ? flags : null;
 }
 
 
@@ -2517,34 +2564,24 @@ function renderTable(isAdmin) {
     const sum = (r.totalServed||0) + (r.totalUnsrv||0) + (r.leftover||0);
     const bal = (r.availQty||0) - sum;
     const ok = bal === 0;
-    const review = reviewRecord(r);
-    const anomFlags = review.flags;
+    const anomFlags = isAnomaly(r) || [];
     const anom = anomFlags.length > 0;
-    // Nothing red, but something over threshold that this site's own weekday history explains.
-    const patterned = !anom && review.expected.length > 0;
     const edited = (r.editCount || 0) > 0;
     const siteName = r.siteName || r.site || '';
-    h += '<tr class="' + (anom ? 'anomaly' : patterned ? 'patterned' : '') + '" style="' + (r.isDraft ? 'opacity:0.65;font-style:italic;' : '') + '">';
+    h += '<tr class="' + (anom ? 'anomaly' : '') + '" style="' + (r.isDraft ? 'opacity:0.65;font-style:italic;' : '') + '">';
     if (isAdmin) h += '<td title="' + esc(siteName) + '">' + esc(siteName.substring(0,16)) + (siteName.length > 16 ? '…':'') + '</td>';
     h += '<td>' + fmtDate(r.svcDate) + '</td><td>' + (r.availQty||0) + '</td><td>' + (r.totalServed||0) + '</td><td>' + (r.totalUnsrv||0) + '</td><td>' + (r.leftover||0) + '</td>';
     if (isAdmin) {
       const wp = r.availQty > 0 ? r.waste / r.availQty : 0;
       const lp = r.availQty > 0 ? r.leftover / r.availQty : 0;
       const wpOver = wp > ANOM.wastePct, lpOver = lp > ANOM.leftoverPct;
-      // A leftover over threshold that the weekday pattern explains goes orange, not red.
-      const lpPattern = lpOver && review.expected.some(t => t.indexOf('Leftover is') === 0);
       h += '<td style="' + (wpOver ? 'color:var(--danger-text);font-weight:700;' : '') + '">' + (r.availQty > 0 ? Math.round(wp*100) + '%' : '—') + '</td>';
-      h += '<td class="' + (lpPattern ? 'val-pattern' : '') + '"'
-        + (lpPattern ? ' title="Expected for this site on a ' + esc((review.pattern && review.pattern.dayName) || '') + '" style="cursor:help;"' : ' style="' + (lpOver ? 'color:var(--danger-text);font-weight:700;' : '') + '"')
-        + '>' + (r.availQty > 0 ? Math.round(lp*100) + '%' : '—') + '</td>';
+      h += '<td style="' + (lpOver ? 'color:var(--danger-text);font-weight:700;' : '') + '">' + (r.availQty > 0 ? Math.round(lp*100) + '%' : '—') + '</td>';
     }
     h += '<td><span class="pill ' + (ok ? 'pill-ok' : 'pill-warn') + '">' + (ok ? 'OK' : 'Off ' + Math.abs(bal)) + '</span></td>';
-    const anomTip = anomFlags.join(' | ');
-    const patTip = review.expected.join(' | ');
     let statusPill;
     if (r.isDraft) statusPill = '<span class="pill pill-warn">Draft</span>';
-    else if (anom) statusPill = '<span class="pill pill-danger" title="' + esc(anomTip + (patTip ? '  ||  Expected pattern: ' + patTip : '')) + '" style="cursor:help;">⚠ ' + anomFlags.length + ' flag' + (anomFlags.length > 1 ? 's' : '') + '</span>';
-    else if (patterned) statusPill = '<span class="pill pill-pattern" title="' + esc(patTip) + '" style="cursor:help;">&#10003; Expected</span>';
+    else if (anom) statusPill = '<span class="pill pill-danger" title="' + esc(anomFlags.join(' | ')) + '" style="cursor:help;">⚠ ' + anomFlags.length + ' flag' + (anomFlags.length > 1 ? 's' : '') + '</span>';
     else if (edited) statusPill = '<span class="pill pill-info">Edited</span>';
     else statusPill = '<span class="pill pill-ok">Clean</span>';
     h += '<td>' + statusPill + '</td>';
@@ -2585,7 +2622,7 @@ function renderTable(isAdmin) {
     h += '</div>';
   }
 
-  if (isAdmin) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">⚠ Waste % = waste ÷ available (red &gt; 30%) · Left % = leftover ÷ available (red &gt; 40%). Flags also cover served &lt; 30% of available and balance mismatches. A <span class="pill pill-pattern" style="font-size:9px;">&#10003; Expected</span> row is one where the leftover or served figure is over threshold but matches this site\'s own history for that weekday — hover it to see the history it was compared against. Hover a flag count for details. Click any column header to sort. The history button shows every change made to a record.</p>';
+  if (isAdmin) h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">⚠ Waste % = waste ÷ available (red &gt; 30%) · Left % = leftover ÷ available (red &gt; 40%). Flags also cover served &lt; 30% of available and balance mismatches. Hover a flag count for details. Click any column header to sort, including Status, which brings drafts and flagged records to the top. The history button shows every change made to a record.</p>';
   else {
     h += '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Use the pencil to edit a record or finish a draft. Every edit must be re-signed and is recorded in its history. Click the clock button to see the version history. Unsaved drafts can be deleted; certified records can\'t.';
     // Only the most recent records are loaded on sign-in; say so rather than letting an older record
@@ -2774,7 +2811,6 @@ function sortTableRows(key, rows, cols, defCol, defDir) {
 // Which function redraws each table after its header is clicked.
 const TABLE_RERENDER = {
   sumSites: () => renderSummary(),
-  reimb:    () => renderReimbursement(),
   remHist:  () => renderReminderHistory(),
   siteInfo: () => loadAllSiteInfo()
 };
@@ -2784,11 +2820,10 @@ const TABLE_RERENDER = {
 // then edited, then clean.
 function statusRank(r) {
   if (r.isDraft) return 0;
-  const rev = reviewRecord(r);
-  if (rev.flags.length) return 1 - Math.min(rev.flags.length, 9) / 100;
-  if (rev.expected.length) return 2;
-  if ((r.editCount || 0) > 0) return 3;
-  return 4;
+  const flags = isAnomaly(r);
+  if (flags) return 1 - Math.min(flags.length, 9) / 100;
+  if ((r.editCount || 0) > 0) return 2;
+  return 3;
 }
 
 let trackerSort = { weekly: { col: 'site', dir: 'asc' }, monthly: { col: 'site', dir: 'asc' } };
@@ -2874,7 +2909,7 @@ async function refreshTracker(force) {
   redrawTracker();
   const rg = trackerRange();
   // No pattern verdicts here — the tracker only asks whether a record exists — so no lookback padding.
-  await ensureRange(rg.from, rg.to, { pad: false, force: !!force });
+  await ensureRange(rg.from, rg.to, { force: !!force });
   redrawTracker();
 }
 
@@ -3761,10 +3796,10 @@ async function runLookup(force) {
   await ensureRange(rg.from, rg.to, { scope, force: !!force });
   lookupLoaded = true;
   adminPage = 0;   // a new selection starts at its first page
-  ['lookup-summary-card', 'lookup-records-card', 'lookup-reimb-card'].forEach(id => {
+  ['lookup-summary-card', 'lookup-records-card'].forEach(id => {
     const el = document.getElementById(id); if (el) el.style.display = 'block';
   });
-  renderSummary(); renderTable(true); renderReimbursement();
+  renderSummary(); renderTable(true);
   setLookupStatus('alert-success', '<i class="ti ti-circle-check"></i><span>Showing <strong>' + esc(rg.label) + '</strong> for <strong>' + esc(lookupScopeLabel()) + '</strong>. Press <strong>Load</strong> again to re-read it.</span>');
 }
 
@@ -3856,92 +3891,21 @@ function renderSummary() {
 }
 
 // ═══════════════════════════
-//  REIMBURSEMENT TRACKER (live) — shows % of meals reimbursed per line
+//  SUPPER RATE
+//  The live Reimbursement tracker that used to sit on Site Lookup is gone; the figure is now only
+//  used by the Initial Estimated Reimbursement export, and is set on that export's own card.
 // ═══════════════════════════
 const DEFAULT_SUPPER_RATE = 4.76;
-const DEFAULT_CIL_RATE = 0.32;
-
 function getReimbRates() {
   const rate = parseFloat(safeGet('cacfp_supper_rate'));
-  const cil = parseFloat(safeGet('cacfp_cil_rate'));
-  return {
-    rate: isNaN(rate) ? DEFAULT_SUPPER_RATE : rate,
-    cil:  isNaN(cil)  ? DEFAULT_CIL_RATE  : cil
-  };
-}
-function saveReimbRates() {
-  const rateEl = document.getElementById('reimb-rate');
-  const cilEl = document.getElementById('reimb-cil');
-  if (rateEl && rateEl.value !== '') safeSet('cacfp_supper_rate', rateEl.value);
-  if (cilEl && cilEl.value !== '') safeSet('cacfp_cil_rate', cilEl.value);
-}
-function money(v) {
-  return '$' + (v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-function pct(num, den) { return den > 0 ? Math.round(num / den * 100) + '%' : '—'; }
-function monthNameUpper(month) {
-  if (!month) return '';
-  const [y, m] = month.split('-').map(Number);
-  return new Date(y, m-1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' }).toUpperCase();
+  return { rate: isNaN(rate) ? DEFAULT_SUPPER_RATE : rate };
 }
 
-function renderReimbursement() {
+function saveReimbRates() {
   const rateEl = document.getElementById('reimb-rate');
-  const cilEl = document.getElementById('reimb-cil');
-  const ctr = document.getElementById('reimb-content');
-  if (!ctr) return;
-  const rates = getReimbRates();
-  if (rateEl && rateEl.value === '') rateEl.value = rates.rate;
-  if (cilEl && cilEl.value === '') cilEl.value = rates.cil;
-  const rate = rateEl && rateEl.value !== '' ? parseFloat(rateEl.value) : rates.rate;
-  // Follows the Site Lookup selection. A claim is monthly, so a daily or weekly selection shows the
-  // month it falls in — but only the days of it that have actually been loaded.
-  const rg = summaryRange();
-  const month = rg.from.slice(0, 7);
-  const site = lookupScope();
-  let recs = records.filter(r => !r.isDraft && r.svcDate && r.svcDate.slice(0,7) === month && r.site !== 'MONITOR');
-  if (site && site !== 'ALL') recs = recs.filter(r => r.site === site);
-  if (!recs.length) {
-    ctr.innerHTML = '<div class="empty"><i class="ti ti-cash-off"></i>No reimbursable records for this month' + (site !== 'ALL' ? ' and site' : '') + '.</div>';
-    return;
-  }
-  const bySite = {};
-  recs.forEach(r => {
-    if (!bySite[r.site]) bySite[r.site] = { name: r.siteName || r.site, first: 0, served: 0, days: new Set() };
-    bySite[r.site].first += (r.firstMeal || 0);
-    bySite[r.site].served += (r.totalServed || 0);
-    bySite[r.site].days.add(r.svcDate);
-  });
-  const reimbCols = { name: r => r.name, days: r => r.days, served: r => r.served, first: r => r.first,
-                      pctReimb: r => (r.served > 0 ? r.first / r.served : -1), amount: r => r.amount };
-  const rows = sortTableRows('reimb',
-    Object.entries(bySite).map(([k, v]) => ({ site: k, name: v.name, first: v.first, served: v.served, days: v.days.size, amount: v.first * rate })),
-    reimbCols, 'name');
-  const totalFirst = rows.reduce((a, r) => a + r.first, 0);
-  const totalServed = rows.reduce((a, r) => a + r.served, 0);
-  const totalAmount = rows.reduce((a, r) => a + r.amount, 0);
-  let h = '<div class="table-scroll"><table class="rec-table"><thead><tr>'
-    + sortTh('reimb', 'name', 'Site')
-    + sortTh('reimb', 'days', 'Service days', 'width:95px;')
-    + sortTh('reimb', 'served', 'Total served', 'width:105px;')
-    + sortTh('reimb', 'first', 'First meals', 'width:105px;')
-    + sortTh('reimb', 'pctReimb', '% reimbursed', 'width:110px;')
-    + sortTh('reimb', 'amount', 'Est. reimbursement', 'width:135px;')
-    + '</tr></thead><tbody>';
-  rows.forEach(r => {
-    const p = r.served > 0 ? r.first / r.served : 0;
-    const pc = p >= 0.9 ? 'var(--success-text)' : p >= 0.75 ? 'var(--warning-text)' : 'var(--danger-text)';
-    h += '<tr><td title="' + esc(r.name) + '">' + esc(r.name) + '</td><td>' + r.days + '</td><td>' + r.served + '</td><td>' + r.first + '</td>'
-      + '<td style="font-weight:600;color:' + pc + ';">' + pct(r.first, r.served) + '</td><td>' + money(r.amount) + '</td></tr>';
-  });
-  h += '</tbody><tfoot><tr style="font-weight:700;border-top:2px solid var(--border);">'
-    + '<td>Total</td><td></td><td>' + totalServed + '</td><td>' + totalFirst + '</td><td>' + pct(totalFirst, totalServed) + '</td><td style="color:var(--success-text);">' + money(totalAmount) + '</td>'
-    + '</tr></tfoot></table></div>'
-    + '<p style="font-size:11px;color:var(--text-soft);margin-top:8px;">Estimate = first meals &times; ' + money(rate) + '. <strong>% reimbursed</strong> = first meals &divide; total served (second and adult meals are the non-reimbursed remainder). Overall: <strong>' + pct(totalFirst, totalServed) + '</strong> of ' + totalServed + ' meals served are reimbursable. This is an estimate for planning only; the official claim uses the compliance department\'s workbook.'
-    + (summaryView !== 'monthly' ? ' <strong style="color:var(--warning-text);">Your selection above is a ' + (summaryView === 'daily' ? 'single day' : 'single week') + ', so only that part of ' + esc(monthNameUpper(month)) + ' has been loaded &mdash; switch to Monthly and press Load for the whole claim month.</strong>' : '')
-    + '</p>';
-  ctr.innerHTML = h;
+  if (rateEl && rateEl.value !== '') safeSet('cacfp_supper_rate', rateEl.value);
 }
+
 
 // ═══════════════════════════
 //  INITIAL ESTIMATED REIMBURSEMENT EXPORT
@@ -3953,7 +3917,7 @@ async function exportInitialReimbursement(month) {
   // month could be worth two different amounts depending on which screen you looked at.
   const RATE = getReimbRates().rate;
   const mb = monthBounds(month);
-  await ensureRange(mb.from, mb.to, { pad: false });
+  await ensureRange(mb.from, mb.to);
   let recs = records.filter(r => !r.isDraft && r.svcDate && r.svcDate.slice(0,7) === month && r.site !== 'MONITOR');
   if (!recs.length) { alert('No records found for ' + month + '.'); return; }
   const bySite = {};
@@ -4122,7 +4086,7 @@ function q(v) {
 async function exportCSV(isAdmin) {
   // The only thing that deliberately wants the whole history. Not forced, so a second export in the
   // same session costs nothing; the monitor pays the full read once, on purpose, by pressing this.
-  if (isAdmin) await ensureRange('2020-01-01', shiftDays(today(), 400), { pad: false });
+  if (isAdmin) await ensureRange('2020-01-01', shiftDays(today(), 400));
   let recs = isAdmin ? records : records.filter(r => r.site === currentSite);
   if (!recs.length) { alert('No records to export.'); return; }
   const cols = [
@@ -4327,7 +4291,7 @@ async function exportMonthlyReport(month, site) {
   if (!month) { alert('Pick a month first.'); return; }
   const mb = monthBounds(month);
   // No pattern verdicts in this report any more, so no weekday-history padding is needed.
-  await ensureRange(mb.from, mb.to, { scope: (site && site !== 'ALL') ? site : 'ALL', pad: false });
+  await ensureRange(mb.from, mb.to, { scope: (site && site !== 'ALL') ? site : 'ALL' });
   let recs = records.filter(r => !r.isDraft && r.svcDate && r.svcDate.slice(0,7) === month && r.site !== 'MONITOR');
   if (site && site !== 'ALL') recs = recs.filter(r => r.site === site);
   if (!recs.length) { alert('No records for ' + month + (site && site !== 'ALL' ? ' at this site' : '') + '.'); return; }
@@ -4370,7 +4334,7 @@ async function exportSiteAudit() {
   const statusEl = document.getElementById('audit-export-status');
   if (!site) { alert('Select a site.'); return; }
   if (!start || !end) { alert('Pick a start and end date.'); return; }
-  await ensureRange(start, end, { scope: site, pad: false });   // may sit well outside what's loaded
+  await ensureRange(start, end, { scope: site });   // may sit well outside what's loaded
   let recs = records.filter(r => !r.isDraft && r.site === site && r.svcDate >= start && r.svcDate <= end);
   if (!recs.length) { alert('No records for this site in that date range.'); return; }
   recs.sort((a,b)=>(a.svcDate||'').localeCompare(b.svcDate||''));
@@ -4488,7 +4452,7 @@ async function exportPerSiteMonthReport() {
   if (statusEl) { statusEl.style.display = 'block'; statusEl.innerHTML = '<span class="spinner dark"></span> Building report…'; }
 
   const months = psmMonthsInRange(fromM, toM);
-  await ensureRange(monthBounds(months[0]).from, monthBounds(months[months.length - 1]).to, { scope: site, pad: false });
+  await ensureRange(monthBounds(months[0]).from, monthBounds(months[months.length - 1]).to, { scope: site });
   const recByDate = {};
   records.filter(r => !r.isDraft && r.site === site).forEach(r => { recByDate[r.svcDate] = r; });
 
@@ -4607,18 +4571,15 @@ async function exportWeeklyWasteReport() {
   const wsL = XLSX.utils.aoa_to_sheet(lMat); wsL['!cols'] = [{wch:30}].concat(Array(7).fill({wch:12}));
   XLSX.utils.book_append_sheet(wb, wsL, 'Leftover by Day');
 
-  // Review Flags, moved here from the Monthly Audit Report. Both levels are listed, so a reviewer
-  // sees what was softened as well as what was flagged — an expected-pattern row is still a figure
-  // over threshold, just one the site's own weekday history explains.
-  const flags = [['REVIEW FLAGS — week of ' + dayLabels[0]], [], ['Site','Service date','Level','Finding']];
+  // Review Flags, moved here from the Monthly Audit Report.
+  const flags = [['REVIEW FLAGS — week of ' + dayLabels[0]], [], ['Site','Service date','Flag']];
   recs.slice().sort((a,b)=>(a.siteName||'').localeCompare(b.siteName||'') || (a.svcDate||'').localeCompare(b.svcDate||'')).forEach(r => {
-    const rev = reviewRecord(r);
-    rev.flags.forEach(f => flags.push([r.siteName || r.site, fmtDate(r.svcDate), 'Flag', f]));
-    rev.expected.forEach(f => flags.push([r.siteName || r.site, fmtDate(r.svcDate), 'Expected pattern', f]));
+    const f = isAnomaly(r);
+    if (f) f.forEach(x => flags.push([r.siteName || r.site, fmtDate(r.svcDate), x]));
   });
-  if (flags.length === 3) flags.push(['—','—','—','No anomalies flagged this week']);
+  if (flags.length === 3) flags.push(['—','—','No anomalies flagged this week']);
   const wsF = XLSX.utils.aoa_to_sheet(flags);
-  wsF['!cols'] = [{wch:30},{wch:14},{wch:17},{wch:70}];
+  wsF['!cols'] = [{wch:30},{wch:14},{wch:70}];
   XLSX.utils.book_append_sheet(wb, wsF, 'Review Flags');
 
   const label = (siteFilter && siteFilter !== 'ALL') ? siteFilter : 'AllSites';
