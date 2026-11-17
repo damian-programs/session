@@ -125,8 +125,16 @@ body { font-family: 'DM Sans', sans-serif;
 /* The tracker's site name stays put while the day columns slide past it, so a row is still
    identifiable at the far right of a wide week. The corner cell needs the higher z-index to sit
    over both the frozen header row and the frozen column. */
-.tracker-table th.site-col, .tracker-table td.site-col {
+/* The email checkbox is the first column, so it is the one pinned to the very left edge; the site
+   name sits immediately after it and is pinned just past its width. */
+.tracker-table th.mail-col, .tracker-table td.mail-col {
   position: sticky; left: 0; z-index: 2; background: var(--white);
+  width: 40px; min-width: 40px; max-width: 40px; text-align: center;
+}
+.tracker-table th.mail-col { z-index: 4; background: var(--cream); }
+.tracker-table tr:hover td.mail-col { background: var(--cream); }
+.tracker-table th.site-col, .tracker-table td.site-col {
+  position: sticky; left: 40px; z-index: 2; background: var(--white);
   box-shadow: inset -1px 0 0 var(--border);
 }
 .tracker-table th.site-col { z-index: 4; background: var(--cream); }
@@ -725,6 +733,7 @@ background-image:
           </div>
           <div class="fg"><label for="rem-hist-limit">Show</label>
             <select id="rem-hist-limit" onchange="renderReminderHistory()" style="width:140px;">
+              <option value="10" selected>Last 10</option>
               <option value="50">Last 50</option>
               <option value="200">Last 200</option>
               <option value="0">Everything</option>
@@ -867,7 +876,7 @@ background-image:
         <div class="ec-edit-panel" id="ecpanel-intro" style="display:none;margin-top:1rem;padding:0.9rem;background:var(--cream);border-radius:var(--radius-sm);">
           <div class="fg" style="margin-bottom:10px;"><label>Title</label><input type="text" id="ectitle-intro"></div>
           <div class="fg" style="margin-bottom:10px;"><label>Description</label><textarea id="ecdesc-intro" style="height:70px;"></textarea></div>
-          <div class="fg" style="margin-bottom:10px;max-width:220px;"><label>Accent color <span style="font-size:11px;color:var(--text-soft);">(hex, blank for none)</span></label><input type="text" id="eccolor-intro" placeholder="#3f72b8"></div>
+          <div class="fg" style="margin-bottom:10px;max-width:220px;"><label>Accent color <span style="font-size:11px;color:var(--text-soft);">(hex, blank for none)</span></label><input type="text" id="eccolor-intro" placeholder="#58923a"></div>
           <div class="btn-row" style="margin-top:0;">
             <button class="btn-sec" style="height:34px;font-size:12px;" onclick="saveExportCard('intro')"><i class="ti ti-check"></i> Save</button>
             <button class="btn-sec" style="height:34px;font-size:12px;" onclick="toggleExportCardEdit('intro')">Cancel</button>
@@ -907,7 +916,7 @@ background-image:
       </div>
 
       <!-- Weekly Waste & Leftover Report (admin) -->
-      <div class="card" id="card-wwl" style="border-left:3px solid var(--navy);">
+      <div class="card" id="card-wwl" style="border-left:3px solid var(--amber);">
         <div class="card-title">
           <i class="ti ti-trash"></i><span id="title-wwl">Weekly Waste &amp; Leftover Report</span>
           <button class="btn-sm" style="margin-left:auto;" title="Edit heading &amp; description" onclick="toggleExportCardEdit('wwl')"><i class="ti ti-pencil"></i></button>
@@ -916,7 +925,7 @@ background-image:
         <div class="ec-edit-panel" id="ecpanel-wwl" style="display:none;margin-bottom:1rem;padding:0.9rem;background:var(--cream);border-radius:var(--radius-sm);">
           <div class="fg" style="margin-bottom:10px;"><label>Title</label><input type="text" id="ectitle-wwl"></div>
           <div class="fg" style="margin-bottom:10px;"><label>Description</label><textarea id="ecdesc-wwl" style="height:70px;"></textarea></div>
-          <div class="fg" style="margin-bottom:10px;max-width:220px;"><label>Accent color <span style="font-size:11px;color:var(--text-soft);">(hex, blank for none)</span></label><input type="text" id="eccolor-wwl" placeholder="#3f72b8"></div>
+          <div class="fg" style="margin-bottom:10px;max-width:220px;"><label>Accent color <span style="font-size:11px;color:var(--text-soft);">(hex, blank for none)</span></label><input type="text" id="eccolor-wwl" placeholder="#58923a"></div>
           <div class="btn-row" style="margin-top:0;">
             <button class="btn-sec" style="height:34px;font-size:12px;" onclick="saveExportCard('wwl')"><i class="ti ti-check"></i> Save</button>
             <button class="btn-sec" style="height:34px;font-size:12px;" onclick="toggleExportCardEdit('wwl')">Cancel</button>
@@ -929,7 +938,7 @@ background-image:
           </div>
         </div>
         <div class="btn-row" style="margin-top:0;">
-          <button class="btn-primary" onclick="exportWeeklyWasteReport()">
+          <button class="btn-primary green" onclick="exportWeeklyWasteReport()">
             <i class="ti ti-file-spreadsheet"></i> Export Weekly Waste &amp; Leftover Report
           </button>
         </div>
@@ -937,7 +946,7 @@ background-image:
       </div>
 
       <!-- Site Audit Report -->
-      <div class="card" id="card-audit" style="border-left:3px solid var(--navy);">
+      <div class="card" id="card-audit" style="border-left:3px solid var(--amber);">
         <div class="card-title">
           <i class="ti ti-report-analytics"></i><span id="title-audit">Site Audit Report</span>
           <button class="btn-sm" style="margin-left:auto;" title="Edit heading &amp; description" onclick="toggleExportCardEdit('audit')"><i class="ti ti-pencil"></i></button>
@@ -946,7 +955,7 @@ background-image:
         <div class="ec-edit-panel" id="ecpanel-audit" style="display:none;margin-bottom:1rem;padding:0.9rem;background:var(--cream);border-radius:var(--radius-sm);">
           <div class="fg" style="margin-bottom:10px;"><label>Title</label><input type="text" id="ectitle-audit"></div>
           <div class="fg" style="margin-bottom:10px;"><label>Description</label><textarea id="ecdesc-audit" style="height:70px;"></textarea></div>
-          <div class="fg" style="margin-bottom:10px;max-width:220px;"><label>Accent color <span style="font-size:11px;color:var(--text-soft);">(hex, blank for none)</span></label><input type="text" id="eccolor-audit" placeholder="#3f72b8"></div>
+          <div class="fg" style="margin-bottom:10px;max-width:220px;"><label>Accent color <span style="font-size:11px;color:var(--text-soft);">(hex, blank for none)</span></label><input type="text" id="eccolor-audit" placeholder="#58923a"></div>
           <div class="btn-row" style="margin-top:0;">
             <button class="btn-sec" style="height:34px;font-size:12px;" onclick="saveExportCard('audit')"><i class="ti ti-check"></i> Save</button>
             <button class="btn-sec" style="height:34px;font-size:12px;" onclick="toggleExportCardEdit('audit')">Cancel</button>
@@ -969,7 +978,7 @@ background-image:
           </div>
         </div>
         <div class="btn-row" style="margin-top:0;">
-          <button class="btn-primary" onclick="exportSiteAudit()">
+          <button class="btn-primary green" onclick="exportSiteAudit()">
             <i class="ti ti-file-spreadsheet"></i> Export Site Audit Report
           </button>
         </div>
@@ -977,7 +986,7 @@ background-image:
       </div>
 
       <!-- Monthly Audit Report -->
-      <div class="card" id="card-monthly" style="border-left:3px solid var(--navy);">
+      <div class="card" id="card-monthly" style="border-left:3px solid var(--amber);">
         <div class="card-title">
           <i class="ti ti-calendar-stats"></i><span id="title-monthly">Monthly Audit Report</span>
           <button class="btn-sm" style="margin-left:auto;" title="Edit heading &amp; description" onclick="toggleExportCardEdit('monthly')"><i class="ti ti-pencil"></i></button>
@@ -986,7 +995,7 @@ background-image:
         <div class="ec-edit-panel" id="ecpanel-monthly" style="display:none;margin-bottom:1rem;padding:0.9rem;background:var(--cream);border-radius:var(--radius-sm);">
           <div class="fg" style="margin-bottom:10px;"><label>Title</label><input type="text" id="ectitle-monthly"></div>
           <div class="fg" style="margin-bottom:10px;"><label>Description</label><textarea id="ecdesc-monthly" style="height:70px;"></textarea></div>
-          <div class="fg" style="margin-bottom:10px;max-width:220px;"><label>Accent color <span style="font-size:11px;color:var(--text-soft);">(hex, blank for none)</span></label><input type="text" id="eccolor-monthly" placeholder="#3f72b8"></div>
+          <div class="fg" style="margin-bottom:10px;max-width:220px;"><label>Accent color <span style="font-size:11px;color:var(--text-soft);">(hex, blank for none)</span></label><input type="text" id="eccolor-monthly" placeholder="#58923a"></div>
           <div class="btn-row" style="margin-top:0;">
             <button class="btn-sec" style="height:34px;font-size:12px;" onclick="saveExportCard('monthly')"><i class="ti ti-check"></i> Save</button>
             <button class="btn-sec" style="height:34px;font-size:12px;" onclick="toggleExportCardEdit('monthly')">Cancel</button>
@@ -999,7 +1008,7 @@ background-image:
           </div>
         </div>
         <div class="btn-row" style="margin-top:0;">
-          <button class="btn-primary" onclick="exportMonthlyReport(document.getElementById('export-mo-report').value, document.getElementById('export-site-report').value)">
+          <button class="btn-primary green" onclick="exportMonthlyReport(document.getElementById('export-mo-report').value, document.getElementById('export-site-report').value)">
             <i class="ti ti-file-spreadsheet"></i> Export Monthly Audit Report
           </button>
         </div>
@@ -1042,14 +1051,14 @@ background-image:
         <div class="ec-edit-panel" id="ecpanel-csv" style="display:none;margin-bottom:1rem;padding:0.9rem;background:var(--cream);border-radius:var(--radius-sm);">
           <div class="fg" style="margin-bottom:10px;"><label>Title</label><input type="text" id="ectitle-csv"></div>
           <div class="fg" style="margin-bottom:10px;"><label>Description</label><textarea id="ecdesc-csv" style="height:70px;"></textarea></div>
-          <div class="fg" style="margin-bottom:10px;max-width:220px;"><label>Accent color <span style="font-size:11px;color:var(--text-soft);">(hex, blank for none)</span></label><input type="text" id="eccolor-csv" placeholder="#3f72b8"></div>
+          <div class="fg" style="margin-bottom:10px;max-width:220px;"><label>Accent color <span style="font-size:11px;color:var(--text-soft);">(hex, blank for none)</span></label><input type="text" id="eccolor-csv" placeholder="#58923a"></div>
           <div class="btn-row" style="margin-top:0;">
             <button class="btn-sec" style="height:34px;font-size:12px;" onclick="saveExportCard('csv')"><i class="ti ti-check"></i> Save</button>
             <button class="btn-sec" style="height:34px;font-size:12px;" onclick="toggleExportCardEdit('csv')">Cancel</button>
           </div>
         </div>
         <div class="btn-row" style="margin-top:0;">
-          <button class="btn-sec" onclick="exportCSV(true)"><i class="ti ti-file-spreadsheet"></i> Export all records as CSV</button>
+          <button class="btn-primary green" onclick="exportCSV(true)"><i class="ti ti-file-spreadsheet"></i> Export all records as CSV</button>
         </div>
       </div>
     </div>
@@ -1164,7 +1173,7 @@ background-image:
     </div>
 </div>
 
-<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.11.13.5</div>
+<div style="text-align:center;padding:1.5rem;font-size:11px;color:var(--text-soft);letter-spacing:0.03em;">Created, Constructed, and Maintained by Damian Feliciano &nbsp;&middot;&nbsp; v2026.11.17.1</div>
 
 <script>
 // ═══════════════════════════
@@ -1884,9 +1893,9 @@ function showTab(t) {
 const EXPORT_CARDS_DEFAULT = {
   intro:   { title: 'Export reports', description: 'Every report below reads the same live records. Pick one and export it. Meal Count Sheets for a single record come from the buttons on each row in <strong>Site Lookup</strong>, after you press Load there.', color: '' },
   psm:     { title: 'Site Summary Sheet Report', description: 'One site, a range of months. A single <strong>Daily Meal Details</strong> sheet listing every day that site serves: service date, weekday, status, received, available, 1st and 2nd meals, with blanks where nothing came in, a total row, and a live DAYS SERVED formula.', color: '#58923a' },
-  wwl:     { title: 'Weekly Waste & Leftover Report', description: 'One week, Mon&ndash;Sat, every site. A <strong>Summary</strong> with totals and waste and leftover as a share of available, then <strong>Waste by Day</strong>, <strong>Leftover by Day</strong>, and <strong>Review Flags</strong> for the week. Pick any day in the week; it snaps to Monday. Use it to spot over-ordering.', color: '#3f72b8' },
-  audit:   { title: 'Site Audit Report', description: 'One site, one date range, in the CACFP audit layout: daily details, monthly averages, monthly totals, site information. For when a monitor or the state asks for a site&#39;s full history.', color: '#3f72b8' },
-  monthly: { title: 'Monthly Audit Report', description: 'A month across all sites, or one: the Sponsor Monthly Meal Count Summary by site. Review Flags now live on the Weekly Waste &amp; Leftover Report, and the raw daily rows come from All Records (CSV).', color: '#3f72b8' },
+  wwl:     { title: 'Weekly Waste & Leftover Report', description: 'One week, Mon&ndash;Sat, every site. A <strong>Summary</strong> with totals and waste and leftover as a share of available, then <strong>Waste by Day</strong>, <strong>Leftover by Day</strong>, and <strong>Review Flags</strong> for the week. Pick any day in the week; it snaps to Monday. Use it to spot over-ordering.', color: '#58923a' },
+  audit:   { title: 'Site Audit Report', description: 'One site, one date range, in the CACFP audit layout: daily details, monthly averages, monthly totals, site information. For when a monitor or the state asks for a site&#39;s full history.', color: '#58923a' },
+  monthly: { title: 'Monthly Audit Report', description: 'A month across all sites, or one: the Sponsor Monthly Meal Count Summary by site. Review Flags now live on the Weekly Waste &amp; Leftover Report, and the raw daily rows come from All Records (CSV).', color: '#58923a' },
   reimb:   { title: 'Initial Estimated Reimbursement', description: 'One sheet in the compliance department&#39;s format. Per site: Received, Available, Attendance, 1st and 2nd meals. Real 2nds are capped at 2% of 1sts. Then a total and an estimate at the supper rate set on the Reimbursement tracker. This is the first pass for the monthly claim.', color: '#58923a' },
   csv:     { title: 'All Records (CSV)', description: 'Every record, every site, one row each, all fields. For spreadsheets and pivot tables.', color: '' }
 };
@@ -1898,6 +1907,12 @@ async function loadExportCardsConfig() {
     if (doc.exists) {
       const d = doc.data();
       Object.keys(EXPORT_CARDS_DEFAULT).forEach(id => { if (d[id]) EXPORT_CARDS[id] = { ...EXPORT_CARDS_DEFAULT[id], ...d[id] }; });
+      // Export Reports is all green now. Cards whose accent was saved as the old blue default under
+      // an earlier version would otherwise still draw a blue left edge from Firestore; they are
+      // moved to the green. A colour anyone deliberately picked for themselves is left alone.
+      Object.keys(EXPORT_CARDS).forEach(id => {
+        if (/^#3f72b8$/i.test(String(EXPORT_CARDS[id].color || '').trim())) EXPORT_CARDS[id].color = '#58923a';
+      });
     }
   } catch (e) { console.warn('exportCards config load failed:', e); }
 }
@@ -3063,17 +3078,29 @@ function renderTrackerWeekly() {
   trackerSortRows(rows, 'weekly');
   const totalMissing = rows.filter(r => !r.allOk).length;
 
+  // Status and Contacted? columns were removed: the day cells already say it — ✓ submitted,
+  // ✗ missing, ✉ missing but already emailed about, – not a service day. The email checkbox is the
+  // first column so it's always reachable without scrolling a wide week sideways.
   let h = '<div class="table-scroll"><table class="tracker-table t-weekly">'
-    + '<thead><tr><th class="site-col sortable" onclick="setTrackerSort(\'weekly\',\'site\')">Site ' + trackerArrow('weekly','site') + '</th>';
+    + '<thead><tr><th class="mail-col" title="Tick a site to include it in Email selected">&#9993;</th>'
+    + '<th class="site-col sortable" onclick="setTrackerSort(\'weekly\',\'site\')">Site ' + trackerArrow('weekly','site') + '</th>';
   dayLabels.forEach((d, i) => {
     h += '<th class="sortable" onclick="setTrackerSort(\'weekly\',\'d' + i + '\')" title="Sort by this day">' + d + ' ' + trackerArrow('weekly','d' + i) + '</th>';
   });
-  h += '<th class="sortable" onclick="setTrackerSort(\'weekly\',\'submitted\')">Status ' + trackerArrow('weekly','submitted') + '</th>'
-    + '<th class="sortable" onclick="setTrackerSort(\'weekly\',\'contacted\')" title="Missing days a reminder has already gone out for">Contacted? ' + trackerArrow('weekly','contacted') + '</th>'
-    + '<th>Email</th></tr></thead><tbody>';
+  h += '</tr></thead><tbody>';
   rows.forEach(row => {
     h += '<tr>';
-    h += '<td class="site-col" title="' + esc(row.name + ' — serves ' + serviceDaysLabel(row.k)) + '">' + esc(row.name) + '</td>';
+    if (!row.allOk && row.hasEmail) {
+      h += '<td class="mail-col"><input type="checkbox" class="tracker-sel" data-site="' + row.k + '" data-dates=\'' + JSON.stringify(row.missingDays) + '\' onchange="updateSelCount()" style="width:16px;height:16px;accent-color:var(--navy);cursor:pointer;" title="Select to email"></td>';
+    } else if (!row.allOk) {
+      h += '<td class="mail-col"><span style="font-size:11px;color:var(--text-soft);" title="No email on file for this site">&mdash;</span></td>';
+    } else {
+      h += '<td class="mail-col"></td>';
+    }
+    // The counts and contact state the two dropped columns carried now live in this tooltip.
+    h += '<td class="site-col" title="' + esc(row.name + ' — serves ' + serviceDaysLabel(row.k)
+        + ' — ' + row.submitted + '/' + row.expected + ' submitted'
+        + (row.allOk ? '' : '; emailed for ' + row.contacted + ' of ' + row.missing + ' missing day(s)')) + '">' + esc(row.name) + '</td>';
     weekDays.forEach(d => {
       const ok = submittedByDate[d].has(row.k);
       if (!isServiceDay(row.k, d) && !ok) { h += '<td><span class="day-cell-na" title="' + esc('Not a service day — this site serves ' + serviceDaysLabel(row.k)) + '">–</span></td>'; return; }
@@ -3084,25 +3111,12 @@ function renderTrackerWeekly() {
         ? '<td><span class="day-cell-mailed" title="' + esc('Still missing. ' + mailedTip(m)) + '">&#9993;</span></td>'
         : '<td><span class="day-cell-miss">✗</span></td>';
     });
-    h += '<td><span class="pill ' + (row.allOk ? 'pill-ok' : 'pill-danger') + '">' + row.submitted + '/' + row.expected + '</span></td>';
-    // How many of this row's missing days have already been emailed about.
-    const contacted = row.missingDays.filter(d => remindersFor(row.k, d).length);
-    h += '<td>' + (row.allOk ? ''
-      : contacted.length
-        ? '<span class="mail-badge" title="' + esc('Emailed for ' + contacted.map(fmtDate).join(', ')) + '">' + contacted.length + '/' + row.missing + '</span>'
-        : '<span style="font-size:10px;color:var(--text-soft);">not yet</span>') + '</td>';
-    if (!row.allOk && row.hasEmail) {
-      h += '<td><input type="checkbox" class="tracker-sel" data-site="' + row.k + '" data-dates=\'' + JSON.stringify(row.missingDays) + '\' onchange="updateSelCount()" style="width:16px;height:16px;accent-color:var(--navy);cursor:pointer;" title="Select to email"></td>';
-    } else if (!row.allOk) {
-      h += '<td><span style="font-size:10px;color:var(--text-soft);">No email</span></td>';
-    } else {
-      h += '<td></td>';
-    }
     h += '</tr>';
   });
   h += '</tbody></table></div>';
   trackerGrid.innerHTML = h;
-  trackerSum.innerHTML = 'Week of ' + dayLabels[0] + ' — <strong>' + totalMissing + '</strong> site(s) with missing submissions. A <span class="day-cell-na">–</span> is a day that site doesn\'t serve, taken from its Days Serving field.';
+  trackerSum.innerHTML = 'Week of ' + dayLabels[0] + ' — <strong>' + totalMissing + '</strong> site(s) with missing submissions. '
+    + 'A <span class="day-cell-ok">✓</span> is submitted, a <span class="day-cell-miss">✗</span> still missing, a <span class="day-cell-mailed">&#9993;</span> still missing but already emailed about, and a <span class="day-cell-na">–</span> a day that site doesn\'t serve, taken from its Days Serving field.';
   refreshSendRow();
 }
 
@@ -3140,16 +3154,17 @@ function renderTrackerMonthly() {
   trackerSortRows(rows, 'monthly');
   const totalMissing = rows.filter(r => !r.allOk).length;
 
+  // As with the weekly view: no Status or Contacted? columns — the ✉ beside a missing date says it —
+  // and the email checkbox leads the row.
   let h = '<div class="table-scroll"><table class="tracker-table t-monthly">'
     + '<thead><tr>'
+    + '<th class="mail-col" title="Tick a site to include it in Email selected">&#9993;</th>'
     + '<th class="site-col sortable" onclick="setTrackerSort(\'monthly\',\'site\')">Site ' + trackerArrow('monthly','site') + '</th>'
     + '<th class="sortable" onclick="setTrackerSort(\'monthly\',\'expected\')">Expected ' + trackerArrow('monthly','expected') + '</th>'
     + '<th class="sortable" onclick="setTrackerSort(\'monthly\',\'submitted\')">Submitted ' + trackerArrow('monthly','submitted') + '</th>'
     + '<th class="sortable" onclick="setTrackerSort(\'monthly\',\'missing\')">Missing ' + trackerArrow('monthly','missing') + '</th>'
     + '<th class="sortable" onclick="setTrackerSort(\'monthly\',\'rate\')">Rate ' + trackerArrow('monthly','rate') + '</th>'
     + '<th class="sortable" style="text-align:left;" onclick="setTrackerSort(\'monthly\',\'firstMissing\')" title="Sort by earliest missing date">Missing dates ' + trackerArrow('monthly','firstMissing') + '</th>'
-    + '<th class="sortable" onclick="setTrackerSort(\'monthly\',\'contacted\')" title="Missing days a reminder has already gone out for">Contacted? ' + trackerArrow('monthly','contacted') + '</th>'
-    + '<th>Email</th>'
     + '</tr></thead><tbody>';
   rows.forEach(row => {
     // Dates already emailed about are marked with an envelope, so the column itself answers
@@ -3162,23 +3177,20 @@ function renderTrackerMonthly() {
       : fmtDate(d)).join(', ');
     const rateColor = row.rate === 100 ? 'var(--success-text)' : row.rate >= 80 ? 'var(--warning-text)' : 'var(--danger-text)';
     h += '<tr>';
-    h += '<td class="site-col" title="' + esc(row.name + ' — serves ' + row.days) + '">' + esc(row.name) + '</td>';
+    if (!row.allOk && row.hasEmail) {
+      h += '<td class="mail-col"><input type="checkbox" class="tracker-sel" data-site="' + row.k + '" data-dates=\'' + JSON.stringify(row.missingDays) + '\' onchange="updateSelCount()" style="width:16px;height:16px;accent-color:var(--navy);cursor:pointer;" title="Select to email"></td>';
+    } else if (!row.allOk) {
+      h += '<td class="mail-col"><span style="font-size:11px;color:var(--text-soft);" title="No email on file for this site">&mdash;</span></td>';
+    } else {
+      h += '<td class="mail-col"></td>';
+    }
+    h += '<td class="site-col" title="' + esc(row.name + ' — serves ' + row.days
+        + (row.allOk ? '' : ' — emailed for ' + contacted.length + ' of ' + row.missing + ' missing day(s)')) + '">' + esc(row.name) + '</td>';
     h += '<td title="' + esc('Serves ' + row.days) + '">' + row.expected + '</td>';
     h += '<td>' + row.submitted + '</td>';
     h += '<td style="color:' + (row.missing ? 'var(--danger-text)' : 'var(--success-text)') + ';">' + row.missing + '</td>';
     h += '<td style="font-weight:600;color:' + rateColor + ';">' + row.rate + '%</td>';
     h += '<td class="dates-col" title="' + esc(row.missing ? row.missing + ' missing: ' + missingPlain : 'All submitted') + '">' + (row.missing ? missingFmt : '<span style="color:var(--success-text);">All submitted &#10003;</span>') + '</td>';
-    h += '<td>' + (row.allOk ? ''
-      : contacted.length
-        ? '<span class="mail-badge" title="' + esc('Emailed for ' + contacted.map(fmtDate).join(', ')) + '">' + contacted.length + '/' + row.missing + '</span>'
-        : '<span style="font-size:10px;color:var(--text-soft);">not yet</span>') + '</td>';
-    if (!row.allOk && row.hasEmail) {
-      h += '<td><input type="checkbox" class="tracker-sel" data-site="' + row.k + '" data-dates=\'' + JSON.stringify(row.missingDays) + '\' onchange="updateSelCount()" style="width:16px;height:16px;accent-color:var(--navy);cursor:pointer;" title="Select to email"></td>';
-    } else if (!row.allOk) {
-      h += '<td><span style="font-size:10px;color:var(--text-soft);">No email</span></td>';
-    } else {
-      h += '<td></td>';
-    }
     h += '</tr>';
   });
   h += '</tbody></table></div>';
@@ -3449,7 +3461,8 @@ function renderReminderHistory() {
   // Default to all sites when the select hasn't been populated yet, rather than filtering on an
   // empty value and reporting that nothing has been sent.
   const site = (siteSel && siteSel.value) || 'ALL';
-  const lim = limSel && limSel.value !== '' ? (parseInt(limSel.value) || 0) : 50;
+  // Defaults to the last 10, matching the selected option in the Show dropdown.
+  const lim = limSel && limSel.value !== '' ? (parseInt(limSel.value) || 0) : 10;
   let rows = [];
   Object.entries(REMINDER_LOG).forEach(([k, arr]) => {
     if (site !== 'ALL' && k !== site) return;
