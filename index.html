@@ -4496,6 +4496,16 @@ function fmtDate(iso) {
   const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
   return m ? m[2] + '/' + m[3] + '/' + m[1].slice(2) : (iso || '');
 }
+// "2026-11" → "NOVEMBER 2026", for the banner row of the Initial Estimated Reimbursement and
+// Monthly Audit exports. Lost in the full rebuild; both exports threw a ReferenceError without it.
+function monthNameUpper(month) {
+  const m = /^(\d{4})-(\d{2})/.exec(String(month || ''));
+  if (!m) return String(month || '').toUpperCase();
+  return new Date(+m[1], +m[2] - 1, 1)
+    .toLocaleString('en-US', { month: 'long', year: 'numeric' })
+    .toUpperCase();
+}
+
 // An ISO timestamp (e.g. audit log) → "MM/DD/YY HH:MM" in local time.
 function fmtStamp(iso) {
   const d = new Date(iso);
